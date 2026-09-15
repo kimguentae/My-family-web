@@ -1008,8 +1008,87 @@
         class="screen"
     >
 
-        <div class="empty-screen">
-            계정 설정
+        <div
+            id="accountLoggedOut"
+            class="account-section"
+        >
+
+            <div class="account-label">
+                이메일
+            </div>
+
+            <input
+                type="email"
+                id="authEmailInput"
+                class="account-input"
+                placeholder="you@example.com"
+                autocomplete="email"
+            >
+
+            <div class="account-label">
+                비밀번호
+            </div>
+
+            <input
+                type="password"
+                id="authPasswordInput"
+                class="account-input"
+                placeholder="6자 이상"
+                autocomplete="current-password"
+            >
+
+            <div
+                id="authMessage"
+                class="account-message"
+            ></div>
+
+            <button
+                type="button"
+                class="save-button"
+                onclick="handleSignIn()"
+            >
+                로그인
+            </button>
+
+            <button
+                type="button"
+                class="account-secondary-button"
+                onclick="handleSignUp()"
+            >
+                회원가입
+            </button>
+
+        </div>
+
+
+        <div
+            id="accountLoggedIn"
+            class="account-section"
+            style="display: none;"
+        >
+
+            <div class="account-label">
+                로그인 계정
+            </div>
+
+            <div
+                id="accountEmailDisplay"
+                class="account-email"
+            ></div>
+
+            <div
+                id="accountSyncStatus"
+                class="account-message account-message-info"
+            ></div>
+
+            <button
+                type="button"
+                class="save-button"
+                onclick="handleSignOut()"
+            >
+                로그아웃
+            </button>
+
         </div>
 
     </section>
@@ -1073,6 +1152,7 @@
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
 
 </body>

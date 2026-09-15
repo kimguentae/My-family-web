@@ -1,3 +1,35 @@
+/* =========================
+   Supabase 연동
+========================= */
+
+const SUPABASE_URL =
+    "https://lyassaicxiixzyqlewhx.supabase.co";
+
+const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5YXNzYWljeGlpeHp5cWxld2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NjEwMDMsImV4cCI6MjEwNTAzNzAwM30.pHAYhGkx-NE9-_Ep44uKxADRyR5qR--UsYlIuwFKalw";
+
+const supabaseClient =
+    typeof window !== "undefined" &&
+    window.supabase &&
+    typeof window.supabase.createClient ===
+        "function"
+        ? window.supabase.createClient(
+              SUPABASE_URL,
+              SUPABASE_ANON_KEY
+          )
+        : null;
+
+
+/* 현재 로그인 사용자 (없으면 null = 로컬 전용 모드) */
+
+let currentUser = null;
+
+let syncUserDataTimer = null;
+
+let isLoadingUserData = false;
+
+
+
 let transactions = JSON.parse(
     localStorage.getItem("householdTransactions") || "[]"
 );
@@ -275,6 +307,8 @@ function saveSettings() {
         JSON.stringify(settings)
     );
 
+    scheduleSyncUserData();
+
 }
 
 
@@ -284,6 +318,8 @@ function saveCategories() {
         "householdCategories",
         JSON.stringify(categories)
     );
+
+    scheduleSyncUserData();
 
 }
 
@@ -295,6 +331,8 @@ function savePaymentMethods() {
         JSON.stringify(paymentMethods)
     );
 
+    scheduleSyncUserData();
+
 }
 
 
@@ -304,6 +342,1033 @@ function saveSubjects() {
         "householdSubjects",
         JSON.stringify(subjects)
     );
+
+    scheduleSyncUserData();
+
+}
+
+
+
+/* =========================
+   Supabase 인증 (로그인 / 회원가입)
+========================= */
+
+function updateAccountUI() {
+
+    const loggedOut =
+        document.getElementById(
+            "accountLoggedOut"
+        );
+
+    const loggedIn =
+        document.getElementById(
+            "accountLoggedIn"
+        );
+
+    const emailDisplay =
+        document.getElementById(
+            "accountEmailDisplay"
+        );
+
+
+    if (!loggedOut || !loggedIn) {
+
+        return;
+
+    }
+
+
+    if (currentUser) {
+
+        loggedOut.style.display =
+            "none";
+
+        loggedIn.style.display =
+            "block";
+
+
+        if (emailDisplay) {
+
+            emailDisplay.innerText =
+                currentUser.email;
+
+        }
+
+    }
+
+    else {
+
+        loggedOut.style.display =
+            "block";
+
+        loggedIn.style.display =
+            "none";
+
+    }
+
+}
+
+
+function setAuthMessage(text) {
+
+    const message =
+        document.getElementById(
+            "authMessage"
+        );
+
+    if (message) {
+
+        message.innerText =
+            text || "";
+
+    }
+
+}
+
+
+function setSyncStatus(text) {
+
+    const status =
+        document.getElementById(
+            "accountSyncStatus"
+        );
+
+    if (status) {
+
+        status.innerText =
+            text || "";
+
+    }
+
+}
+
+
+/* 앱 실행 시 기존 로그인 세션이 있는지 확인 */
+
+async function checkExistingSession() {
+
+    if (!supabaseClient) {
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.getSession();
+
+
+    if (error) {
+
+        console.error(
+            error
+        );
+
+        return;
+
+    }
+
+
+    if (
+        data &&
+        data.session &&
+        data.session.user
+    ) {
+
+        currentUser = {
+            id: data.session.user.id,
+            email: data.session.user.email
+        };
+
+
+        updateAccountUI();
+
+        await loadUserDataFromSupabase();
+
+    }
+
+}
+
+
+async function handleSignUp() {
+
+    if (!supabaseClient) {
+
+        setAuthMessage(
+            "Supabase 연결 정보가 설정되지 않았습니다."
+        );
+
+        return;
+
+    }
+
+
+    const emailInput =
+        document.getElementById(
+            "authEmailInput"
+        );
+
+    const passwordInput =
+        document.getElementById(
+            "authPasswordInput"
+        );
+
+
+    const email =
+        emailInput
+            ? emailInput.value.trim()
+            : "";
+
+    const password =
+        passwordInput
+            ? passwordInput.value
+            : "";
+
+
+    if (!email || !password) {
+
+        setAuthMessage(
+            "이메일과 비밀번호를 입력해주세요."
+        );
+
+        return;
+
+    }
+
+
+    if (password.length < 6) {
+
+        setAuthMessage(
+            "비밀번호는 6자 이상이어야 해요."
+        );
+
+        return;
+
+    }
+
+
+    setAuthMessage(
+        "처리 중..."
+    );
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+
+
+    if (error) {
+
+        setAuthMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if (
+        data &&
+        data.session &&
+        data.user
+    ) {
+
+        currentUser = {
+            id: data.user.id,
+            email: data.user.email
+        };
+
+
+        setAuthMessage(
+            ""
+        );
+
+        updateAccountUI();
+
+
+        /* 최초 가입 시 기존 로컬 데이터를 서버로 올림 */
+
+        await pushLocalDataToSupabase();
+
+        await loadUserDataFromSupabase();
+
+    }
+
+    else {
+
+        setAuthMessage(
+            "가입 확인 메일을 확인해주세요."
+        );
+
+    }
+
+}
+
+
+async function handleSignIn() {
+
+    if (!supabaseClient) {
+
+        setAuthMessage(
+            "Supabase 연결 정보가 설정되지 않았습니다."
+        );
+
+        return;
+
+    }
+
+
+    const emailInput =
+        document.getElementById(
+            "authEmailInput"
+        );
+
+    const passwordInput =
+        document.getElementById(
+            "authPasswordInput"
+        );
+
+
+    const email =
+        emailInput
+            ? emailInput.value.trim()
+            : "";
+
+    const password =
+        passwordInput
+            ? passwordInput.value
+            : "";
+
+
+    if (!email || !password) {
+
+        setAuthMessage(
+            "이메일과 비밀번호를 입력해주세요."
+        );
+
+        return;
+
+    }
+
+
+    setAuthMessage(
+        "로그인 중..."
+    );
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.signInWithPassword(
+            {
+                email,
+                password
+            }
+        );
+
+
+    if (error) {
+
+        setAuthMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    currentUser = {
+        id: data.user.id,
+        email: data.user.email
+    };
+
+
+    setAuthMessage(
+        ""
+    );
+
+    updateAccountUI();
+
+
+    await loadUserDataFromSupabase();
+
+}
+
+
+async function handleSignOut() {
+
+    if (supabaseClient) {
+
+        await supabaseClient.auth.signOut();
+
+    }
+
+
+    currentUser = null;
+
+    setAuthMessage(
+        ""
+    );
+
+    setSyncStatus(
+        ""
+    );
+
+    updateAccountUI();
+
+}
+
+
+
+/* =========================
+   Supabase 데이터 동기화
+========================= */
+
+/* 서버에서 내 데이터를 가져와 로컬에 반영 */
+
+async function loadUserDataFromSupabase() {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    isLoadingUserData = true;
+
+    setSyncStatus(
+        "동기화 중..."
+    );
+
+
+    const [
+        transactionsResult,
+        userDataResult
+    ] = await Promise.all([
+
+        supabaseClient
+            .from("transactions")
+            .select("*")
+            .eq(
+                "user_id",
+                currentUser.id
+            )
+            .order(
+                "date",
+                {
+                    ascending: true
+                }
+            ),
+
+        supabaseClient
+            .from("user_data")
+            .select("*")
+            .eq(
+                "user_id",
+                currentUser.id
+            )
+            .maybeSingle()
+
+    ]);
+
+
+    isLoadingUserData = false;
+
+
+    if (transactionsResult.error) {
+
+        setSyncStatus(
+            "동기화 실패: " +
+            transactionsResult.error
+                .message
+        );
+
+        return;
+
+    }
+
+
+    if (
+        userDataResult.error &&
+        userDataResult.error.code !==
+        "PGRST116"
+    ) {
+
+        setSyncStatus(
+            "동기화 실패: " +
+            userDataResult.error
+                .message
+        );
+
+        return;
+
+    }
+
+
+    const rows =
+        transactionsResult.data ||
+        [];
+
+
+    transactions =
+        rows.map(
+            row => ({
+
+                id: row.id,
+
+                date: row.date,
+
+                type: row.type,
+
+                amount:
+                    Number(
+                        row.amount
+                    ) || 0,
+
+                category:
+                    row.category ||
+                    "",
+
+                memo:
+                    row.memo ||
+                    "",
+
+                payment:
+                    row.payment ||
+                    "",
+
+                subject:
+                    row.subject ||
+                    ""
+
+            })
+        );
+
+
+    localStorage.setItem(
+        "householdTransactions",
+        JSON.stringify(transactions)
+    );
+
+
+    const userRow =
+        userDataResult.data;
+
+
+    if (userRow) {
+
+        if (userRow.settings) {
+
+            settings = {
+                ...settings,
+                ...userRow.settings
+            };
+
+            localStorage.setItem(
+                "householdSettings",
+                JSON.stringify(settings)
+            );
+
+        }
+
+
+        if (userRow.categories) {
+
+            categories =
+                userRow.categories;
+
+            localStorage.setItem(
+                "householdCategories",
+                JSON.stringify(categories)
+            );
+
+        }
+
+
+        if (
+            userRow.payment_methods
+        ) {
+
+            paymentMethods =
+                userRow.payment_methods;
+
+            localStorage.setItem(
+                "householdPaymentMethods",
+                JSON.stringify(paymentMethods)
+            );
+
+        }
+
+
+        if (userRow.subjects) {
+
+            subjects =
+                userRow.subjects;
+
+            localStorage.setItem(
+                "householdSubjects",
+                JSON.stringify(subjects)
+            );
+
+        }
+
+    }
+
+    else {
+
+        /* 서버에 데이터가 없는 최초 로그인: 로컬 데이터를 서버로 업로드 */
+
+        await pushLocalDataToSupabase();
+
+    }
+
+
+    setSyncStatus(
+        "동기화 완료"
+    );
+
+
+    refreshAllScreens();
+
+}
+
+
+/* 로컬 데이터 전체를 서버로 업로드 (최초 로그인/가입 시) */
+
+async function pushLocalDataToSupabase() {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    await supabaseClient
+        .from("user_data")
+        .upsert({
+
+            user_id:
+                currentUser.id,
+
+            settings: settings,
+
+            categories: categories,
+
+            payment_methods:
+                paymentMethods,
+
+            subjects: subjects,
+
+            updated_at:
+                new Date().toISOString()
+
+        });
+
+
+    if (transactions.length) {
+
+        const rows =
+            transactions.map(
+                transaction => ({
+
+                    id:
+                        transaction.id,
+
+                    user_id:
+                        currentUser.id,
+
+                    date:
+                        transaction.date,
+
+                    type:
+                        transaction.type,
+
+                    amount:
+                        transaction.amount,
+
+                    category:
+                        transaction.category ||
+                        null,
+
+                    memo:
+                        transaction.memo ||
+                        null,
+
+                    payment:
+                        transaction.payment ||
+                        null,
+
+                    subject:
+                        transaction.subject ||
+                        null
+
+                })
+            );
+
+
+        await supabaseClient
+            .from("transactions")
+            .upsert(
+                rows
+            );
+
+    }
+
+}
+
+
+/* 설정 / 카테고리 / 결제수단 / 주체 변경을 서버에 반영 (여러 번 연속 호출되어도 한 번만 전송) */
+
+function scheduleSyncUserData() {
+
+    if (
+        !supabaseClient ||
+        !currentUser ||
+        isLoadingUserData
+    ) {
+
+        return;
+
+    }
+
+
+    if (syncUserDataTimer) {
+
+        clearTimeout(
+            syncUserDataTimer
+        );
+
+    }
+
+
+    syncUserDataTimer =
+        setTimeout(
+            function() {
+
+                supabaseClient
+                    .from("user_data")
+                    .upsert({
+
+                        user_id:
+                            currentUser.id,
+
+                        settings:
+                            settings,
+
+                        categories:
+                            categories,
+
+                        payment_methods:
+                            paymentMethods,
+
+                        subjects:
+                            subjects,
+
+                        updated_at:
+                            new Date().toISOString()
+
+                    })
+                    .then(
+                        function(
+                            result
+                        ) {
+
+                            if (
+                                result.error
+                            ) {
+
+                                console.error(
+                                    result.error
+                                );
+
+                            }
+
+                        }
+                    );
+
+            },
+            600
+        );
+
+}
+
+
+/* 화면 다시 그리기 (로그인 후 서버 데이터로 갱신될 때 사용) */
+
+function refreshAllScreens() {
+
+    renderCategoryButtons();
+
+    renderSubjectButtons();
+
+    renderPaymentButtons();
+
+    updateInputAreas();
+
+
+    renderCalendar();
+
+    renderSelectedDate();
+
+
+    renderCategoryManagement();
+
+    renderPaymentManagement();
+
+    renderSubjectManagement();
+
+
+    updateSettingsUI();
+
+
+    const analysisScreen =
+        document.getElementById(
+            "analysisScreen"
+        );
+
+
+    if (
+        analysisScreen &&
+        analysisScreen.classList.contains(
+            "active"
+        )
+    ) {
+
+        renderAnalysis();
+
+    }
+
+}
+
+
+/* 거래 1건 추가를 서버에 반영 */
+
+function syncInsertTransaction(
+    transaction
+) {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    supabaseClient
+        .from("transactions")
+        .insert({
+
+            id:
+                transaction.id,
+
+            user_id:
+                currentUser.id,
+
+            date:
+                transaction.date,
+
+            type:
+                transaction.type,
+
+            amount:
+                transaction.amount,
+
+            category:
+                transaction.category ||
+                null,
+
+            memo:
+                transaction.memo ||
+                null,
+
+            payment:
+                transaction.payment ||
+                null,
+
+            subject:
+                transaction.subject ||
+                null
+
+        })
+        .then(
+            function(result) {
+
+                if (result.error) {
+
+                    console.error(
+                        result.error
+                    );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* 거래 1건 수정(금액 등)을 서버에 반영 */
+
+function syncUpdateTransaction(
+    id,
+    fields
+) {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    supabaseClient
+        .from("transactions")
+        .update(
+            fields
+        )
+        .eq(
+            "id",
+            id
+        )
+        .eq(
+            "user_id",
+            currentUser.id
+        )
+        .then(
+            function(result) {
+
+                if (result.error) {
+
+                    console.error(
+                        result.error
+                    );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* 거래 1건 삭제를 서버에 반영 */
+
+function syncDeleteTransaction(id) {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    supabaseClient
+        .from("transactions")
+        .delete()
+        .eq(
+            "id",
+            id
+        )
+        .eq(
+            "user_id",
+            currentUser.id
+        )
+        .then(
+            function(result) {
+
+                if (result.error) {
+
+                    console.error(
+                        result.error
+                    );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* 카테고리 / 결제수단 / 주체 이름이 바뀔 때
+   해당 필드를 사용하는 모든 거래를 서버에서도 일괄 변경 */
+
+function syncRenameTransactionsField(
+    field,
+    oldValue,
+    newValue
+) {
+
+    if (
+        !supabaseClient ||
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    const updatePayload = {};
+
+    updatePayload[field] =
+        newValue;
+
+
+    supabaseClient
+        .from("transactions")
+        .update(
+            updatePayload
+        )
+        .eq(
+            "user_id",
+            currentUser.id
+        )
+        .eq(
+            field,
+            oldValue
+        )
+        .then(
+            function(result) {
+
+                if (result.error) {
+
+                    console.error(
+                        result.error
+                    );
+
+                }
+
+            }
+        );
 
 }
 
@@ -1387,6 +2452,8 @@ function updateSettingsUI() {
 
     updateAnalysisGroupVisibility();
 
+    updateAccountUI();
+
 }
 
 
@@ -2273,7 +3340,7 @@ function saveTransaction() {
     }
 
 
-    transactions.push({
+    const newTransaction = {
 
         id: Date.now(),
 
@@ -2303,10 +3370,19 @@ function saveTransaction() {
                 ? selectedSubject
                 : ""
 
-    });
+    };
+
+
+    transactions.push(
+        newTransaction
+    );
 
 
     saveTransactions();
+
+    syncInsertTransaction(
+        newTransaction
+    );
 
 
     amountInput.value = "";
@@ -4367,6 +5443,14 @@ function editTransaction(id) {
 
     saveTransactions();
 
+    syncUpdateTransaction(
+        id,
+        {
+            amount:
+                amount
+        }
+    );
+
     renderCalendar();
 
     renderSelectedDate();
@@ -4406,6 +5490,10 @@ function deleteTransaction(id) {
 
 
     saveTransactions();
+
+    syncDeleteTransaction(
+        id
+    );
 
     renderCalendar();
 
@@ -5385,6 +6473,12 @@ function editCategory(
 
     saveTransactions();
 
+    syncRenameTransactionsField(
+        "category",
+        oldName,
+        trimmed
+    );
+
     renderCategoryManagement();
 
     renderCategoryButtons();
@@ -5892,6 +6986,12 @@ function editPaymentMethod(index) {
 
     saveTransactions();
 
+    syncRenameTransactionsField(
+        "payment",
+        oldName,
+        trimmed
+    );
+
     renderPaymentManagement();
 
     renderPaymentButtons();
@@ -6396,6 +7496,12 @@ function editSubject(index) {
 
     saveTransactions();
 
+    syncRenameTransactionsField(
+        "subject",
+        oldName,
+        trimmed
+    );
+
     renderSubjectManagement();
 
     renderSubjectButtons();
@@ -6494,6 +7600,9 @@ document.addEventListener(
             );
 
         }
+
+
+        checkExistingSession();
 
     }
 );
