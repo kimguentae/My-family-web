@@ -717,6 +717,16 @@ async function handleSignOut() {
 
     currentUser = null;
 
+    if (syncUserDataTimer) {
+
+        clearTimeout(
+            syncUserDataTimer
+        );
+
+        syncUserDataTimer = null;
+
+    }
+
     setAuthMessage(
         ""
     );
@@ -725,7 +735,146 @@ async function handleSignOut() {
         ""
     );
 
+
+    /* 로그인 중 불러온 데이터가 로그아웃 후에도
+       화면에 남아있지 않도록 로컬 데이터를 초기화 */
+
+    resetLocalDataToDefaults();
+
     updateAccountUI();
+
+}
+
+
+/* 로그아웃 시 로컬 데이터(거래내역/설정/카테고리/결제수단/주체)를
+   최초 설치 상태로 되돌림 - 다른 계정 데이터가 남아있지 않도록 함 */
+
+function resetLocalDataToDefaults() {
+
+    transactions = [];
+
+    settings = {
+
+        memoEnabled: true,
+        paymentEnabled: true,
+        categoryEnabled: true,
+        subjectEnabled: true,
+
+        memoExpenseEnabled: true,
+        memoIncomeEnabled: true,
+
+        paymentExpenseEnabled: true,
+        paymentIncomeEnabled: true,
+
+        categoryExpenseEnabled: true,
+        categoryIncomeEnabled: true,
+
+        subjectExpenseEnabled: true,
+        subjectIncomeEnabled: true,
+
+        analysisCategoryEnabled: true,
+        analysisPaymentEnabled: true,
+        analysisSubjectEnabled: true,
+
+        analysisGroupOrder: [
+            "monthlyChart",
+            "category",
+            "payment",
+            "subject"
+        ],
+
+        monthlyChartEnabled: true
+
+    };
+
+    categories = {
+
+        expense: [
+            "식비",
+            "교통",
+            "쇼핑",
+            "생활",
+            "의료",
+            "교육",
+            "여가",
+            "기타"
+        ],
+
+        income: [
+            "급여",
+            "용돈",
+            "이자",
+            "투자수익",
+            "기타"
+        ]
+
+    };
+
+    paymentMethods = [
+        "카드1",
+        "카드2",
+        "현금",
+        "상품권"
+    ];
+
+    subjects = [
+        "남편",
+        "아내",
+        "아기",
+        "기타"
+    ];
+
+
+    localStorage.setItem(
+        "householdTransactions",
+        JSON.stringify(transactions)
+    );
+
+    localStorage.setItem(
+        "householdSettings",
+        JSON.stringify(settings)
+    );
+
+    localStorage.setItem(
+        "householdCategories",
+        JSON.stringify(categories)
+    );
+
+    localStorage.setItem(
+        "householdPaymentMethods",
+        JSON.stringify(paymentMethods)
+    );
+
+    localStorage.setItem(
+        "householdSubjects",
+        JSON.stringify(subjects)
+    );
+
+
+    selectedCategory = "";
+    selectedPayment = "";
+    selectedSubject = "";
+
+    if (
+        typeof analysisSelectedCategory !==
+        "undefined"
+    ) {
+
+        analysisSelectedCategory = "";
+        analysisSelectedPayment = "";
+        analysisSelectedSubject = "";
+
+    }
+
+
+    calendarDate = new Date();
+
+    selectedDate = getTodayString();
+
+    historySearchKeyword = "";
+
+
+    refreshAllScreens();
 
 }
 
@@ -1063,6 +1212,16 @@ function scheduleSyncUserData() {
     syncUserDataTimer =
         setTimeout(
             function() {
+
+                if (
+                    !supabaseClient ||
+                    !currentUser
+                ) {
+
+                    return;
+
+                }
+
 
                 supabaseClient
                     .from("user_data")
