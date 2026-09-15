@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <title>가계부</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="header">
+
+        <button
+            type="button"
+            id="headerBackButton"
+            class="header-back-button"
+            onclick="goBackFromHeader()"
+        >
+            ‹
+        </button>
+
+        <h1 id="pageTitle"></h1>
+
+    </header>
+
+
+    <!-- 입력 -->
+
+    <section id="inputScreen" class="screen active">
+
+        <div class="input-date-row">
+
+            <div
+                id="inputDateText"
+                class="input-date-text"
+            ></div>
+
+            <input
+                type="date"
+                id="dateInput"
+                class="input-date-picker"
+            >
+
+        </div>
+
+        <div class="input-section">
+
+            <div class="type-toggle">
+
+                <button
+                    type="button"
+                    id="expenseBtn"
+                    class="type-btn active"
+                    onclick="setType('expense')"
+                >
+                    지출
+                </button>
+
+                <button
+                    type="button"
+                    id="incomeBtn"
+                    class="type-btn"
+                    onclick="setType('income')"
+                >
+                    수입
+                </button>
+
+            </div>
+
+            <div class="amount-wrap">
+
+                <input
+                    type="text"
+                    id="amountInput"
+                    class="amount-input"
+                    placeholder="0"
+                    inputmode="numeric"
+                    autocomplete="off"
+                >
+
+                <span class="won">원</span>
+
+            </div>
+
+            <div
+                id="categoryButtons"
+                class="category-buttons"
+            ></div>
+
+            <div
+                id="subjectArea"
+                class="subject-area"
+            >
+                <div
+                    id="subjectButtons"
+                    class="subject-buttons"
+                ></div>
+            </div>
+
+            <div
+                id="memoArea"
+                class="memo-area"
+            >
+
+                <input
+                    type="text"
+                    id="memoInput"
+                    class="memo-input"
+                    placeholder="메모"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <div
+                id="paymentArea"
+                class="payment-area"
+            >
+
+                <div
+                    id="paymentButtons"
+                    class="payment-buttons"
+                ></div>
+
+            </div>
+
+            <button
+                type="button"
+                class="save-button"
+                onclick="saveTransaction()"
+            >
+                저장
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 내역 -->
+
+    <section id="historyScreen" class="screen">
+
+        <div class="history-calendar-fixed">
+
+            <div class="calendar-header">
+
+                <div class="calendar-header-left">
+
+                    <button
+                        type="button"
+                        onclick="changeMonth(-1)"
+                    >
+                        ‹
+                    </button>
+
+                    <div id="calendarTitle"></div>
+
+                    <button
+                        type="button"
+                        onclick="changeMonth(1)"
+                    >
+                        ›
+                    </button>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="history-search-button"
+                    onclick="toggleHistorySearch()"
+                >
+                    🔍
+                </button>
+
+            </div>
+
+            <div
+                id="historySearchArea"
+                class="history-search-area"
+            >
+
+                <input
+                    type="text"
+                    id="historySearchInput"
+                    placeholder="메모 검색"
+                    autocomplete="off"
+                >
+
+                <button
+                    type="button"
+                    onclick="clearHistorySearch()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div class="calendar-week">
+
+                <div class="sunday">일</div>
+                <div>월</div>
+                <div>화</div>
+                <div>수</div>
+                <div>목</div>
+                <div>금</div>
+                <div class="saturday">토</div>
+
+            </div>
+
+            <div
+                id="calendar"
+                class="calendar"
+            ></div>
+
+        </div>
+
+        <div
+            id="selectedDateTitle"
+            class="selected-date-title"
+        ></div>
+
+        <div id="selectedDateTransactions"></div>
+
+    </section>
+
+
+<!-- 분석 -->
+
+<section
+    id="analysisScreen"
+    class="screen"
+>
+
+    <div id="analysisDateRow" class="analysis-date-row">
+
+        <div class="analysis-date-item">
+
+            <div
+                id="analysisStartDateText"
+                class="analysis-date-text"
+            ></div>
+
+            <input
+                type="date"
+                id="analysisStartDate"
+                class="analysis-date-picker"
+            >
+
+        </div>
+
+        <span class="analysis-date-separator">~</span>
+
+        <div class="analysis-date-item">
+
+            <div
+                id="analysisEndDateText"
+                class="analysis-date-text"
+            ></div>
+
+            <input
+                type="date"
+                id="analysisEndDate"
+                class="analysis-date-picker"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="analysis-type-toggle">
+
+        <button
+            type="button"
+            id="analysisExpenseBtn"
+            class="analysis-type-btn active"
+            onclick="setAnalysisType('expense')"
+        >
+            지출
+        </button>
+
+        <button
+            type="button"
+            id="analysisIncomeBtn"
+            class="analysis-type-btn"
+            onclick="setAnalysisType('income')"
+        >
+            수입
+        </button>
+
+    </div>
+
+
+    <div
+        id="analysisOverallSummary"
+        class="analysis-overall-summary"
+    ></div>
+
+
+    <!-- 월별 그래프 -->
+
+    <div
+        id="analysisMonthlyChartGroup"
+        class="analysis-group"
+    >
+
+        <div class="analysis-group-title">
+            월별 그래프
+        </div>
+
+        <div
+            id="analysisMonthlyChart"
+            class="monthly-chart"
+        ></div>
+
+        <div
+            id="analysisMonthlyLegend"
+            class="monthly-chart-legend"
+        ></div>
+
+    </div>
+
+
+    <!-- 카테고리 -->
+
+    <div id="analysisCategoryGroup" class="analysis-group">
+
+        <div class="analysis-group-title">
+            카테고리
+        </div>
+
+        <div
+            id="analysisCategoryBar"
+            class="analysis-group-bar"
+        ></div>
+
+        <div
+            id="analysisCategoryBarInfo"
+            class="analysis-group-bar-info"
+        ></div>
+
+        <div
+            id="analysisCategoryList"
+            class="analysis-button-grid"
+        ></div>
+
+        <div
+            id="analysisCategoryDetails"
+            class="analysis-detail-list"
+        ></div>
+
+    </div>
+
+
+    <!-- 결제수단 -->
+
+    <div id="analysisPaymentGroup" class="analysis-group">
+
+        <div class="analysis-group-title">
+            결제수단
+        </div>
+
+        <div
+            id="analysisPaymentBar"
+            class="analysis-group-bar"
+        ></div>
+
+        <div
+            id="analysisPaymentBarInfo"
+            class="analysis-group-bar-info"
+        ></div>
+
+        <div
+            id="analysisPaymentList"
+            class="analysis-button-grid"
+        ></div>
+
+        <div
+            id="analysisPaymentDetails"
+            class="analysis-detail-list"
+        ></div>
+
+    </div>
+
+
+    <!-- 주체 -->
+
+    <div id="analysisSubjectGroup" class="analysis-group">
+
+        <div class="analysis-group-title">
+            주체
+        </div>
+
+        <div
+            id="analysisSubjectBar"
+            class="analysis-group-bar"
+        ></div>
+
+        <div
+            id="analysisSubjectBarInfo"
+            class="analysis-group-bar-info"
+        ></div>
+
+        <div
+            id="analysisSubjectList"
+            class="analysis-button-grid"
+        ></div>
+
+        <div
+            id="analysisSubjectDetails"
+            class="analysis-detail-list"
+        ></div>
+
+    </div>
+
+</section>
+
+
+    <!-- 설정 -->
+
+    <section
+        id="settingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('inputSettings')"
+            >
+                <span>입력 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('historySettings')"
+            >
+                <span>내역 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('analysisSettings')"
+            >
+                <span>분석 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('accountSettings')"
+            >
+                <span>계정 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 입력 설정 -->
+
+    <section
+        id="inputSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('memoSettings')"
+            >
+                <span>메모 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('categorySettings')"
+            >
+                <span>카테고리 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('paymentSettings')"
+            >
+                <span>결제수단 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('subjectSettings')"
+            >
+                <span>주체 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 메모 설정 -->
+
+    <section
+        id="memoSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div class="setting-row">
+
+                <span>지출에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="memoExpenseToggle"
+                        onchange="toggleMemoExpense()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="setting-row">
+
+                <span>수입에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="memoIncomeToggle"
+                        onchange="toggleMemoIncome()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 카테고리 설정 -->
+
+    <section
+        id="categorySettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div class="setting-row">
+
+                <span>지출에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="categoryExpenseToggle"
+                        onchange="toggleCategoryExpense()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="setting-row">
+
+                <span>수입에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="categoryIncomeToggle"
+                        onchange="toggleCategoryIncome()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="collapse-section">
+
+                <div class="collapse-header">
+
+                    <button
+                        type="button"
+                        class="collapse-title"
+                        onclick="toggleSettingsCollapse('expenseCategoryBody', this)"
+                    >
+                        <span>지출</span>
+                        <span class="collapse-arrow">⌄</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="add-button"
+                        onclick="addCategory('expense')"
+                    >
+                        + 추가
+                    </button>
+
+                </div>
+
+                <div
+                    id="expenseCategoryBody"
+                    class="collapse-body"
+                >
+
+                    <div
+                        id="expenseCategoryList"
+                        class="category-manage-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="collapse-section">
+
+                <div class="collapse-header">
+
+                    <button
+                        type="button"
+                        class="collapse-title"
+                        onclick="toggleSettingsCollapse('incomeCategoryBody', this)"
+                    >
+                        <span>수입</span>
+                        <span class="collapse-arrow">⌄</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="add-button"
+                        onclick="addCategory('income')"
+                    >
+                        + 추가
+                    </button>
+
+                </div>
+
+                <div
+                    id="incomeCategoryBody"
+                    class="collapse-body"
+                >
+
+                    <div
+                        id="incomeCategoryList"
+                        class="category-manage-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 결제수단 설정 -->
+
+    <section
+        id="paymentSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div class="setting-row">
+
+                <span>지출에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="paymentExpenseToggle"
+                        onchange="togglePaymentExpense()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="setting-row">
+
+                <span>수입에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="paymentIncomeToggle"
+                        onchange="togglePaymentIncome()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="collapse-section">
+
+                <div class="collapse-header">
+
+                    <button
+                        type="button"
+                        class="collapse-title"
+                        onclick="toggleSettingsCollapse('paymentBody', this)"
+                    >
+                        <span>결제수단</span>
+                        <span class="collapse-arrow">⌄</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="add-button"
+                        onclick="addPaymentMethod()"
+                    >
+                        + 추가
+                    </button>
+
+                </div>
+
+                <div
+                    id="paymentBody"
+                    class="collapse-body"
+                >
+
+                    <div
+                        id="paymentMethodList"
+                        class="category-manage-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 주체 설정 -->
+
+    <section
+        id="subjectSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div class="setting-row">
+
+                <span>지출에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="subjectExpenseToggle"
+                        onchange="toggleSubjectExpense()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+            <div class="setting-row">
+
+                <span>수입에서 사용</span>
+
+                <label class="switch">
+
+                    <input
+                        type="checkbox"
+                        id="subjectIncomeToggle"
+                        onchange="toggleSubjectIncome()"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="collapse-section">
+
+                <div class="collapse-header">
+
+                    <button
+                        type="button"
+                        class="collapse-title"
+                        onclick="toggleSettingsCollapse('subjectBody', this)"
+                    >
+                        <span>주체</span>
+                        <span class="collapse-arrow">⌄</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="add-button"
+                        onclick="addSubject()"
+                    >
+                        + 추가
+                    </button>
+
+                </div>
+
+                <div
+                    id="subjectBody"
+                    class="collapse-body"
+                >
+
+                    <div
+                        id="subjectList"
+                        class="category-manage-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 내역 설정 -->
+
+    <section
+        id="historySettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-list">
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('historyExport')"
+            >
+                <span>거래내역 엑셀로 저장</span>
+                <span class="arrow">›</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 거래내역 엑셀 저장 -->
+
+    <section
+        id="historyExportScreen"
+        class="screen"
+    >
+
+        <div class="export-section">
+
+            <div class="export-label">
+                기간 선택
+            </div>
+
+            <div class="export-date-row">
+
+                <input
+                    type="date"
+                    id="exportStartDate"
+                    class="export-date-input"
+                >
+
+                <span class="export-date-separator">~</span>
+
+                <input
+                    type="date"
+                    id="exportEndDate"
+                    class="export-date-input"
+                >
+
+            </div>
+
+            <div class="export-quick-buttons">
+
+                <button
+                    type="button"
+                    class="export-quick-btn"
+                    onclick="setExportRangeThisMonth()"
+                >
+                    이번 달
+                </button>
+
+                <button
+                    type="button"
+                    class="export-quick-btn"
+                    onclick="setExportRangeLastMonth()"
+                >
+                    지난 달
+                </button>
+
+                <button
+                    type="button"
+                    class="export-quick-btn"
+                    onclick="setExportRangeThisYear()"
+                >
+                    올해
+                </button>
+
+                <button
+                    type="button"
+                    class="export-quick-btn"
+                    onclick="setExportRangeAll()"
+                >
+                    전체
+                </button>
+
+            </div>
+
+            <button
+                type="button"
+                class="save-button"
+                onclick="exportTransactionsToExcel()"
+            >
+                엑셀로 다운로드
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- 분석 설정 -->
+
+    <section
+        id="analysisSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-group">
+
+            <div class="settings-group-title">
+                분석 항목 표시 / 순서
+            </div>
+
+            <div
+                id="analysisGroupOrderList"
+                class="category-manage-list"
+            ></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 계정 설정 -->
+
+    <section
+        id="accountSettingsScreen"
+        class="screen"
+    >
+
+        <div class="empty-screen">
+            계정 설정
+        </div>
+
+    </section>
+
+
+    <!-- 하단 메뉴 -->
+
+    <nav class="bottom-nav">
+
+        <button
+            type="button"
+            class="nav-item active"
+            data-screen="input"
+            onclick="showScreen('input')"
+        >
+
+            <span class="nav-icon">＋</span>
+            <span>입력</span>
+
+        </button>
+
+        <button
+            type="button"
+            class="nav-item"
+            data-screen="history"
+            onclick="showScreen('history')"
+        >
+
+            <span class="nav-icon">☷</span>
+            <span>내역</span>
+
+        </button>
+
+        <button
+            type="button"
+            class="nav-item"
+            data-screen="analysis"
+            onclick="showScreen('analysis')"
+        >
+
+            <span class="nav-icon">◒</span>
+            <span>분석</span>
+
+        </button>
+
+        <button
+            type="button"
+            class="nav-item"
+            data-screen="settings"
+            onclick="showScreen('settings')"
+        >
+
+            <span class="nav-icon">⚙</span>
+            <span>설정</span>
+
+        </button>
+
+    </nav>
+
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
