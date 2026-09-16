@@ -1,0 +1,11 @@
+{
+  "name": "가계부",
+  "short_name": "가계부",
+  "icons": [
+    {
+      "src": "home_icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
