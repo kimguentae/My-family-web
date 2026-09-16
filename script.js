@@ -9963,9 +9963,9 @@ document.addEventListener(
 
 
 /* =========================================================
-   키보드가 닫힌 뒤 화면이 위로 밀려 고정되는 문제 방지
-   (모바일 브라우저에서 입력창 포커스 시
-    페이지 전체가 스크롤되는 현상 보정)
+   키보드 관련 스크롤 보정
+   - 키보드가 열릴 때: 입력창이 키보드에 가려지지 않도록 스크롤
+   - 키보드가 닫힐 때: 화면이 위로 밀린 채 고정되지 않도록 원위치
 ========================================================= */
 
 function resetPageScrollPosition() {
@@ -9980,6 +9980,159 @@ function resetPageScrollPosition() {
     document.body.scrollTop = 0;
 
 }
+
+
+/* 포커스된 입력창을 감싸는, 실제로 스크롤 가능한 조상 요소 찾기 */
+
+function findScrollableAncestor(
+    element
+) {
+
+    let node =
+        element.parentElement;
+
+
+    while (
+        node &&
+        node !== document.body
+    ) {
+
+        const style =
+            window.getComputedStyle(
+                node
+            );
+
+
+        if (
+            style.overflowY ===
+                "auto" ||
+            style.overflowY ===
+                "scroll"
+        ) {
+
+            return node;
+
+        }
+
+
+        node =
+            node.parentElement;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* 입력창이 키보드에 가려지지 않도록 필요한 만큼만 스크롤 */
+
+function scrollFocusedInputIntoView(
+    target
+) {
+
+    if (!target) {
+
+        return;
+
+    }
+
+
+    const scrollableParent =
+        findScrollableAncestor(
+            target
+        );
+
+
+    const viewportHeight =
+        window.visualViewport
+            ? window.visualViewport.height
+            : window.innerHeight;
+
+
+    const rect =
+        target.getBoundingClientRect();
+
+
+    const buffer = 16;
+
+    const overflow =
+        rect.bottom -
+        (
+            viewportHeight -
+            buffer
+        );
+
+
+    if (overflow <= 0) {
+
+        return;
+
+    }
+
+
+    if (scrollableParent) {
+
+        scrollableParent.scrollBy(
+            {
+                top: overflow,
+                behavior: "smooth"
+            }
+        );
+
+    }
+
+    else {
+
+        target.scrollIntoView(
+            {
+                block: "center",
+                behavior: "smooth"
+            }
+        );
+
+    }
+
+}
+
+
+document.addEventListener(
+    "focusin",
+    function(event) {
+
+        const target =
+            event.target;
+
+
+        if (
+            !target ||
+            (
+                target.tagName !== "INPUT" &&
+                target.tagName !== "TEXTAREA"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        /* 키보드가 올라오는 애니메이션 시간을 기다린 뒤 위치 보정 */
+
+        setTimeout(
+            function() {
+
+                scrollFocusedInputIntoView(
+                    target
+                );
+
+            },
+            300
+        );
+
+    }
+);
 
 
 document.addEventListener(
@@ -10023,10 +10176,46 @@ if (window.visualViewport) {
         "resize",
         function() {
 
-            setTimeout(
-                resetPageScrollPosition,
-                50
-            );
+            const active =
+                document.activeElement;
+
+
+            const isTyping =
+                active &&
+                (
+                    active.tagName === "INPUT" ||
+                    active.tagName === "TEXTAREA"
+                );
+
+
+            if (isTyping) {
+
+                /* 키보드가 열리는 중: 입력창이 보이도록만 스크롤,
+                   페이지를 강제로 원위치시키지 않음 */
+
+                setTimeout(
+                    function() {
+
+                        scrollFocusedInputIntoView(
+                            active
+                        );
+
+                    },
+                    50
+                );
+
+            }
+
+            else {
+
+                /* 입력 중이 아닐 때(키보드가 닫힐 때 등)만 원위치 */
+
+                setTimeout(
+                    resetPageScrollPosition,
+                    50
+                );
+
+            }
 
         }
     );
