@@ -70,7 +70,9 @@ if (!settings || typeof settings !== "object") {
             "subject"
         ],
 
-        monthlyChartEnabled: true
+        monthlyChartEnabled: true,
+
+        budgets: {}
     };
 
 }
@@ -153,6 +155,14 @@ if (settings.analysisSubjectEnabled === undefined) {
 
 if (settings.monthlyChartEnabled === undefined) {
     settings.monthlyChartEnabled = true;
+}
+
+if (
+    !settings.budgets ||
+    typeof settings.budgets !== "object" ||
+    Array.isArray(settings.budgets)
+) {
+    settings.budgets = {};
 }
 
 if (
@@ -783,7 +793,9 @@ function resetLocalDataToDefaults() {
             "subject"
         ],
 
-        monthlyChartEnabled: true
+        monthlyChartEnabled: true,
+
+        budgets: {}
 
     };
 
@@ -1661,6 +1673,8 @@ function showScreen(screenName) {
 
         inputSettings: "입력 설정",
 
+        budgetSettings: "예산 설정",
+
         memoSettings: "메모 설정",
 
         categorySettings: "카테고리 설정",
@@ -1711,6 +1725,7 @@ function showScreen(screenName) {
             const showBackButton =
                 screenName === "settings" ||
                 screenName === "inputSettings" ||
+                screenName === "budgetSettings" ||
                 screenName === "memoSettings" ||
                 screenName === "categorySettings" ||
                 screenName === "paymentSettings" ||
@@ -1765,6 +1780,13 @@ function showScreen(screenName) {
     ) {
 
         updateSettingsUI();
+
+    }
+
+
+    if (screenName === "budgetSettings") {
+
+        renderBudgetSettings();
 
     }
 
@@ -1834,6 +1856,7 @@ function goBackFromHeader() {
 
 
     if (
+        currentScreen === "budgetSettings" ||
         currentScreen === "historySettings" ||
         currentScreen === "analysisSettings" ||
         currentScreen === "accountSettings"
@@ -6644,6 +6667,26 @@ function editCategory(
     }
 
 
+    if (
+        settings.budgets &&
+        Object.prototype.hasOwnProperty.call(
+            settings.budgets,
+            oldName
+        )
+    ) {
+
+        settings.budgets[trimmed] =
+            settings.budgets[oldName];
+
+        delete settings.budgets[
+            oldName
+        ];
+
+        saveSettings();
+
+    }
+
+
     saveCategories();
 
     saveTransactions();
@@ -6698,11 +6741,241 @@ function deleteCategory(
     }
 
 
+    if (
+        settings.budgets &&
+        Object.prototype.hasOwnProperty.call(
+            settings.budgets,
+            name
+        )
+    ) {
+
+        delete settings.budgets[
+            name
+        ];
+
+        saveSettings();
+
+    }
+
+
     saveCategories();
 
     renderCategoryManagement();
 
     renderCategoryButtons();
+
+}
+
+
+
+/* =========================
+   예산 설정
+========================= */
+
+function renderBudgetSettings() {
+
+    const container =
+        document.getElementById(
+            "budgetCategoryList"
+        );
+
+
+    if (!container) return;
+
+
+    container.innerHTML = "";
+
+
+    const list =
+        categories.expense || [];
+
+
+    if (!settings.budgets) {
+
+        settings.budgets = {};
+
+    }
+
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="no-transactions">
+                지출 카테고리가 없습니다.
+            </div>`;
+
+        return;
+
+    }
+
+
+    list.forEach(
+        category => {
+
+            const budget =
+                Number(
+                    settings.budgets[
+                        category
+                    ]
+                ) || 0;
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type = "button";
+
+            button.className =
+                "analysis-item";
+
+
+            button.onclick =
+                function() {
+
+                    editCategoryBudget(
+                        category
+                    );
+
+                };
+
+
+            const nameElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            nameElement.className =
+                "analysis-item-name";
+
+            nameElement.textContent =
+                category;
+
+
+            const amountElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            amountElement.className =
+                "analysis-item-amount";
+
+            amountElement.textContent =
+                budget > 0
+                    ? formatAnalysisAmount(
+                          budget
+                      ) + "원"
+                    : "미설정";
+
+
+            button.appendChild(
+                nameElement
+            );
+
+            button.appendChild(
+                amountElement
+            );
+
+
+            container.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+function editCategoryBudget(
+    category
+) {
+
+    if (!settings.budgets) {
+
+        settings.budgets = {};
+
+    }
+
+
+    const currentBudget =
+        Number(
+            settings.budgets[
+                category
+            ]
+        ) || 0;
+
+
+    const input =
+        prompt(
+            `"${category}" 월 예산을 입력하세요.`,
+            currentBudget > 0
+                ? currentBudget.toLocaleString(
+                      "ko-KR"
+                  )
+                : ""
+        );
+
+
+    if (input === null) {
+
+        return;
+
+    }
+
+
+    const trimmed =
+        input.replace(
+            /[^0-9]/g,
+            ""
+        );
+
+
+    if (
+        !trimmed ||
+        Number(trimmed) <= 0
+    ) {
+
+        delete settings.budgets[
+            category
+        ];
+
+    }
+
+    else {
+
+        settings.budgets[
+            category
+        ] = Number(trimmed);
+
+    }
+
+
+    saveSettings();
+
+    renderBudgetSettings();
+
+
+    const analysisScreen =
+        document.getElementById(
+            "analysisScreen"
+        );
+
+
+    if (
+        analysisScreen &&
+        analysisScreen.classList.contains(
+            "active"
+        )
+    ) {
+
+        renderAnalysis();
+
+    }
 
 }
 
@@ -8565,6 +8838,227 @@ function createAnalysisItem(
 }
 
 
+/* 카테고리 카드 (탭하면 뒤집혀서 예산 · 월평균을 보여줌) */
+
+function createAnalysisCategoryItem(
+    name,
+    amount,
+    startDate,
+    endDate
+) {
+
+    const periodAverage =
+        getAnalysisMonthlyAverage(
+            amount,
+            startDate,
+            endDate
+        );
+
+    const budget =
+        Number(
+            settings.budgets &&
+            settings.budgets[name]
+        ) || 0;
+
+    const isOverBudget =
+        budget > 0 &&
+        periodAverage > budget;
+
+
+    const button =
+        document.createElement(
+            "button"
+        );
+
+    button.type = "button";
+
+    button.className =
+        "analysis-item analysis-item-flip";
+
+
+    const inner =
+        document.createElement(
+            "div"
+        );
+
+    inner.className =
+        "analysis-item-inner";
+
+
+    /* 앞면: 이름 · 금액 · 월평균 */
+
+    const front =
+        document.createElement(
+            "div"
+        );
+
+    front.className =
+        "analysis-item-front";
+
+
+    const nameElement =
+        document.createElement(
+            "span"
+        );
+
+    nameElement.className =
+        "analysis-item-name";
+
+    nameElement.textContent =
+        name;
+
+
+    const amountElement =
+        document.createElement(
+            "span"
+        );
+
+    amountElement.className =
+        "analysis-item-amount";
+
+    amountElement.textContent =
+        formatAnalysisAmount(
+            amount
+        ) + "원";
+
+
+    const averageElement =
+        document.createElement(
+            "span"
+        );
+
+    averageElement.className =
+        "analysis-item-average";
+
+    averageElement.textContent =
+        formatAnalysisAmount(
+            Math.round(
+                periodAverage
+            )
+        ) + "원";
+
+
+    front.appendChild(
+        nameElement
+    );
+
+    front.appendChild(
+        amountElement
+    );
+
+    front.appendChild(
+        averageElement
+    );
+
+
+    /* 뒷면: 예산 · 월평균 (초과 시 옅은 빨간색) */
+
+    const back =
+        document.createElement(
+            "div"
+        );
+
+    back.className =
+        "analysis-item-back" +
+        (
+            isOverBudget
+                ? " over-budget"
+                : ""
+        );
+
+
+    const backName =
+        document.createElement(
+            "span"
+        );
+
+    backName.className =
+        "analysis-item-back-name";
+
+    backName.textContent =
+        name;
+
+
+    const budgetElement =
+        document.createElement(
+            "span"
+        );
+
+    budgetElement.className =
+        "analysis-item-budget-label";
+
+    budgetElement.textContent =
+        budget > 0
+             ? formatAnalysisAmount(
+                  budget
+              ) +
+              "원"
+            : "예산 미설정";
+
+
+    const budgetAverageElement =
+        document.createElement(
+            "span"
+        );
+
+    budgetAverageElement.className =
+        "analysis-item-budget-average";
+
+    budgetAverageElement.textContent =
+        formatAnalysisAmount(
+            Math.round(
+                periodAverage
+            )
+        ) +
+        "원";
+
+
+    back.appendChild(
+        backName
+    );
+
+    back.appendChild(
+        budgetElement
+    );
+
+    back.appendChild(
+        budgetAverageElement
+    );
+
+
+    inner.appendChild(
+        front
+    );
+
+    inner.appendChild(
+        back
+    );
+
+    button.appendChild(
+        inner
+    );
+
+
+    button.onclick =
+        function() {
+
+            button.classList.toggle(
+                "flipped"
+            );
+
+            selectAnalysisCategory(
+                name
+            );
+
+        };
+
+
+    return button;
+
+}
+
+
+
 /* 합계 */
 
 function renderAnalysisSummary(
@@ -9702,13 +10196,9 @@ function renderAnalysis() {
             ) => {
 
                 const item =
-                    createAnalysisItem(
+                    createAnalysisCategoryItem(
                         name,
                         amount,
-                        () =>
-                            selectAnalysisCategory(
-                                name
-                            ),
                         startDate,
                         endDate
                     );
