@@ -435,13 +435,21 @@ input {
     font-weight: 700;
 }
 .selected-date-add-button {
+    background: none;
     border: none;
-    background: #222;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 9px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 0;
+    margin: 0;
+    width: auto;
+    height: auto;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selected-date-add-button svg {
+    width: 20px;
+    height: 20px;
 }
 #selectedDateTransactions {
     flex: 1;
