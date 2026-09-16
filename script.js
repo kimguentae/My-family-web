@@ -867,15 +867,79 @@ function setAuthMessage(text) {
 
 function setSyncStatus(text) {
 
-    const status =
+    // 계정 설정의 동기화 상태
+    const accountStatus =
         document.getElementById(
             "accountSyncStatus"
         );
 
-    if (status) {
+    if (accountStatus) {
 
-        status.innerText =
+        accountStatus.innerText =
             text || "";
+
+    }
+
+
+    // 입력 화면의 작은 동기화 상태
+    const inputStatus =
+        document.getElementById(
+            "syncStatus"
+        );
+
+    if (inputStatus) {
+
+        const dot =
+            inputStatus.querySelector(
+                ".sync-status-dot"
+            );
+
+        inputStatus.classList.remove(
+            "success",
+            "warning",
+            "error"
+        );
+
+
+        if (
+            text ===
+            "동기화 완료"
+        ) {
+
+            inputStatus.classList.add(
+                "success"
+            );
+
+        }
+        else if (
+            text ===
+            "동기화 중..."
+        ) {
+
+            inputStatus.classList.add(
+                "warning"
+            );
+
+        }
+        else if (
+            text &&
+            text.includes(
+                "동기화 실패"
+            )
+        ) {
+
+            inputStatus.classList.add(
+                "error"
+            );
+
+        }
+        else {
+
+            inputStatus.classList.add(
+                "error"
+            );
+
+        }
 
     }
 
