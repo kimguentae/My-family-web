@@ -451,6 +451,14 @@
 
             <div
                 class="setting-row setting-link"
+                onclick="showScreen('budgetSettings')"
+            >
+                <span>예산 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
                 onclick="showScreen('historySettings')"
             >
                 <span>내역 설정</span>
@@ -870,6 +878,29 @@
                 </div>
 
             </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- 예산 설정 -->
+
+    <section
+        id="budgetSettingsScreen"
+        class="screen"
+    >
+
+        <div class="settings-group">
+
+            <div class="settings-group-title">
+                카테고리별 월 예산
+            </div>
+
+            <div
+                id="budgetCategoryList"
+                class="analysis-button-grid"
+            ></div>
 
         </div>
 
