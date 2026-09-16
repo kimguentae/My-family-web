@@ -7428,14 +7428,14 @@ function editCategoryBudget(
 
 
     appPrompt(
-        `"${category}" 월 예산을 입력하세요.`,
+        `월 예산을 입력하세요.`,
         currentBudget > 0
             ? currentBudget.toLocaleString(
                   "ko-KR"
               )
             : "",
         {
-            title: "예산 설정",
+            title: category,
             formatAmount: true,
             placeholder: "0"
         }
