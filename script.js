@@ -11310,5 +11310,3 @@ function refreshPage() {
     // 페이지 자체만 새로고침
     location.reload();
 }
-
-}
