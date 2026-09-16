@@ -20,6 +20,435 @@ const supabaseClient =
         : null;
 
 
+/* =========================
+   공용 모달 (alert / confirm / prompt 대체)
+========================= */
+
+let modalResolver = null;
+
+
+function getModalElements() {
+
+    return {
+
+        overlay:
+            document.getElementById(
+                "appModalOverlay"
+            ),
+
+        title:
+            document.getElementById(
+                "modalTitle"
+            ),
+
+        message:
+            document.getElementById(
+                "modalMessage"
+            ),
+
+        inputWrap:
+            document.getElementById(
+                "modalInputWrap"
+            ),
+
+        input:
+            document.getElementById(
+                "modalInput"
+            ),
+
+        cancelBtn:
+            document.getElementById(
+                "modalCancelBtn"
+            ),
+
+        confirmBtn:
+            document.getElementById(
+                "modalConfirmBtn"
+            )
+
+    };
+
+}
+
+
+function closeAppModal(result) {
+
+    const els =
+        getModalElements();
+
+
+    if (!els.overlay) return;
+
+
+    els.overlay.classList.remove(
+        "active"
+    );
+
+
+    if (modalResolver) {
+
+        const resolve =
+            modalResolver;
+
+        modalResolver = null;
+
+        resolve(result);
+
+    }
+
+}
+
+
+function openAppModal(options) {
+
+    options = options || {};
+
+
+    return new Promise(
+        function(resolve) {
+
+            const els =
+                getModalElements();
+
+
+            if (!els.overlay) {
+
+                /* 모달 요소가 없을 경우를 대비한 안전장치 */
+
+                resolve(
+                    options.showInput
+                        ? null
+                        : (
+                              options.showCancel
+                                  ? false
+                                  : undefined
+                          )
+                );
+
+                return;
+
+            }
+
+
+            modalResolver =
+                resolve;
+
+
+            els.title.textContent =
+                options.title || "";
+
+            els.title.classList.toggle(
+                "has-content",
+                !!options.title
+            );
+
+
+            els.message.textContent =
+                options.message || "";
+
+            els.message.classList.toggle(
+                "has-content",
+                !!options.message
+            );
+
+
+            if (options.showInput) {
+
+                els.inputWrap.classList.add(
+                    "active"
+                );
+
+                els.input.value =
+                    options.inputValue ||
+                    "";
+
+                els.input.placeholder =
+                    options.placeholder ||
+                    "";
+
+                els.input.dataset.formatAmount =
+                    options.formatAmount
+                        ? "1"
+                        : "";
+
+                els.input.inputMode =
+                    options.formatAmount
+                        ? "numeric"
+                        : "text";
+
+            }
+
+            else {
+
+                els.inputWrap.classList.remove(
+                    "active"
+                );
+
+                els.input.dataset.formatAmount =
+                    "";
+
+            }
+
+
+            els.cancelBtn.style.display =
+                options.showCancel ===
+                false
+                    ? "none"
+                    : "block";
+
+            els.cancelBtn.textContent =
+                options.cancelText ||
+                "취소";
+
+            els.confirmBtn.textContent =
+                options.confirmText ||
+                "확인";
+
+            els.confirmBtn.classList.toggle(
+                "danger",
+                !!options.danger
+            );
+
+
+            els.overlay.classList.add(
+                "active"
+            );
+
+
+            if (options.showInput) {
+
+                setTimeout(
+                    function() {
+
+                        els.input.focus();
+
+                        els.input.select();
+
+                    },
+                    50
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+function appAlert(message, options) {
+
+    options = options || {};
+
+
+    return openAppModal({
+
+        message: message,
+
+        title: options.title || "",
+
+        showCancel: false,
+
+        confirmText:
+            options.confirmText ||
+            "확인"
+
+    }).then(function() {
+
+        return undefined;
+
+    });
+
+}
+
+
+function appConfirm(message, options) {
+
+    options = options || {};
+
+
+    return openAppModal({
+
+        message: message,
+
+        title: options.title || "",
+
+        showCancel: true,
+
+        confirmText:
+            options.confirmText ||
+            "확인",
+
+        cancelText:
+            options.cancelText ||
+            "취소",
+
+        danger: options.danger
+
+    });
+
+}
+
+
+function appPrompt(
+    message,
+    defaultValue,
+    options
+) {
+
+    options = options || {};
+
+
+    return openAppModal({
+
+        message: message,
+
+        title: options.title || "",
+
+        showCancel: true,
+
+        showInput: true,
+
+        inputValue:
+            defaultValue || "",
+
+        placeholder:
+            options.placeholder ||
+            "",
+
+        formatAmount:
+            options.formatAmount,
+
+        confirmText:
+            options.confirmText ||
+            "확인",
+
+        cancelText:
+            options.cancelText ||
+            "취소"
+
+    }).then(function(confirmed) {
+
+        if (!confirmed) {
+
+            return null;
+
+        }
+
+
+        const els =
+            getModalElements();
+
+        return els.input
+            ? els.input.value
+            : "";
+
+    });
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const els =
+            getModalElements();
+
+
+        if (!els.overlay) return;
+
+
+        els.confirmBtn.addEventListener(
+            "click",
+            function() {
+
+                closeAppModal(true);
+
+            }
+        );
+
+
+        els.cancelBtn.addEventListener(
+            "click",
+            function() {
+
+                closeAppModal(false);
+
+            }
+        );
+
+
+        els.overlay.addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target ===
+                    els.overlay
+                ) {
+
+                    closeAppModal(false);
+
+                }
+
+            }
+        );
+
+
+        els.input.addEventListener(
+            "input",
+            function() {
+
+                if (
+                    els.input.dataset
+                        .formatAmount ===
+                    "1"
+                ) {
+
+                    const digits =
+                        els.input.value.replace(
+                            /[^0-9]/g,
+                            ""
+                        );
+
+                    els.input.value =
+                        digits
+                            ? Number(
+                                  digits
+                              ).toLocaleString(
+                                  "ko-KR"
+                              )
+                            : "";
+
+                }
+
+            }
+        );
+
+
+        els.input.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    closeAppModal(true);
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
 /* 현재 로그인 사용자 (없으면 null = 로컬 전용 모드) */
 
 let currentUser = null;
@@ -70,7 +499,9 @@ if (!settings || typeof settings !== "object") {
             "subject"
         ],
 
-        monthlyChartEnabled: true
+        monthlyChartEnabled: true,
+
+        budgets: {}
     };
 
 }
@@ -153,6 +584,14 @@ if (settings.analysisSubjectEnabled === undefined) {
 
 if (settings.monthlyChartEnabled === undefined) {
     settings.monthlyChartEnabled = true;
+}
+
+if (
+    !settings.budgets ||
+    typeof settings.budgets !== "object" ||
+    Array.isArray(settings.budgets)
+) {
+    settings.budgets = {};
 }
 
 if (
@@ -406,13 +845,6 @@ function updateAccountUI() {
 
     }
 
-
-    if (!currentUser) {
-
-        setSyncDotState("");
-
-    }
-
 }
 
 
@@ -435,126 +867,83 @@ function setAuthMessage(text) {
 
 function setSyncStatus(text) {
 
-    const status =
+    // 계정 설정의 동기화 상태
+    const accountStatus =
         document.getElementById(
             "accountSyncStatus"
         );
 
-    if (status) {
+    if (accountStatus) {
 
-        status.innerText =
+        accountStatus.innerText =
             text || "";
 
     }
 
-}
 
-
-/* 동기화 상태 점
-   state: "synced"(초록) / "syncing"(노랑) / ""(빨강 - 로그인 안됨/실패) */
-
-function setSyncDotState(state) {
-
-    const syncDot =
-        document.querySelector(
-            "#syncStatus .sync-status-dot"
+    // 입력 화면의 작은 동기화 상태
+    const inputStatus =
+        document.getElementById(
+            "syncStatus"
         );
 
-    if (!syncDot) {
+    if (inputStatus) {
 
-        return;
+        const dot =
+            inputStatus.querySelector(
+                ".sync-status-dot"
+            );
 
-    }
-
-    syncDot.classList.remove(
-        "synced",
-        "syncing"
-    );
-
-    if (
-        state === "synced" ||
-        state === "syncing"
-    ) {
-
-        syncDot.classList.add(
-            state
+        inputStatus.classList.remove(
+            "success",
+            "warning",
+            "error"
         );
 
+
+        if (
+            text ===
+            "동기화 완료"
+        ) {
+
+            inputStatus.classList.add(
+                "success"
+            );
+
+        }
+        else if (
+            text ===
+            "동기화 중..."
+        ) {
+
+            inputStatus.classList.add(
+                "warning"
+            );
+
+        }
+        else if (
+            text &&
+            text.includes(
+                "동기화 실패"
+            )
+        ) {
+
+            inputStatus.classList.add(
+                "error"
+            );
+
+        }
+        else {
+
+            inputStatus.classList.add(
+                "error"
+            );
+
+        }
+
     }
 
 }
-
-
-/* 세션/토큰 관련 오류(JWT 시계 오차 등) 복구 시도
-   - 세션 갱신을 한 번 시도하고, 그래도 실패하면
-     조용히 로그아웃시켜 오류 문구가 계속 뜨지 않게 함 */
-
-async function recoverFromAuthError(error) {
-
-    if (
-        !supabaseClient ||
-        !currentUser ||
-        !error
-    ) {
-
-        return false;
-
-    }
-
-
-    const message =
-        (
-            error.message || ""
-        ).toLowerCase();
-
-
-    const isTokenIssue =
-        message.includes("jwt") ||
-        message.includes("token") ||
-        message.includes("session");
-
-
-    if (!isTokenIssue) {
-
-        return false;
-
-    }
-
-
-    const {
-        data,
-        error: refreshError
-    } =
-        await supabaseClient.auth.refreshSession();
-
-
-    if (
-        !refreshError &&
-        data &&
-        data.session &&
-        data.session.user
-    ) {
-
-        currentUser = {
-            id: data.session.user.id,
-            email: data.session.user.email
-        };
-
-        return true;
-
-    }
-
-
-    await handleSignOut();
-
-    setAuthMessage(
-        "세션이 만료되어 로그아웃되었습니다. 다시 로그인해주세요."
-    );
-
-    return false;
-
-}
-
 
 
 /* 앱 실행 시 기존 로그인 세션이 있는지 확인 */
@@ -897,7 +1286,9 @@ function resetLocalDataToDefaults() {
             "subject"
         ],
 
-        monthlyChartEnabled: true
+        monthlyChartEnabled: true,
+
+        budgets: {}
 
     };
 
@@ -1014,10 +1405,6 @@ async function loadUserDataFromSupabase() {
 
     isLoadingUserData = true;
 
-    setSyncDotState(
-        "syncing"
-    );
-
     setSyncStatus(
         "동기화 중..."
     );
@@ -1059,32 +1446,11 @@ async function loadUserDataFromSupabase() {
 
     if (transactionsResult.error) {
 
-        const recovered =
-            await recoverFromAuthError(
-                transactionsResult.error
-            );
-
-
-        if (recovered) {
-
-            await loadUserDataFromSupabase();
-
-            return;
-
-        }
-
-
-        if (currentUser) {
-
-            setSyncDotState("");
-
-            setSyncStatus(
-                "동기화 실패: " +
-                transactionsResult.error
-                    .message
-            );
-
-        }
+        setSyncStatus(
+            "동기화 실패: " +
+            transactionsResult.error
+                .message
+        );
 
         return;
 
@@ -1097,32 +1463,11 @@ async function loadUserDataFromSupabase() {
         "PGRST116"
     ) {
 
-        const recovered =
-            await recoverFromAuthError(
-                userDataResult.error
-            );
-
-
-        if (recovered) {
-
-            await loadUserDataFromSupabase();
-
-            return;
-
-        }
-
-
-        if (currentUser) {
-
-            setSyncDotState("");
-
-            setSyncStatus(
-                "동기화 실패: " +
-                userDataResult.error
-                    .message
-            );
-
-        }
+        setSyncStatus(
+            "동기화 실패: " +
+            userDataResult.error
+                .message
+        );
 
         return;
 
@@ -1246,10 +1591,6 @@ async function loadUserDataFromSupabase() {
 
     }
 
-
-    setSyncDotState(
-        "synced"
-    );
 
     setSyncStatus(
         "동기화 완료"
@@ -1387,11 +1728,6 @@ function scheduleSyncUserData() {
                 }
 
 
-                setSyncDotState(
-                    "syncing"
-                );
-
-
                 supabaseClient
                     .from("user_data")
                     .upsert({
@@ -1424,20 +1760,8 @@ function scheduleSyncUserData() {
                                 result.error
                             ) {
 
-                                setSyncDotState(
-                                    ""
-                                );
-
                                 console.error(
                                     result.error
-                                );
-
-                            }
-
-                            else {
-
-                                setSyncDotState(
-                                    "synced"
                                 );
 
                             }
@@ -1516,11 +1840,6 @@ function syncInsertTransaction(
     }
 
 
-    setSyncDotState(
-        "syncing"
-    );
-
-
     supabaseClient
         .from("transactions")
         .insert({
@@ -1562,20 +1881,8 @@ function syncInsertTransaction(
 
                 if (result.error) {
 
-                    setSyncDotState(
-                        ""
-                    );
-
                     console.error(
                         result.error
-                    );
-
-                }
-
-                else {
-
-                    setSyncDotState(
-                        "synced"
                     );
 
                 }
@@ -1603,11 +1910,6 @@ function syncUpdateTransaction(
     }
 
 
-    setSyncDotState(
-        "syncing"
-    );
-
-
     supabaseClient
         .from("transactions")
         .update(
@@ -1626,20 +1928,8 @@ function syncUpdateTransaction(
 
                 if (result.error) {
 
-                    setSyncDotState(
-                        ""
-                    );
-
                     console.error(
                         result.error
-                    );
-
-                }
-
-                else {
-
-                    setSyncDotState(
-                        "synced"
                     );
 
                 }
@@ -1664,11 +1954,6 @@ function syncDeleteTransaction(id) {
     }
 
 
-    setSyncDotState(
-        "syncing"
-    );
-
-
     supabaseClient
         .from("transactions")
         .delete()
@@ -1685,20 +1970,8 @@ function syncDeleteTransaction(id) {
 
                 if (result.error) {
 
-                    setSyncDotState(
-                        ""
-                    );
-
                     console.error(
                         result.error
-                    );
-
-                }
-
-                else {
-
-                    setSyncDotState(
-                        "synced"
                     );
 
                 }
@@ -1893,6 +2166,8 @@ function showScreen(screenName) {
 
         inputSettings: "입력 설정",
 
+        budgetSettings: "예산 설정",
+
         memoSettings: "메모 설정",
 
         categorySettings: "카테고리 설정",
@@ -1943,6 +2218,7 @@ function showScreen(screenName) {
             const showBackButton =
                 screenName === "settings" ||
                 screenName === "inputSettings" ||
+                screenName === "budgetSettings" ||
                 screenName === "memoSettings" ||
                 screenName === "categorySettings" ||
                 screenName === "paymentSettings" ||
@@ -1997,6 +2273,13 @@ function showScreen(screenName) {
     ) {
 
         updateSettingsUI();
+
+    }
+
+
+    if (screenName === "budgetSettings") {
+
+        renderBudgetSettings();
 
     }
 
@@ -2066,6 +2349,7 @@ function goBackFromHeader() {
 
 
     if (
+        currentScreen === "budgetSettings" ||
         currentScreen === "historySettings" ||
         currentScreen === "analysisSettings" ||
         currentScreen === "accountSettings"
@@ -3665,7 +3949,7 @@ function saveTransaction() {
 
     if (!date) {
 
-        alert(
+        appAlert(
             "날짜를 선택해주세요."
         );
 
@@ -3676,7 +3960,7 @@ function saveTransaction() {
 
     if (!amount || amount <= 0) {
 
-        alert(
+        appAlert(
             "금액을 입력해주세요."
         );
 
@@ -3690,7 +3974,7 @@ function saveTransaction() {
         !selectedCategory
     ) {
 
-        alert(
+        appAlert(
             "카테고리를 선택해주세요."
         );
 
@@ -3704,7 +3988,7 @@ function saveTransaction() {
         !selectedPayment
     ) {
 
-        alert(
+        appAlert(
             "결제수단을 선택해주세요."
         );
 
@@ -3722,7 +4006,7 @@ function saveTransaction() {
         !selectedSubject
     ) {
 
-        alert(
+        appAlert(
             "주체를 선택해주세요."
         );
 
@@ -5810,12 +6094,15 @@ function editTransaction(id) {
         );
 
 
-    const newAmount =
-        prompt(
-            "금액을 수정하세요.",
-            currentAmount
-        );
-
+    appPrompt(
+        "금액을 수정하세요.",
+        currentAmount,
+        {
+            title: "금액 수정",
+            formatAmount: true,
+            placeholder: "0"
+        }
+    ).then(function(newAmount) {
 
     if (newAmount === null) {
 
@@ -5835,7 +6122,7 @@ function editTransaction(id) {
 
     if (!amount || amount <= 0) {
 
-        alert(
+        appAlert(
             "올바른 금액을 입력해주세요."
         );
 
@@ -5862,6 +6149,8 @@ function editTransaction(id) {
 
     renderSelectedDate();
 
+    });
+
 }
 
 
@@ -5880,11 +6169,14 @@ function deleteTransaction(id) {
     if (!transaction) return;
 
 
-    const confirmed =
-        confirm(
-            "이 내역을 삭제할까요?"
-        );
-
+    appConfirm(
+        "이 내역을 삭제할까요?",
+        {
+            title: "내역 삭제",
+            confirmText: "삭제",
+            danger: true
+        }
+    ).then(function(confirmed) {
 
     if (!confirmed) return;
 
@@ -5905,6 +6197,8 @@ function deleteTransaction(id) {
     renderCalendar();
 
     renderSelectedDate();
+
+    });
 
 }
 
@@ -6158,7 +6452,7 @@ function exportTransactionsToExcel() {
 
     if (!start || !end) {
 
-        alert(
+        appAlert(
             "기간을 선택해주세요."
         );
 
@@ -6169,7 +6463,7 @@ function exportTransactionsToExcel() {
 
     if (start > end) {
 
-        alert(
+        appAlert(
             "시작일이 종료일보다 늦을 수 없습니다."
         );
 
@@ -6198,7 +6492,7 @@ function exportTransactionsToExcel() {
 
     if (!filtered.length) {
 
-        alert(
+        appAlert(
             "선택한 기간에 내역이 없습니다."
         );
 
@@ -6209,7 +6503,7 @@ function exportTransactionsToExcel() {
 
     if (typeof XLSX === "undefined") {
 
-        alert(
+        appAlert(
             "엑셀 기능을 불러오지 못했습니다. 인터넷 연결을 확인해주세요."
         );
 
@@ -6748,11 +7042,14 @@ function initializeCategoryDrag(
 
 function addCategory(type) {
 
-    const name =
-        prompt(
-            "카테고리 이름을 입력하세요."
-        );
-
+    appPrompt(
+        "카테고리 이름을 입력하세요.",
+        "",
+        {
+            title: "카테고리 추가",
+            placeholder: "카테고리 이름"
+        }
+    ).then(function(name) {
 
     if (name === null) {
 
@@ -6774,7 +7071,7 @@ function addCategory(type) {
         )
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 카테고리입니다."
         );
 
@@ -6794,6 +7091,8 @@ function addCategory(type) {
 
     renderCategoryButtons();
 
+    });
+
 }
 
 
@@ -6807,12 +7106,14 @@ function editCategory(
         categories[type][index];
 
 
-    const newName =
-        prompt(
-            "카테고리 이름을 수정하세요.",
-            oldName
-        );
-
+    appPrompt(
+        "카테고리 이름을 수정하세요.",
+        oldName,
+        {
+            title: "카테고리 수정",
+            placeholder: "카테고리 이름"
+        }
+    ).then(function(newName) {
 
     if (newName === null) {
 
@@ -6835,7 +7136,7 @@ function editCategory(
         trimmed !== oldName
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 카테고리입니다."
         );
 
@@ -6876,6 +7177,26 @@ function editCategory(
     }
 
 
+    if (
+        settings.budgets &&
+        Object.prototype.hasOwnProperty.call(
+            settings.budgets,
+            oldName
+        )
+    ) {
+
+        settings.budgets[trimmed] =
+            settings.budgets[oldName];
+
+        delete settings.budgets[
+            oldName
+        ];
+
+        saveSettings();
+
+    }
+
+
     saveCategories();
 
     saveTransactions();
@@ -6892,6 +7213,8 @@ function editCategory(
 
     renderSelectedDate();
 
+    });
+
 }
 
 
@@ -6905,11 +7228,14 @@ function deleteCategory(
         categories[type][index];
 
 
-    const confirmed =
-        confirm(
-            `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`
-        );
-
+    appConfirm(
+        `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
+        {
+            title: "카테고리 삭제",
+            confirmText: "삭제",
+            danger: true
+        }
+    ).then(function(confirmed) {
 
     if (!confirmed) return;
 
@@ -6930,11 +7256,248 @@ function deleteCategory(
     }
 
 
+    if (
+        settings.budgets &&
+        Object.prototype.hasOwnProperty.call(
+            settings.budgets,
+            name
+        )
+    ) {
+
+        delete settings.budgets[
+            name
+        ];
+
+        saveSettings();
+
+    }
+
+
     saveCategories();
 
     renderCategoryManagement();
 
     renderCategoryButtons();
+
+    });
+
+}
+
+
+
+/* =========================
+   예산 설정
+========================= */
+
+function renderBudgetSettings() {
+
+    const container =
+        document.getElementById(
+            "budgetCategoryList"
+        );
+
+
+    if (!container) return;
+
+
+    container.innerHTML = "";
+
+
+    const list =
+        categories.expense || [];
+
+
+    if (!settings.budgets) {
+
+        settings.budgets = {};
+
+    }
+
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="no-transactions">
+                지출 카테고리가 없습니다.
+            </div>`;
+
+        return;
+
+    }
+
+
+    list.forEach(
+        category => {
+
+            const budget =
+                Number(
+                    settings.budgets[
+                        category
+                    ]
+                ) || 0;
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type = "button";
+
+            button.className =
+                "analysis-item";
+
+
+            button.onclick =
+                function() {
+
+                    editCategoryBudget(
+                        category
+                    );
+
+                };
+
+
+            const nameElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            nameElement.className =
+                "analysis-item-name";
+
+            nameElement.textContent =
+                category;
+
+
+            const amountElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            amountElement.className =
+                "analysis-item-amount";
+
+            amountElement.textContent =
+                budget > 0
+                    ? formatAnalysisAmount(
+                          budget
+                      ) + "원"
+                    : "미설정";
+
+
+            button.appendChild(
+                nameElement
+            );
+
+            button.appendChild(
+                amountElement
+            );
+
+
+            container.appendChild(
+                button
+            );
+
+        }
+    );
+
+}
+
+
+function editCategoryBudget(
+    category
+) {
+
+    if (!settings.budgets) {
+
+        settings.budgets = {};
+
+    }
+
+
+    const currentBudget =
+        Number(
+            settings.budgets[
+                category
+            ]
+        ) || 0;
+
+
+    appPrompt(
+        `"${category}" 월 예산을 입력하세요.`,
+        currentBudget > 0
+            ? currentBudget.toLocaleString(
+                  "ko-KR"
+              )
+            : "",
+        {
+            title: "예산 설정",
+            formatAmount: true,
+            placeholder: "0"
+        }
+    ).then(function(input) {
+
+    if (input === null) {
+
+        return;
+
+    }
+
+
+    const trimmed =
+        input.replace(
+            /[^0-9]/g,
+            ""
+        );
+
+
+    if (
+        !trimmed ||
+        Number(trimmed) <= 0
+    ) {
+
+        delete settings.budgets[
+            category
+        ];
+
+    }
+
+    else {
+
+        settings.budgets[
+            category
+        ] = Number(trimmed);
+
+    }
+
+
+    saveSettings();
+
+    renderBudgetSettings();
+
+
+    const analysisScreen =
+        document.getElementById(
+            "analysisScreen"
+        );
+
+
+    if (
+        analysisScreen &&
+        analysisScreen.classList.contains(
+            "active"
+        )
+    ) {
+
+        renderAnalysis();
+
+    }
+
+    });
 
 }
 
@@ -7264,11 +7827,14 @@ function initializePaymentDrag(
 
 function addPaymentMethod() {
 
-    const name =
-        prompt(
-            "결제수단 이름을 입력하세요."
-        );
-
+    appPrompt(
+        "결제수단 이름을 입력하세요.",
+        "",
+        {
+            title: "결제수단 추가",
+            placeholder: "결제수단 이름"
+        }
+    ).then(function(name) {
 
     if (name === null) {
 
@@ -7290,7 +7856,7 @@ function addPaymentMethod() {
         )
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 결제수단입니다."
         );
 
@@ -7310,6 +7876,8 @@ function addPaymentMethod() {
 
     renderPaymentButtons();
 
+    });
+
 }
 
 
@@ -7320,12 +7888,14 @@ function editPaymentMethod(index) {
         paymentMethods[index];
 
 
-    const newName =
-        prompt(
-            "결제수단 이름을 수정하세요.",
-            oldName
-        );
-
+    appPrompt(
+        "결제수단 이름을 수정하세요.",
+        oldName,
+        {
+            title: "결제수단 수정",
+            placeholder: "결제수단 이름"
+        }
+    ).then(function(newName) {
 
     if (newName === null) {
 
@@ -7348,7 +7918,7 @@ function editPaymentMethod(index) {
         trimmed !== oldName
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 결제수단입니다."
         );
 
@@ -7405,6 +7975,8 @@ function editPaymentMethod(index) {
 
     renderSelectedDate();
 
+    });
+
 }
 
 
@@ -7415,11 +7987,14 @@ function deletePaymentMethod(index) {
         paymentMethods[index];
 
 
-    const confirmed =
-        confirm(
-            `"${name}" 결제수단을 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`
-        );
-
+    appConfirm(
+        `"${name}" 결제수단을 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
+        {
+            title: "결제수단 삭제",
+            confirmText: "삭제",
+            danger: true
+        }
+    ).then(function(confirmed) {
 
     if (!confirmed) return;
 
@@ -7445,6 +8020,8 @@ function deletePaymentMethod(index) {
     renderPaymentManagement();
 
     renderPaymentButtons();
+
+    });
 
 }
 
@@ -7774,11 +8351,14 @@ function initializeSubjectDrag(
 
 function addSubject() {
 
-    const name =
-        prompt(
-            "주체 이름을 입력하세요."
-        );
-
+    appPrompt(
+        "주체 이름을 입력하세요.",
+        "",
+        {
+            title: "주체 추가",
+            placeholder: "주체 이름"
+        }
+    ).then(function(name) {
 
     if (name === null) {
 
@@ -7800,7 +8380,7 @@ function addSubject() {
         )
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 주체입니다."
         );
 
@@ -7820,6 +8400,8 @@ function addSubject() {
 
     renderSubjectButtons();
 
+    });
+
 }
 
 
@@ -7830,12 +8412,14 @@ function editSubject(index) {
         subjects[index];
 
 
-    const newName =
-        prompt(
-            "주체 이름을 수정하세요.",
-            oldName
-        );
-
+    appPrompt(
+        "주체 이름을 수정하세요.",
+        oldName,
+        {
+            title: "주체 수정",
+            placeholder: "주체 이름"
+        }
+    ).then(function(newName) {
 
     if (newName === null) {
 
@@ -7858,7 +8442,7 @@ function editSubject(index) {
         trimmed !== oldName
     ) {
 
-        alert(
+        appAlert(
             "이미 존재하는 주체입니다."
         );
 
@@ -7915,6 +8499,8 @@ function editSubject(index) {
 
     renderSelectedDate();
 
+    });
+
 }
 
 
@@ -7925,11 +8511,14 @@ function deleteSubject(index) {
         subjects[index];
 
 
-    const confirmed =
-        confirm(
-            `"${name}" 주체를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`
-        );
-
+    appConfirm(
+        `"${name}" 주체를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
+        {
+            title: "주체 삭제",
+            confirmText: "삭제",
+            danger: true
+        }
+    ).then(function(confirmed) {
 
     if (!confirmed) return;
 
@@ -7955,6 +8544,8 @@ function deleteSubject(index) {
     renderSubjectManagement();
 
     renderSubjectButtons();
+
+    });
 
 }
 
@@ -8795,6 +9386,229 @@ function createAnalysisItem(
     return button;
 
 }
+
+
+/* 카테고리 카드 (탭하면 뒤집혀서 예산 · 월평균을 보여줌) */
+
+function createAnalysisCategoryItem(
+    name,
+    amount,
+    startDate,
+    endDate
+) {
+
+    const periodAverage =
+        getAnalysisMonthlyAverage(
+            amount,
+            startDate,
+            endDate
+        );
+
+    const budget =
+        Number(
+            settings.budgets &&
+            settings.budgets[name]
+        ) || 0;
+
+    const isOverBudget =
+        budget > 0 &&
+        periodAverage > budget;
+
+
+    const button =
+        document.createElement(
+            "button"
+        );
+
+    button.type = "button";
+
+    button.className =
+        "analysis-item analysis-item-flip";
+
+
+    const inner =
+        document.createElement(
+            "div"
+        );
+
+    inner.className =
+        "analysis-item-inner";
+
+
+    /* 앞면: 이름 · 금액 · 월평균 */
+
+    const front =
+        document.createElement(
+            "div"
+        );
+
+    front.className =
+        "analysis-item-front";
+
+
+    const nameElement =
+        document.createElement(
+            "span"
+        );
+
+    nameElement.className =
+        "analysis-item-name";
+
+    nameElement.textContent =
+        name;
+
+
+    const amountElement =
+        document.createElement(
+            "span"
+        );
+
+    amountElement.className =
+        "analysis-item-amount";
+
+    amountElement.textContent =
+        formatAnalysisAmount(
+            amount
+        ) + "원";
+
+
+    const averageElement =
+        document.createElement(
+            "span"
+        );
+
+    averageElement.className =
+        "analysis-item-average";
+
+    averageElement.textContent =
+        formatAnalysisAmount(
+            Math.round(
+                periodAverage
+            )
+        ) + "원";
+
+
+    front.appendChild(
+        nameElement
+    );
+
+    front.appendChild(
+        amountElement
+    );
+
+    front.appendChild(
+        averageElement
+    );
+
+
+    /* 뒷면: 예산 · 월평균 (초과 시 옅은 빨간색) */
+
+    const back =
+        document.createElement(
+            "div"
+        );
+
+    back.className =
+        "analysis-item-back" +
+        (
+            isOverBudget
+                ? " over-budget"
+                : ""
+        );
+
+
+    const backName =
+        document.createElement(
+            "span"
+        );
+
+    backName.className =
+        "analysis-item-back-name";
+
+    backName.textContent =
+        name;
+
+
+    const budgetElement =
+        document.createElement(
+            "span"
+        );
+
+    budgetElement.className =
+        "analysis-item-budget-label";
+
+    budgetElement.textContent =
+        budget > 0
+            ? "예산 " +
+              formatAnalysisAmount(
+                  budget
+              ) +
+              "원"
+            : "예산 미설정";
+
+
+    const budgetAverageElement =
+        document.createElement(
+            "span"
+        );
+
+    budgetAverageElement.className =
+        "analysis-item-budget-average";
+
+    budgetAverageElement.textContent =
+        "평균 " +
+        formatAnalysisAmount(
+            Math.round(
+                periodAverage
+            )
+        ) +
+        "원";
+
+
+    back.appendChild(
+        backName
+    );
+
+    back.appendChild(
+        budgetElement
+    );
+
+    back.appendChild(
+        budgetAverageElement
+    );
+
+
+    inner.appendChild(
+        front
+    );
+
+    inner.appendChild(
+        back
+    );
+
+    button.appendChild(
+        inner
+    );
+
+
+    button.onclick =
+        function() {
+
+            button.classList.toggle(
+                "flipped"
+            );
+
+            selectAnalysisCategory(
+                name
+            );
+
+        };
+
+
+    return button;
+
+}
+
 
 
 /* 합계 */
@@ -9934,13 +10748,9 @@ function renderAnalysis() {
             ) => {
 
                 const item =
-                    createAnalysisItem(
+                    createAnalysisCategoryItem(
                         name,
                         amount,
-                        () =>
-                            selectAnalysisCategory(
-                                name
-                            ),
                         startDate,
                         endDate
                     );
@@ -10495,3 +11305,4 @@ window.addEventListener(
 
     }
 );
+
