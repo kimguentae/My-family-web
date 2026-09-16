@@ -411,8 +411,8 @@ input {
     color: white;
 }
 .calendar-amount {
-    font-size: 7px;
-    line-height: 12px;
+    font-size: 9px;
+    line-height: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
