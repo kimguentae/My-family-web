@@ -11242,7 +11242,6 @@ window.addEventListener(
     }
 );
 
-
 let pullStartY = 0;
 let pullDistance = 0;
 let isPulling = false;
@@ -11310,4 +11309,6 @@ function refreshPage() {
     // 현재 URL은 그대로 유지하고
     // 페이지 자체만 새로고침
     location.reload();
+}
+
 }
