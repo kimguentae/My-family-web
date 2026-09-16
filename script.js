@@ -11241,3 +11241,128 @@ window.addEventListener(
 
     }
 );
+
+
+
+let pullStartY = 0;
+let pullDistance = 0;
+let isPulling = false;
+
+document.addEventListener(
+    "touchstart",
+    function (event) {
+
+        // 화면의 맨 위에서만 시작
+        if (window.scrollY !== 0) {
+            return;
+        }
+
+        if (event.touches.length !== 1) {
+            return;
+        }
+
+        pullStartY =
+            event.touches[0].clientY;
+
+        isPulling = true;
+    },
+    { passive: true }
+);
+
+document.addEventListener(
+    "touchmove",
+    function (event) {
+
+        if (!isPulling) {
+            return;
+        }
+
+        const currentY =
+            event.touches[0].clientY;
+
+        pullDistance =
+            currentY - pullStartY;
+
+        // 아래로 당길 때만
+        if (pullDistance <= 0) {
+            return;
+        }
+
+        // 80px 이상 당기면 새로고침
+        if (pullDistance >= 80) {
+
+            isPulling = false;
+
+            refreshPage();
+        }
+    },
+    { passive: true }
+);
+
+document.addEventListener(
+    "touchend",
+    function () {
+
+        isPulling = false;
+        pullDistance = 0;
+    },
+    { passive: true }
+);
+
+function refreshPage() {
+
+    const activeScreen =
+        document.querySelector(
+            ".screen.active"
+        );
+
+    if (activeScreen) {
+
+        sessionStorage.setItem(
+            "lastActiveScreen",
+            activeScreen.id
+        );
+    }
+
+    location.reload();
+}
+
+window.addEventListener(
+    "load",
+    function () {
+
+        const lastActiveScreen =
+            sessionStorage.getItem(
+                "lastActiveScreen"
+            );
+
+        if (!lastActiveScreen) {
+            return;
+        }
+
+        const screen =
+            document.getElementById(
+                lastActiveScreen
+            );
+
+        if (!screen) {
+            return;
+        }
+
+        document
+            .querySelectorAll(
+                ".screen"
+            )
+            .forEach(
+                function (item) {
+                    item.classList.remove(
+                        "active"
+                    );
+                }
+            );
+
+        screen.classList.add(
+            "active"
+        );
+    }
+);
