@@ -8512,13 +8512,11 @@ function createAnalysisItem(
         );
 
     averageElement.textContent =
-        "월평균 " +
         formatAnalysisAmount(
             Math.round(
                 periodAverage
             )
-        ) +
-        "원";
+        ) + "원";
 
 
     button.appendChild(
@@ -9959,6 +9957,91 @@ document.addEventListener(
             );
 
         }
+
+    }
+);
+
+
+/* =========================================================
+   키보드가 닫힌 뒤 화면이 위로 밀려 고정되는 문제 방지
+   (모바일 브라우저에서 입력창 포커스 시
+    페이지 전체가 스크롤되는 현상 보정)
+========================================================= */
+
+function resetPageScrollPosition() {
+
+    window.scrollTo(
+        0,
+        0
+    );
+
+    document.documentElement.scrollTop = 0;
+
+    document.body.scrollTop = 0;
+
+}
+
+
+document.addEventListener(
+    "focusout",
+    function(event) {
+
+        const target =
+            event.target;
+
+
+        if (
+            !target ||
+            (
+                target.tagName !== "INPUT" &&
+                target.tagName !== "TEXTAREA"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        setTimeout(
+            resetPageScrollPosition,
+            50
+        );
+
+        setTimeout(
+            resetPageScrollPosition,
+            300
+        );
+
+    }
+);
+
+
+if (window.visualViewport) {
+
+    window.visualViewport.addEventListener(
+        "resize",
+        function() {
+
+            setTimeout(
+                resetPageScrollPosition,
+                50
+            );
+
+        }
+    );
+
+}
+
+
+window.addEventListener(
+    "orientationchange",
+    function() {
+
+        setTimeout(
+            resetPageScrollPosition,
+            300
+        );
 
     }
 );
