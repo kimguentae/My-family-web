@@ -11242,5 +11242,3 @@ window.addEventListener(
     }
 );
 
-}
-}
