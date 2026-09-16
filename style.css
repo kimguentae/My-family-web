@@ -1637,3 +1637,42 @@ input {
 .modal-btn-confirm.danger {
     background: #e05252;
 }
+
+.input-date-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-date-text {
+    flex: 1;
+}
+
+.sync-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-left: 8px;
+}
+
+.sync-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #aaa;
+}
+
+.sync-status.success .sync-status-dot {
+    background: #4caf68;
+}
+
+.sync-status.warning .sync-status-dot {
+    background: #e5aa24;
+}
+
+.sync-status.error .sync-status-dot {
+    background: #df5b5b;
+}
