@@ -7841,32 +7841,45 @@ function getAnalysisDays(startDate, endDate) {
 
 
 /* 월평균
-   산식: 총액 ÷ (기간 일수 ÷ 30.44) */
+   산식: 총액 ÷ 조회기간에 포함된 개월 수
+   예:
+   1/1 ~ 9/16 = 9개월
+   9/1 ~ 9/16 = 1개월
+   9/16 ~ 9/16 = 1개월
+*/
 
 function getAnalysisMonthlyAverage(
     amount,
     startDate,
     endDate
 ) {
+    if (!startDate || !endDate) {
+        return 0;
+    }
 
-    const days =
-        getAnalysisDays(
-            startDate,
-            endDate
+    const start =
+        new Date(
+            startDate + "T00:00:00"
         );
 
-    if (
-        !days ||
-        days <= 0
-    ) {
+    const end =
+        new Date(
+            endDate + "T00:00:00"
+        );
+
+    const months =
+        (end.getFullYear() - start.getFullYear()) * 12 +
+        (end.getMonth() - start.getMonth()) +
+        1;
+
+    if (months <= 0) {
         return 0;
     }
 
     return (
         Number(amount || 0) /
-        (days / 30.44)
+        months
     );
-
 }
 
 
