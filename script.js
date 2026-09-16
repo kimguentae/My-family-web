@@ -9539,7 +9539,7 @@ function createAnalysisCategoryItem(
 
     budgetElement.textContent =
         budget > 0
-            ? "예산 " +
+            ? 
               formatAnalysisAmount(
                   budget
               ) +
@@ -9556,7 +9556,6 @@ function createAnalysisCategoryItem(
         "analysis-item-budget-average";
 
     budgetAverageElement.textContent =
-        "평균 " +
         formatAnalysisAmount(
             Math.round(
                 periodAverage
