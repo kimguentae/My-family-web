@@ -411,7 +411,7 @@ input {
     color: white;
 }
 .calendar-amount {
-    font-size: 9px;
+    font-size: 7px;
     line-height: 12px;
     white-space: nowrap;
     overflow: hidden;
