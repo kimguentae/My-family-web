@@ -1510,3 +1510,130 @@ input {
     font-weight: 700;
     margin-bottom: 4px;
 }
+
+
+/* =========================
+   공용 모달 (alert / confirm / prompt 대체)
+========================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.18s ease,
+        visibility 0.18s ease;
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 300px;
+    background: white;
+    border-radius: 18px;
+    padding: 24px 20px 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    transform: scale(0.94) translateY(6px);
+    transition: transform 0.18s ease;
+}
+
+.modal-overlay.active .modal-box {
+    transform: scale(1) translateY(0);
+}
+
+.modal-title {
+    display: none;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    color: #222;
+}
+
+.modal-title.has-content {
+    display: block;
+}
+
+.modal-message {
+    display: none;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+    text-align: center;
+    white-space: pre-line;
+}
+
+.modal-message.has-content {
+    display: block;
+}
+
+.modal-input-wrap {
+    display: none;
+    margin-top: 16px;
+}
+
+.modal-input-wrap.active {
+    display: block;
+}
+
+.modal-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #222;
+    background: transparent;
+    padding: 8px 0;
+    outline: none;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 700;
+    color: #222;
+}
+
+.modal-input::placeholder {
+    color: #cfcfcf;
+    font-weight: 500;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 22px;
+}
+
+.modal-btn {
+    flex: 1;
+    border: none;
+    border-radius: 11px;
+    padding: 13px 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.modal-btn:active {
+    transform: scale(0.98);
+}
+
+.modal-btn-cancel {
+    background: #f3f3f3;
+    color: #666;
+}
+
+.modal-btn-confirm {
+    background: #222;
+    color: white;
+}
+
+.modal-btn-confirm.danger {
+    background: #e05252;
+}
