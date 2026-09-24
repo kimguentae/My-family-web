@@ -412,7 +412,7 @@ document.addEventListener(
 
                 }
 
-                
+
         /* 동기화 상태 아이콘 탭 → 계정 설정 */
 
         const syncStatusElement =
@@ -913,5 +913,29 @@ function initializeDragSort(
 
         }
     );
+
+}
+
+/* =========================
+   동기화 상태 아이콘 클릭 처리
+   (날짜 선택기로 이벤트 전파 방지)
+========================= */
+
+function handleSyncStatusClick(event) {
+
+    if (event) {
+
+        event.preventDefault();
+
+        event.stopPropagation();
+
+        if (event.stopImmediatePropagation) {
+            event.stopImmediatePropagation();
+        }
+
+    }
+
+
+    showScreen("accountSettings");
 
 }
