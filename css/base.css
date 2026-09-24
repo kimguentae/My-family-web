@@ -192,7 +192,7 @@ input {
     line-height: 1;
 }
 
-/* 공용: 접기/펼치기 */
+/* 공용: 접기/펼치기 (분석 설정 등에서 사용) */
 
 .collapse-section {
     margin-top: 12px;
@@ -253,7 +253,7 @@ input {
     display: block;
 }
 
-/* 공용: 관리 리스트 */
+/* 공용: 관리 리스트 (분석 설정 순서 관리용) */
 
 .category-manage-list {
     display: flex;
@@ -434,4 +434,152 @@ input {
     font-size: 17px;
     font-weight: 700;
     margin-bottom: 4px;
+}
+
+/* =========================
+   카드형 가로 리스트
+   (카테고리 / 결제수단 / 주체 관리)
+========================= */
+
+.card-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #555;
+    margin: 22px 0 10px;
+    padding: 0 2px;
+}
+
+.card-horizontal-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.card-horizontal-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* 관리 카드 */
+
+.manage-card {
+    flex: 0 0 auto;
+    width: 90px;
+    height: 90px;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+    touch-action: pan-y;
+}
+
+.manage-card:active {
+    transform: scale(0.97);
+}
+
+.manage-card.dragging {
+    opacity: 0.9;
+    z-index: 100;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+    transform: scale(1.05);
+}
+
+.manage-card-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    text-align: center;
+    word-break: break-word;
+    line-height: 1.3;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* + 추가 카드 */
+
+.manage-card.add-card {
+    border: 1.5px dashed #cfcfcf;
+    background: #fafafa;
+    color: #999;
+}
+
+.manage-card.add-card .manage-card-plus {
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.manage-card.add-card .manage-card-name {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+}
+
+/* 길게 눌러 나타나는 액션 오버레이 */
+
+.manage-card .card-actions-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 5;
+}
+
+.manage-card.actions-visible .card-actions-overlay {
+    display: flex;
+}
+
+.card-actions-overlay button {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    width: 70px;
+    text-align: center;
+}
+
+.card-action-edit {
+    color: #3d78d8;
+    background: #eef4fd !important;
+}
+
+.card-action-delete {
+    color: #e05252;
+    background: #fdeeee !important;
+}
+
+/* 반응형 */
+
+@media (max-width: 480px) {
+    .manage-card {
+        width: 84px;
+        height: 84px;
+    }
 }

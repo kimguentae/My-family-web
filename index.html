@@ -634,83 +634,23 @@
 
             </div>
 
-
-            <div class="collapse-section">
-
-                <div class="collapse-header">
-
-                    <button
-                        type="button"
-                        class="collapse-title"
-                        onclick="toggleSettingsCollapse('expenseCategoryBody', this)"
-                    >
-                        <span>지출</span>
-                        <span class="collapse-arrow">⌄</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="add-button"
-                        onclick="addCategory('expense')"
-                    >
-                        + 추가
-                    </button>
-
-                </div>
-
-                <div
-                    id="expenseCategoryBody"
-                    class="collapse-body"
-                >
-
-                    <div
-                        id="expenseCategoryList"
-                        class="category-manage-list"
-                    ></div>
-
-                </div>
-
-            </div>
-
-
-            <div class="collapse-section">
-
-                <div class="collapse-header">
-
-                    <button
-                        type="button"
-                        class="collapse-title"
-                        onclick="toggleSettingsCollapse('incomeCategoryBody', this)"
-                    >
-                        <span>수입</span>
-                        <span class="collapse-arrow">⌄</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="add-button"
-                        onclick="addCategory('income')"
-                    >
-                        + 추가
-                    </button>
-
-                </div>
-
-                <div
-                    id="incomeCategoryBody"
-                    class="collapse-body"
-                >
-
-                    <div
-                        id="incomeCategoryList"
-                        class="category-manage-list"
-                    ></div>
-
-                </div>
-
-            </div>
-
         </div>
+
+
+        <div class="card-section-title">지출</div>
+
+        <div
+            id="expenseCategoryList"
+            class="card-horizontal-list"
+        ></div>
+
+
+        <div class="card-section-title">수입</div>
+
+        <div
+            id="incomeCategoryList"
+            class="card-horizontal-list"
+        ></div>
 
     </section>
 
@@ -760,45 +700,15 @@
 
             </div>
 
-
-            <div class="collapse-section">
-
-                <div class="collapse-header">
-
-                    <button
-                        type="button"
-                        class="collapse-title"
-                        onclick="toggleSettingsCollapse('paymentBody', this)"
-                    >
-                        <span>결제수단</span>
-                        <span class="collapse-arrow">⌄</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="add-button"
-                        onclick="addPaymentMethod()"
-                    >
-                        + 추가
-                    </button>
-
-                </div>
-
-                <div
-                    id="paymentBody"
-                    class="collapse-body"
-                >
-
-                    <div
-                        id="paymentMethodList"
-                        class="category-manage-list"
-                    ></div>
-
-                </div>
-
-            </div>
-
         </div>
+
+
+        <div class="card-section-title">결제수단</div>
+
+        <div
+            id="paymentMethodList"
+            class="card-horizontal-list"
+        ></div>
 
     </section>
 
@@ -848,45 +758,15 @@
 
             </div>
 
-
-            <div class="collapse-section">
-
-                <div class="collapse-header">
-
-                    <button
-                        type="button"
-                        class="collapse-title"
-                        onclick="toggleSettingsCollapse('subjectBody', this)"
-                    >
-                        <span>주체</span>
-                        <span class="collapse-arrow">⌄</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="add-button"
-                        onclick="addSubject()"
-                    >
-                        + 추가
-                    </button>
-
-                </div>
-
-                <div
-                    id="subjectBody"
-                    class="collapse-body"
-                >
-
-                    <div
-                        id="subjectList"
-                        class="category-manage-list"
-                    ></div>
-
-                </div>
-
-            </div>
-
         </div>
+
+
+        <div class="card-section-title">주체</div>
+
+        <div
+            id="subjectList"
+            class="card-horizontal-list"
+        ></div>
 
     </section>
 

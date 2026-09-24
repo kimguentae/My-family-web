@@ -1892,144 +1892,50 @@ function renderCategoryManagementList(type) {
 
     categories[type].forEach((category, index) => {
 
-        const item = document.createElement("div");
-        item.className = "category-manage-item";
-        item.dataset.index = index;
+        const card = createManageCard(
+            category,
+            index,
+            () => editCategory(type, index),
+            () => deleteCategory(type, index)
+        );
 
 
-        const actions = document.createElement("div");
-        actions.className = "category-actions";
-
-
-        const editButton = document.createElement("button");
-        editButton.type = "button";
-        editButton.className = "category-edit";
-        editButton.innerText = "수정";
-
-        editButton.onclick = function(event) {
-            event.stopPropagation();
-            editCategory(type, index);
-        };
-
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "category-delete";
-        deleteButton.innerText = "삭제";
-
-        deleteButton.onclick = function(event) {
-            event.stopPropagation();
-            deleteCategory(type, index);
-        };
-
-
-        actions.appendChild(editButton);
-        actions.appendChild(deleteButton);
-
-
-        const content = document.createElement("div");
-        content.className = "category-manage-content";
-
-
-        const name = document.createElement("span");
-        name.className = "category-name";
-        name.innerText = category;
-
-
-        const drag = document.createElement("span");
-        drag.className = "category-drag";
-        drag.innerText = "⋮⋮";
-
-
-        content.appendChild(name);
-        content.appendChild(drag);
-
-
-        item.appendChild(actions);
-        item.appendChild(content);
-
-        container.appendChild(item);
-
-
-        initializeSingleCategorySwipe(item, content);
-
-
-        initializeDragSort(
-            item,
-            drag,
+        initializeManageCardDrag(
+            card,
             {
                 getArray: () => categories[type],
-                getItemHeight: () => 54,
                 onSave: saveCategories,
                 onRender: renderCategoryManagement,
                 onAfterMove: renderCategoryButtons
             }
         );
 
+
+        container.appendChild(card);
+
     });
 
-}
+
+    /* + 추가 카드 */
+
+    const addCard = document.createElement("div");
+
+    addCard.className = "manage-card add-card";
+
+    addCard.innerHTML = `
+        <div class="manage-card-plus">+</div>
+        <div class="manage-card-name">추가</div>
+    `;
 
 
-function initializeSingleCategorySwipe(item, content) {
+    addCard.onclick = function() {
 
-    let startX = 0;
-    let currentX = 0;
-    let swiping = false;
+        addCategory(type);
 
-
-    content.addEventListener(
-        "touchstart",
-        function(event) {
-            startX = event.touches[0].clientX;
-            currentX = startX;
-            swiping = true;
-        },
-        { passive: true }
-    );
+    };
 
 
-    content.addEventListener(
-        "touchmove",
-        function(event) {
-
-            if (!swiping) return;
-
-            currentX = event.touches[0].clientX;
-
-            const diff = currentX - startX;
-
-            if (diff < 0 && diff > -120) {
-                content.style.transform = `translateX(${diff}px)`;
-            }
-
-        },
-        { passive: true }
-    );
-
-
-    content.addEventListener(
-        "touchend",
-        function() {
-
-            if (!swiping) return;
-
-            swiping = false;
-
-            const diff = currentX - startX;
-
-            if (diff < -50) {
-                content.style.transform = "translateX(-120px)";
-            }
-            else {
-                content.style.transform = "translateX(0)";
-            }
-
-            startX = 0;
-            currentX = 0;
-
-        }
-    );
+    container.appendChild(addCard);
 
 }
 
@@ -2208,81 +2114,50 @@ function renderPaymentManagement() {
 
     paymentMethods.forEach((payment, index) => {
 
-        const item = document.createElement("div");
-        item.className = "category-manage-item";
-        item.dataset.index = index;
+        const card = createManageCard(
+            payment,
+            index,
+            () => editPaymentMethod(index),
+            () => deletePaymentMethod(index)
+        );
 
 
-        const actions = document.createElement("div");
-        actions.className = "category-actions";
-
-
-        const editButton = document.createElement("button");
-        editButton.type = "button";
-        editButton.className = "category-edit";
-        editButton.innerText = "수정";
-
-        editButton.onclick = function(event) {
-            event.stopPropagation();
-            editPaymentMethod(index);
-        };
-
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "category-delete";
-        deleteButton.innerText = "삭제";
-
-        deleteButton.onclick = function(event) {
-            event.stopPropagation();
-            deletePaymentMethod(index);
-        };
-
-
-        actions.appendChild(editButton);
-        actions.appendChild(deleteButton);
-
-
-        const content = document.createElement("div");
-        content.className = "category-manage-content";
-
-
-        const name = document.createElement("span");
-        name.className = "category-name";
-        name.innerText = payment;
-
-
-        const drag = document.createElement("span");
-        drag.className = "category-drag";
-        drag.innerText = "⋮⋮";
-
-
-        content.appendChild(name);
-        content.appendChild(drag);
-
-
-        item.appendChild(actions);
-        item.appendChild(content);
-
-        container.appendChild(item);
-
-
-        initializeSingleCategorySwipe(item, content);
-
-
-        initializeDragSort(
-            item,
-            drag,
+        initializeManageCardDrag(
+            card,
             {
                 getArray: () => paymentMethods,
-                getItemHeight: () => 54,
                 onSave: savePaymentMethods,
                 onRender: renderPaymentManagement,
                 onAfterMove: renderPaymentButtons
             }
         );
 
+
+        container.appendChild(card);
+
     });
+
+
+    /* + 추가 카드 */
+
+    const addCard = document.createElement("div");
+
+    addCard.className = "manage-card add-card";
+
+    addCard.innerHTML = `
+        <div class="manage-card-plus">+</div>
+        <div class="manage-card-name">추가</div>
+    `;
+
+
+    addCard.onclick = function() {
+
+        addPaymentMethod();
+
+    };
+
+
+    container.appendChild(addCard);
 
 }
 
@@ -2429,81 +2304,50 @@ function renderSubjectManagement() {
 
     subjects.forEach((subject, index) => {
 
-        const item = document.createElement("div");
-        item.className = "category-manage-item";
-        item.dataset.index = index;
+        const card = createManageCard(
+            subject,
+            index,
+            () => editSubject(index),
+            () => deleteSubject(index)
+        );
 
 
-        const actions = document.createElement("div");
-        actions.className = "category-actions";
-
-
-        const editButton = document.createElement("button");
-        editButton.type = "button";
-        editButton.className = "category-edit";
-        editButton.innerText = "수정";
-
-        editButton.onclick = function(event) {
-            event.stopPropagation();
-            editSubject(index);
-        };
-
-
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "button";
-        deleteButton.className = "category-delete";
-        deleteButton.innerText = "삭제";
-
-        deleteButton.onclick = function(event) {
-            event.stopPropagation();
-            deleteSubject(index);
-        };
-
-
-        actions.appendChild(editButton);
-        actions.appendChild(deleteButton);
-
-
-        const content = document.createElement("div");
-        content.className = "category-manage-content";
-
-
-        const name = document.createElement("span");
-        name.className = "category-name";
-        name.innerText = subject;
-
-
-        const drag = document.createElement("span");
-        drag.className = "category-drag";
-        drag.innerText = "⋮⋮";
-
-
-        content.appendChild(name);
-        content.appendChild(drag);
-
-
-        item.appendChild(actions);
-        item.appendChild(content);
-
-        container.appendChild(item);
-
-
-        initializeSingleCategorySwipe(item, content);
-
-
-        initializeDragSort(
-            item,
-            drag,
+        initializeManageCardDrag(
+            card,
             {
                 getArray: () => subjects,
-                getItemHeight: () => 54,
                 onSave: saveSubjects,
                 onRender: renderSubjectManagement,
                 onAfterMove: renderSubjectButtons
             }
         );
 
+
+        container.appendChild(card);
+
     });
+
+
+    /* + 추가 카드 */
+
+    const addCard = document.createElement("div");
+
+    addCard.className = "manage-card add-card";
+
+    addCard.innerHTML = `
+        <div class="manage-card-plus">+</div>
+        <div class="manage-card-name">추가</div>
+    `;
+
+
+    addCard.onclick = function() {
+
+        addSubject();
+
+    };
+
+
+    container.appendChild(addCard);
 
 }
 
@@ -2628,5 +2472,357 @@ function deleteSubject(index) {
         renderSubjectButtons();
 
     });
+
+}
+
+
+
+/* =========================
+   관리 카드 (카테고리/결제수단/주체 공용)
+========================= */
+
+function createManageCard(
+    name,
+    index,
+    onEdit,
+    onDelete
+) {
+
+    const card = document.createElement("div");
+
+    card.className = "manage-card";
+
+    card.dataset.index = index;
+
+
+    const nameElement = document.createElement("div");
+
+    nameElement.className = "manage-card-name";
+
+    nameElement.textContent = name;
+
+
+    card.appendChild(nameElement);
+
+
+    /* 길게 누르면 뜨는 액션 오버레이 */
+
+    const overlay = document.createElement("div");
+
+    overlay.className = "card-actions-overlay";
+
+
+    const editBtn = document.createElement("button");
+
+    editBtn.type = "button";
+
+    editBtn.className = "card-action-edit";
+
+    editBtn.textContent = "수정";
+
+    editBtn.onclick = function(event) {
+
+        event.stopPropagation();
+
+        card.classList.remove("actions-visible");
+
+        onEdit();
+
+    };
+
+
+    const deleteBtn = document.createElement("button");
+
+    deleteBtn.type = "button";
+
+    deleteBtn.className = "card-action-delete";
+
+    deleteBtn.textContent = "삭제";
+
+    deleteBtn.onclick = function(event) {
+
+        event.stopPropagation();
+
+        card.classList.remove("actions-visible");
+
+        onDelete();
+
+    };
+
+
+    overlay.appendChild(editBtn);
+
+    overlay.appendChild(deleteBtn);
+
+
+    card.appendChild(overlay);
+
+
+    /* 오버레이가 떠 있을 때 다른 곳 탭하면 닫힘 */
+
+    document.addEventListener(
+        "touchstart",
+        function(event) {
+
+            if (
+                card.classList.contains("actions-visible") &&
+                !card.contains(event.target)
+            ) {
+
+                card.classList.remove("actions-visible");
+
+            }
+
+        },
+        { passive: true }
+    );
+
+
+    return card;
+
+}
+
+
+
+/* =========================
+   관리 카드 좌우 드래그 (순서 변경)
+========================= */
+
+function initializeManageCardDrag(
+    card,
+    options
+) {
+
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    let dragging = false;
+    let longPressTimer = null;
+
+    let isLongPress = false;
+
+    const CARD_WIDTH = 100; /* 카드 90px + gap 10px */
+    const LONG_PRESS_MS = 500;
+    const MOVE_THRESHOLD = 8;
+
+
+    /* 시작 */
+
+    card.addEventListener(
+        "touchstart",
+        function(event) {
+
+            if (event.touches.length !== 1) return;
+
+
+            const touch = event.touches[0];
+
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            currentX = startX;
+            currentY = startY;
+
+
+            isLongPress = false;
+
+            longPressTimer = setTimeout(
+                function() {
+
+                    isLongPress = true;
+
+                    card.classList.add("actions-visible");
+
+                    if (navigator.vibrate) {
+                        navigator.vibrate(15);
+                    }
+
+                },
+                LONG_PRESS_MS
+            );
+
+        },
+        { passive: true }
+    );
+
+
+    /* 이동 */
+
+    card.addEventListener(
+        "touchmove",
+        function(event) {
+
+            if (event.touches.length !== 1) return;
+
+
+            const touch = event.touches[0];
+
+            currentX = touch.clientX;
+            currentY = touch.clientY;
+
+
+            const diffX = currentX - startX;
+            const diffY = currentY - startY;
+
+
+            /* 롱프레스 전에 손가락이 많이 움직이면 롱프레스 취소 */
+
+            if (
+                !isLongPress &&
+                longPressTimer &&
+                (
+                    Math.abs(diffX) > MOVE_THRESHOLD ||
+                    Math.abs(diffY) > MOVE_THRESHOLD
+                )
+            ) {
+
+                clearTimeout(longPressTimer);
+
+                longPressTimer = null;
+
+            }
+
+
+            /* 이미 오버레이가 떠 있으면 드래그 안 함 */
+
+            if (card.classList.contains("actions-visible")) return;
+
+
+            /* 세로 이동이 더 크면 스크롤 */
+
+            if (
+                !dragging &&
+                Math.abs(diffY) > Math.abs(diffX) &&
+                Math.abs(diffY) > 10
+            ) {
+
+                return;
+
+            }
+
+
+            if (!dragging) {
+
+                /* 가로로 충분히 움직였을 때 드래그 시작 */
+
+                if (Math.abs(diffX) < 10) return;
+
+                dragging = true;
+
+                card.classList.add("dragging");
+
+            }
+
+
+            /* 카드 자체 이동 */
+
+            card.style.transform =
+                `translateX(${diffX}px) scale(1.05)`;
+
+
+            /* 좌우 자리 교환 판정 */
+
+            const steps = Math.round(diffX / CARD_WIDTH);
+
+
+            if (steps !== 0) {
+
+                const array = options.getArray();
+
+                const currentIdx = Number(card.dataset.index);
+
+                let newIdx = currentIdx + steps;
+
+
+                if (newIdx < 0) newIdx = 0;
+
+                if (newIdx >= array.length) {
+                    newIdx = array.length - 1;
+                }
+
+
+                if (newIdx !== currentIdx) {
+
+                    moveArrayItem(array, currentIdx, newIdx);
+
+                    options.onSave();
+
+                    /* 시작 위치 조정 */
+
+                    startX += steps * CARD_WIDTH;
+
+                    options.onRender();
+
+                    if (options.onAfterMove) {
+                        options.onAfterMove();
+                    }
+
+                    return;
+
+                }
+
+            }
+
+        },
+        { passive: true }
+    );
+
+
+    /* 종료 */
+
+    card.addEventListener(
+        "touchend",
+        function() {
+
+            if (longPressTimer) {
+
+                clearTimeout(longPressTimer);
+
+                longPressTimer = null;
+
+            }
+
+
+            if (dragging) {
+
+                dragging = false;
+
+                card.classList.remove("dragging");
+
+                card.style.transform = "";
+
+            }
+
+        }
+    );
+
+
+    card.addEventListener(
+        "touchcancel",
+        function() {
+
+            if (longPressTimer) {
+
+                clearTimeout(longPressTimer);
+
+                longPressTimer = null;
+
+            }
+
+
+            if (dragging) {
+
+                dragging = false;
+
+                card.classList.remove("dragging");
+
+                card.style.transform = "";
+
+            }
+
+        }
+    );
 
 }
