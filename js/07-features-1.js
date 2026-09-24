@@ -8,38 +8,73 @@
 
 function updateInputDateText() {
 
-    const input =
+    const hiddenInput =
         document.getElementById("dateInput");
 
     const text =
         document.getElementById("inputDateText");
 
 
-    if (!input || !text) return;
+    if (!hiddenInput || !text) return;
 
 
-    if (!input.value) {
-        input.value = getTodayString();
+    /* 값이 없으면 오늘로 초기화 */
+
+    if (!hiddenInput.value) {
+        hiddenInput.value = getTodayString();
     }
 
 
-    const date =
-        new Date(input.value + "T00:00:00");
+    /* applyInputDate로 통일 */
 
-    const weekdays = [
-        "일", "월", "화", "수", "목", "금", "토"
-    ];
-
-
-    text.innerText =
-        `${date.getFullYear()}년 ${
-            date.getMonth() + 1
-        }월 ${
-            date.getDate()
-        }일 (${weekdays[date.getDay()]})`;
+    applyInputDate(hiddenInput.value);
 
 }
 
+/* =========================
+   입력탭 날짜 반영 (커스텀 피커용)
+========================= */
+
+function applyInputDate(dateString) {
+
+    /* hidden input에 저장 */
+
+    const hiddenInput =
+        document.getElementById("dateInput");
+
+    if (hiddenInput) {
+        hiddenInput.value = dateString;
+    }
+
+
+    /* 텍스트 표시 */
+
+    const text =
+        document.getElementById("inputDateText");
+
+    if (text) {
+
+        const date =
+            new Date(dateString + "T00:00:00");
+
+        const weekdays = [
+            "일", "월", "화", "수", "목", "금", "토"
+        ];
+
+        text.innerText =
+            `${date.getFullYear()}년 ${
+                date.getMonth() + 1
+            }월 ${
+                date.getDate()
+            }일 (${weekdays[date.getDay()]})`;
+
+        /* dataset에도 저장 (피커가 참조) */
+
+        text.dataset.date = dateString;
+
+    }
+
+}
 
 /* =========================
    금액

@@ -21,6 +21,7 @@ const CACHE_FILES = [
     "./js/07-features-1.js",
     "./js/07-features-2.js",
     "./js/08-main.js",
+    "./js/09-datepicker.js",
     "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
     "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ];

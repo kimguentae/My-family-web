@@ -572,6 +572,67 @@ function updateAnalysisDateText() {
 
 }
 
+/* =========================
+   분석탭 날짜 반영 (커스텀 피커용)
+========================= */
+
+function applyAnalysisDates() {
+
+    const startInput =
+        document.getElementById("analysisStartDate");
+
+    const endInput =
+        document.getElementById("analysisEndDate");
+
+    const startText =
+        document.getElementById("analysisStartDateText");
+
+    const endText =
+        document.getElementById("analysisEndDateText");
+
+
+    if (
+        !startInput ||
+        !endInput ||
+        !startText ||
+        !endText
+    ) return;
+
+
+    /* 시작일 텍스트 */
+
+    if (startInput.value) {
+
+        startText.innerText =
+            formatAnalysisDateDisplay(startInput.value);
+
+    }
+
+
+    /* 종료일 텍스트 */
+
+    if (endInput.value) {
+
+        endText.innerText =
+            formatAnalysisDateDisplay(endInput.value);
+
+    }
+
+
+    /* 날짜 범위 한 줄에 맞추기 */
+
+    fitAnalysisDateRow();
+
+
+    /* 분석 다시 그리기 */
+
+    analysisSelectedCategory = "";
+    analysisSelectedPayment = "";
+    analysisSelectedSubject = "";
+
+    renderAnalysis();
+
+}
 
 function fitAnalysisDateRow() {
 
@@ -628,38 +689,7 @@ function initializeAnalysisDates() {
 
     updateAnalysisDateText();
 
-
-    startInput.onchange = function() {
-
-        if (startInput.value > endInput.value)
-            endInput.value = startInput.value;
-
-        updateAnalysisDateText();
-
-        analysisSelectedCategory = "";
-        analysisSelectedPayment = "";
-        analysisSelectedSubject = "";
-
-        renderAnalysis();
-
-    };
-
-
-    endInput.onchange = function() {
-
-        if (endInput.value < startInput.value)
-            startInput.value = endInput.value;
-
-        updateAnalysisDateText();
-
-        analysisSelectedCategory = "";
-        analysisSelectedPayment = "";
-        analysisSelectedSubject = "";
-
-        renderAnalysis();
-
-    };
-
+    /* onchange는 이제 커스텀 피커가 처리하므로 삭제 */
 }
 
 
