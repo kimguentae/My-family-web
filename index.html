@@ -15,6 +15,7 @@
     <link rel="manifest" href="./manifest.json">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="가계부">
     <meta name="theme-color" content="#ffffff">
@@ -27,6 +28,7 @@
     <link rel="stylesheet" href="./css/screens.css">
     <link rel="stylesheet" href="./css/modal.css">
     <link rel="stylesheet" href="./css/offline.css">
+    <link rel="stylesheet" href="./css/settings.css">
 </head>
 
 <body>
@@ -254,188 +256,188 @@
     </section>
 
 
-<!-- 분석 -->
+    <!-- 분석 -->
 
-<section
-    id="analysisScreen"
-    class="screen"
->
-
-    <div id="analysisDateRow" class="analysis-date-row">
-
-        <div class="analysis-date-item">
-
-            <div
-                id="analysisStartDateText"
-                class="analysis-date-text"
-            ></div>
-
-            <input
-                type="date"
-                id="analysisStartDate"
-                class="analysis-date-picker"
-            >
-
-        </div>
-
-        <span class="analysis-date-separator">~</span>
-
-        <div class="analysis-date-item">
-
-            <div
-                id="analysisEndDateText"
-                class="analysis-date-text"
-            ></div>
-
-            <input
-                type="date"
-                id="analysisEndDate"
-                class="analysis-date-picker"
-            >
-
-        </div>
-
-    </div>
-
-
-    <div class="analysis-type-toggle">
-
-        <button
-            type="button"
-            id="analysisExpenseBtn"
-            class="analysis-type-btn active"
-            onclick="setAnalysisType('expense')"
-        >
-            지출
-        </button>
-
-        <button
-            type="button"
-            id="analysisIncomeBtn"
-            class="analysis-type-btn"
-            onclick="setAnalysisType('income')"
-        >
-            수입
-        </button>
-
-    </div>
-
-
-    <div
-        id="analysisOverallSummary"
-        class="analysis-overall-summary"
-    ></div>
-
-
-    <div
-        id="analysisMonthlyChartGroup"
-        class="analysis-group"
+    <section
+        id="analysisScreen"
+        class="screen"
     >
 
-        <div class="analysis-group-title">
-            월별 그래프
+        <div id="analysisDateRow" class="analysis-date-row">
+
+            <div class="analysis-date-item">
+
+                <div
+                    id="analysisStartDateText"
+                    class="analysis-date-text"
+                ></div>
+
+                <input
+                    type="date"
+                    id="analysisStartDate"
+                    class="analysis-date-picker"
+                >
+
+            </div>
+
+            <span class="analysis-date-separator">~</span>
+
+            <div class="analysis-date-item">
+
+                <div
+                    id="analysisEndDateText"
+                    class="analysis-date-text"
+                ></div>
+
+                <input
+                    type="date"
+                    id="analysisEndDate"
+                    class="analysis-date-picker"
+                >
+
+            </div>
+
         </div>
 
-        <div
-            id="analysisMonthlyChart"
-            class="monthly-chart"
-        ></div>
 
-        <div
-            id="analysisMonthlyLegend"
-            class="monthly-chart-legend"
-        ></div>
+        <div class="analysis-type-toggle">
 
-    </div>
+            <button
+                type="button"
+                id="analysisExpenseBtn"
+                class="analysis-type-btn active"
+                onclick="setAnalysisType('expense')"
+            >
+                지출
+            </button>
 
+            <button
+                type="button"
+                id="analysisIncomeBtn"
+                class="analysis-type-btn"
+                onclick="setAnalysisType('income')"
+            >
+                수입
+            </button>
 
-    <div id="analysisCategoryGroup" class="analysis-group">
-
-        <div class="analysis-group-title">
-            카테고리
         </div>
 
-        <div
-            id="analysisCategoryBar"
-            class="analysis-group-bar"
-        ></div>
 
         <div
-            id="analysisCategoryBarInfo"
-            class="analysis-group-bar-info"
+            id="analysisOverallSummary"
+            class="analysis-overall-summary"
         ></div>
+
 
         <div
-            id="analysisCategoryList"
-            class="analysis-button-grid"
-        ></div>
+            id="analysisMonthlyChartGroup"
+            class="analysis-group"
+        >
 
-        <div
-            id="analysisCategoryDetails"
-            class="analysis-detail-list"
-        ></div>
+            <div class="analysis-group-title">
+                월별 그래프
+            </div>
 
-    </div>
+            <div
+                id="analysisMonthlyChart"
+                class="monthly-chart"
+            ></div>
 
+            <div
+                id="analysisMonthlyLegend"
+                class="monthly-chart-legend"
+            ></div>
 
-    <div id="analysisPaymentGroup" class="analysis-group">
-
-        <div class="analysis-group-title">
-            결제수단
         </div>
 
-        <div
-            id="analysisPaymentBar"
-            class="analysis-group-bar"
-        ></div>
 
-        <div
-            id="analysisPaymentBarInfo"
-            class="analysis-group-bar-info"
-        ></div>
+        <div id="analysisCategoryGroup" class="analysis-group">
 
-        <div
-            id="analysisPaymentList"
-            class="analysis-button-grid"
-        ></div>
+            <div class="analysis-group-title">
+                카테고리
+            </div>
 
-        <div
-            id="analysisPaymentDetails"
-            class="analysis-detail-list"
-        ></div>
+            <div
+                id="analysisCategoryBar"
+                class="analysis-group-bar"
+            ></div>
 
-    </div>
+            <div
+                id="analysisCategoryBarInfo"
+                class="analysis-group-bar-info"
+            ></div>
 
+            <div
+                id="analysisCategoryList"
+                class="analysis-button-grid"
+            ></div>
 
-    <div id="analysisSubjectGroup" class="analysis-group">
+            <div
+                id="analysisCategoryDetails"
+                class="analysis-detail-list"
+            ></div>
 
-        <div class="analysis-group-title">
-            주체
         </div>
 
-        <div
-            id="analysisSubjectBar"
-            class="analysis-group-bar"
-        ></div>
 
-        <div
-            id="analysisSubjectBarInfo"
-            class="analysis-group-bar-info"
-        ></div>
+        <div id="analysisPaymentGroup" class="analysis-group">
 
-        <div
-            id="analysisSubjectList"
-            class="analysis-button-grid"
-        ></div>
+            <div class="analysis-group-title">
+                결제수단
+            </div>
 
-        <div
-            id="analysisSubjectDetails"
-            class="analysis-detail-list"
-        ></div>
+            <div
+                id="analysisPaymentBar"
+                class="analysis-group-bar"
+            ></div>
 
-    </div>
+            <div
+                id="analysisPaymentBarInfo"
+                class="analysis-group-bar-info"
+            ></div>
 
-</section>
+            <div
+                id="analysisPaymentList"
+                class="analysis-button-grid"
+            ></div>
+
+            <div
+                id="analysisPaymentDetails"
+                class="analysis-detail-list"
+            ></div>
+
+        </div>
+
+
+        <div id="analysisSubjectGroup" class="analysis-group">
+
+            <div class="analysis-group-title">
+                주체
+            </div>
+
+            <div
+                id="analysisSubjectBar"
+                class="analysis-group-bar"
+            ></div>
+
+            <div
+                id="analysisSubjectBarInfo"
+                class="analysis-group-bar-info"
+            ></div>
+
+            <div
+                id="analysisSubjectList"
+                class="analysis-button-grid"
+            ></div>
+
+            <div
+                id="analysisSubjectDetails"
+                class="analysis-detail-list"
+            ></div>
+
+        </div>
+
+    </section>
 
 
     <!-- 설정 -->
@@ -445,13 +447,20 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">메뉴</div>
+
+        <div class="settings-card">
 
             <div
                 class="setting-row setting-link"
                 onclick="showScreen('inputSettings')"
             >
-                <span>입력 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </span>
+                    <span class="setting-row-label">입력 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -459,7 +468,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('budgetSettings')"
             >
-                <span>예산 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v2m0 8v2"/></svg>
+                    </span>
+                    <span class="setting-row-label">예산 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -467,7 +481,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('historySettings')"
             >
-                <span>내역 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    </span>
+                    <span class="setting-row-label">내역 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -475,7 +494,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('analysisSettings')"
             >
-                <span>분석 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg>
+                    </span>
+                    <span class="setting-row-label">분석 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -483,7 +507,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('accountSettings')"
             >
-                <span>계정 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                    </span>
+                    <span class="setting-row-label">계정 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -499,13 +528,20 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">입력 항목</div>
+
+        <div class="settings-card">
 
             <div
                 class="setting-row setting-link"
                 onclick="showScreen('memoSettings')"
             >
-                <span>메모 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg>
+                    </span>
+                    <span class="setting-row-label">메모 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -513,7 +549,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('categorySettings')"
             >
-                <span>카테고리 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    </span>
+                    <span class="setting-row-label">카테고리 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -521,7 +562,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('paymentSettings')"
             >
-                <span>결제수단 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                    </span>
+                    <span class="setting-row-label">결제수단 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -529,7 +575,12 @@
                 class="setting-row setting-link"
                 onclick="showScreen('subjectSettings')"
             >
-                <span>주체 설정</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                    </span>
+                    <span class="setting-row-label">주체 설정</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -545,11 +596,15 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">사용 여부</div>
+
+        <div class="settings-card">
 
             <div class="setting-row">
 
-                <span>지출에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">지출에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -567,7 +622,9 @@
 
             <div class="setting-row">
 
-                <span>수입에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">수입에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -595,11 +652,15 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">사용 여부</div>
+
+        <div class="settings-card">
 
             <div class="setting-row">
 
-                <span>지출에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">지출에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -617,7 +678,9 @@
 
             <div class="setting-row">
 
-                <span>수입에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">수입에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -633,6 +696,12 @@
 
             </div>
 
+        </div>
+
+
+        <div class="settings-section-label">카테고리 목록</div>
+
+        <div class="settings-card">
 
             <div class="collapse-section">
 
@@ -670,7 +739,6 @@
                 </div>
 
             </div>
-
 
             <div class="collapse-section">
 
@@ -721,11 +789,15 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">사용 여부</div>
+
+        <div class="settings-card">
 
             <div class="setting-row">
 
-                <span>지출에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">지출에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -743,7 +815,9 @@
 
             <div class="setting-row">
 
-                <span>수입에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">수입에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -759,6 +833,12 @@
 
             </div>
 
+        </div>
+
+
+        <div class="settings-section-label">결제수단 목록</div>
+
+        <div class="settings-card">
 
             <div class="collapse-section">
 
@@ -809,11 +889,15 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">사용 여부</div>
+
+        <div class="settings-card">
 
             <div class="setting-row">
 
-                <span>지출에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">지출에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -831,7 +915,9 @@
 
             <div class="setting-row">
 
-                <span>수입에서 사용</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-label">수입에서 사용</span>
+                </div>
 
                 <label class="switch">
 
@@ -847,6 +933,12 @@
 
             </div>
 
+        </div>
+
+
+        <div class="settings-section-label">주체 목록</div>
+
+        <div class="settings-card">
 
             <div class="collapse-section">
 
@@ -897,15 +989,13 @@
         class="screen"
     >
 
-        <div class="settings-group">
+        <div class="settings-section-label">카테고리별 월 예산</div>
 
-            <div class="settings-group-title">
-                카테고리별 월 예산
-            </div>
+        <div class="settings-card">
 
             <div
                 id="budgetCategoryList"
-                class="analysis-button-grid"
+                class="budget-grid"
             ></div>
 
         </div>
@@ -920,13 +1010,20 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-section-label">데이터 관리</div>
+
+        <div class="settings-card">
 
             <div
                 class="setting-row setting-link"
                 onclick="showScreen('historyExport')"
             >
-                <span>거래내역 엑셀로 저장</span>
+                <div class="setting-row-left">
+                    <span class="setting-row-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </span>
+                    <span class="setting-row-label">거래내역 엑셀로 저장</span>
+                </div>
                 <span class="arrow">›</span>
             </div>
 
@@ -942,11 +1039,9 @@
         class="screen"
     >
 
-        <div class="export-section">
+        <div class="settings-section-label">기간 선택</div>
 
-            <div class="export-label">
-                기간 선택
-            </div>
+        <div class="export-card">
 
             <div class="export-date-row">
 
@@ -1022,15 +1117,14 @@
         class="screen"
     >
 
-        <div class="settings-group">
+        <div class="settings-section-label">분석 항목 표시 / 순서</div>
 
-            <div class="settings-group-title">
-                분석 항목 표시 / 순서
-            </div>
+        <div class="settings-card">
 
             <div
                 id="analysisGroupOrderList"
                 class="category-manage-list"
+                style="padding: 8px 16px 16px;"
             ></div>
 
         </div>
@@ -1047,84 +1141,101 @@
 
         <div
             id="accountLoggedOut"
-            class="account-section"
         >
 
-            <div class="account-label">
-                이메일
+            <div class="settings-section-label">로그인</div>
+
+            <div class="account-card">
+
+                <div class="account-label">
+                    이메일
+                </div>
+
+                <input
+                    type="email"
+                    id="authEmailInput"
+                    class="account-input"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                >
+
+                <div class="account-label">
+                    비밀번호
+                </div>
+
+                <input
+                    type="password"
+                    id="authPasswordInput"
+                    class="account-input"
+                    placeholder="6자 이상"
+                    autocomplete="current-password"
+                >
+
+                <div
+                    id="authMessage"
+                    class="account-message"
+                ></div>
+
+                <button
+                    type="button"
+                    class="save-button"
+                    onclick="handleSignIn()"
+                >
+                    로그인
+                </button>
+
+                <button
+                    type="button"
+                    class="account-secondary-button"
+                    onclick="handleSignUp()"
+                >
+                    회원가입
+                </button>
+
             </div>
-
-            <input
-                type="email"
-                id="authEmailInput"
-                class="account-input"
-                placeholder="you@example.com"
-                autocomplete="email"
-            >
-
-            <div class="account-label">
-                비밀번호
-            </div>
-
-            <input
-                type="password"
-                id="authPasswordInput"
-                class="account-input"
-                placeholder="6자 이상"
-                autocomplete="current-password"
-            >
-
-            <div
-                id="authMessage"
-                class="account-message"
-            ></div>
-
-            <button
-                type="button"
-                class="save-button"
-                onclick="handleSignIn()"
-            >
-                로그인
-            </button>
-
-            <button
-                type="button"
-                class="account-secondary-button"
-                onclick="handleSignUp()"
-            >
-                회원가입
-            </button>
 
         </div>
 
 
         <div
             id="accountLoggedIn"
-            class="account-section"
             style="display: none;"
         >
 
-            <div class="account-label">
-                로그인 계정
+            <div class="settings-section-label">로그인 계정</div>
+
+            <div class="account-card">
+
+                <div
+                    id="accountEmailDisplay"
+                    class="account-email"
+                ></div>
+
+                <div
+                    id="accountSyncStatus"
+                    class="account-message account-message-info"
+                ></div>
+
             </div>
 
-            <div
-                id="accountEmailDisplay"
-                class="account-email"
-            ></div>
 
-            <div
-                id="accountSyncStatus"
-                class="account-message account-message-info"
-            ></div>
+            <div class="settings-section-label">계정 관리</div>
 
-            <button
-                type="button"
-                class="save-button"
-                onclick="handleSignOut()"
-            >
-                로그아웃
-            </button>
+            <div class="settings-card">
+
+                <div
+                    class="setting-row setting-link danger"
+                    onclick="handleSignOut()"
+                >
+                    <div class="setting-row-left">
+                        <span class="setting-row-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </span>
+                        <span class="setting-row-label">로그아웃</span>
+                    </div>
+                </div>
+
+            </div>
 
         </div>
 
