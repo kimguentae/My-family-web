@@ -2,6 +2,30 @@
    01. 설정 및 전역 상태
 ========================= */
 
+/* 
+   ★ 이 함수는 02-utils.js에도 정의되어 있지만,
+   01-config.js가 먼저 로드되면서 이 함수를 필요로 하므로
+   여기서 먼저 선언해둔다. (중복 정의되지만 나중 로드가 덮어씀)
+*/
+
+function getTodayString() {
+
+    const now = new Date();
+
+    const year = now.getFullYear();
+
+    const month = String(
+        now.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+        now.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+}node --check js/01-config.js
+
 const SUPABASE_URL =
     "https://lyassaicxiixzyqlewhx.supabase.co";
 
