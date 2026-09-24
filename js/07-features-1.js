@@ -1069,6 +1069,80 @@ function openMonthPicker() {
 
     monthPickerOpen = true;
 
+
+    /* 텍스트 바로 아래에 위치 계산 */
+
+    positionMonthPicker();
+
+}
+
+
+/* 텍스트 아래에 위치시키기 */
+
+function positionMonthPicker() {
+
+    const pickerInner =
+        document.querySelector(".month-picker-inner");
+
+    const title =
+        document.getElementById("calendarTitle");
+
+
+    if (!pickerInner || !title) return;
+
+
+    const anchorRect =
+        title.getBoundingClientRect();
+
+    const viewportHeight =
+        window.innerHeight;
+
+
+    /* left 50% 유지 (CSS) */
+
+    pickerInner.style.left = "50%";
+    pickerInner.style.transform = "translateX(-50%)";
+
+
+    /* 일단 앵커 아래로 */
+
+    let top = anchorRect.bottom + 8;
+
+    pickerInner.style.top = top + "px";
+
+
+    /* 표시 후 실제 높이 재기 → 아래 넘치면 위로 */
+
+    requestAnimationFrame(function() {
+
+        const sheetHeight = pickerInner.offsetHeight;
+
+
+        if (top + sheetHeight > viewportHeight - 20) {
+
+            const aboveTop =
+                anchorRect.top - sheetHeight - 8;
+
+            if (aboveTop > 20) {
+
+                pickerInner.style.top =
+                    aboveTop + "px";
+
+            }
+            else {
+
+                pickerInner.style.top =
+                    Math.max(
+                        20,
+                        (viewportHeight - sheetHeight) / 2
+                    ) + "px";
+
+            }
+
+        }
+
+    });
+
 }
 
 /* 오버레이 클릭 시 닫기 */
@@ -1087,10 +1161,23 @@ function closeMonthPicker() {
     const picker =
         document.getElementById("monthPicker");
 
-    if (!picker) return;
+    const pickerInner =
+        document.querySelector(".month-picker-inner");
 
 
-    picker.classList.remove("active");
+    if (picker) {
+        picker.classList.remove("active");
+    }
+
+
+    if (pickerInner) {
+
+        pickerInner.style.top = "";
+        pickerInner.style.left = "";
+        pickerInner.style.transform = "";
+
+    }
+
 
     monthPickerOpen = false;
 
@@ -2333,3 +2420,16 @@ function exportTransactionsToExcel() {
     }
 
 }
+
+/* 창 크기 변경 시 월 피커 위치 재계산 */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (monthPickerOpen) {
+            positionMonthPicker();
+        }
+
+    }
+);
