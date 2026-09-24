@@ -315,9 +315,7 @@ document.addEventListener(
     "touchstart",
     function(event) {
 
-        /* 1. 스와이프 대상 확인 */
-
-        /* 모달 열려 있으면 무시 */
+        /* 1. 모달 열려 있으면 무시 */
 
         const modal = document.getElementById("appModalOverlay");
 
@@ -330,7 +328,7 @@ document.addEventListener(
         }
 
 
-        /* 카드 드래그 중이면 무시 */
+        /* 2. 관리 카드 위에서 시작하면 무시 */
 
         if (
             event.target.closest &&
@@ -341,7 +339,40 @@ document.addEventListener(
         }
 
 
-        /* 가로 스크롤 영역이면 무시 */
+        /* 3. 거래 카드 위에서 시작하면 무시 (NEW!) */
+
+        if (
+            event.target.closest &&
+            event.target.closest(".transaction-card")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 4. 거래 내역 컨테이너 내부면 무시 (NEW!) */
+
+        if (
+            event.target.closest &&
+            event.target.closest("#selectedDateTransactions")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 5. 분석 상세 리스트 무시 (NEW!) */
+
+        if (
+            event.target.closest &&
+            event.target.closest(".analysis-detail-list")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 6. 가로 스크롤 영역 무시 */
 
         if (
             event.target.closest &&
@@ -352,7 +383,7 @@ document.addEventListener(
         }
 
 
-        /* 차트/캘린더 등 특정 영역 무시 */
+        /* 7. 차트/캘린더 무시 */
 
         if (
             event.target.closest &&
@@ -366,7 +397,7 @@ document.addEventListener(
         }
 
 
-        /* 설정 하위 화면이면 무시 (설정 메인 탭에서만) */
+        /* 8. 설정 하위 화면이면 무시 */
 
         if (
             currentScreen !== "input" &&
@@ -379,7 +410,7 @@ document.addEventListener(
         }
 
 
-        /* input, textarea 위에서 시작하면 무시 */
+        /* 9. input/textarea 위에서 시작하면 무시 */
 
         const tag = (event.target.tagName || "").toLowerCase();
 
