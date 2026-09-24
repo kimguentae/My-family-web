@@ -220,9 +220,108 @@ function showDatepickerOverlay() {
     const overlay =
         document.getElementById("datepickerOverlay");
 
-    if (overlay) {
-        overlay.classList.add("active");
+    const sheet =
+        overlay ? overlay.querySelector(".datepicker-sheet") : null;
+
+    if (!overlay || !sheet) return;
+
+
+    /* 현재 화면에 맞춰 위치 조정 */
+
+    let anchorRect = null;
+
+    if (datepickerState.mode === "single") {
+
+        /* 입력탭: inputDateText 아래 */
+
+        const inputDateText =
+            document.getElementById("inputDateText");
+
+        if (inputDateText) {
+            anchorRect = inputDateText.getBoundingClientRect();
+        }
+
     }
+    else {
+
+        /* 분석탭: 편집 중인 필드 아래 */
+
+        const startText =
+            document.getElementById("analysisStartDateText");
+
+        const endText =
+            document.getElementById("analysisEndDateText");
+
+        const targetText =
+            datepickerState.editingField === "start"
+                ? startText
+                : endText;
+
+        if (targetText) {
+            anchorRect = targetText.getBoundingClientRect();
+        }
+
+    }
+
+
+    /* 스타일 초기화 */
+
+    sheet.style.marginTop = "";
+    sheet.style.top = "";
+    sheet.style.position = "";
+    sheet.style.transform = "";
+
+
+    if (anchorRect) {
+
+        /* 텍스트 하단 + 8px 아래에서 시작 */
+
+        const top = anchorRect.bottom + 8;
+
+        /* 시트가 화면 아래로 넘치지 않게 조정 */
+
+        const viewportHeight = window.innerHeight;
+
+        const sheetHeight = Math.min(
+            500,
+            sheet.scrollHeight || 500
+        );
+
+        let finalTop = top;
+
+        if (top + sheetHeight > viewportHeight - 20) {
+
+            /* 아래 공간 부족 → 위쪽에 표시 */
+
+            const aboveTop =
+                anchorRect.top - sheetHeight - 8;
+
+            if (aboveTop > 20) {
+                finalTop = aboveTop;
+            }
+            else {
+                /* 위아래 다 부족 → 화면 중앙 */
+
+                finalTop = Math.max(
+                    20,
+                    (viewportHeight - sheetHeight) / 2
+                );
+
+            }
+
+        }
+
+
+        /* position: fixed로 정확히 배치 */
+
+        sheet.style.position = "fixed";
+        sheet.style.top = finalTop + "px";
+        sheet.style.marginTop = "0";
+
+    }
+
+
+    overlay.classList.add("active");
 
 }
 

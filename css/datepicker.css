@@ -2,42 +2,48 @@
    커스텀 날짜 선택기 (입력/분석 공용)
 ========================= */
 
-/* 오버레이 */
+/* 오버레이: 배경 어둡게 X, 그냥 뒤 탭 감지만 */
 
 .datepicker-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: transparent;
     z-index: 2000;
     display: none;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: center;
+    padding: 0 16px;
+    pointer-events: none;
 }
 
 .datepicker-overlay.active {
     display: flex;
+    pointer-events: auto;
 }
 
-/* 시트 */
+/* 시트: 화면 아래가 아니라 텍스트 아래 팝업처럼 */
 
 .datepicker-sheet {
     width: 100%;
-    max-width: 600px;
+    max-width: 400px;
     background: white;
-    border-radius: 20px 20px 0 0;
-    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
-    animation: datepickerSlideUp 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
-    max-height: 90vh;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    animation: datepickerFadeIn 0.18s ease;
+    max-height: 80vh;
     overflow-y: auto;
+    pointer-events: auto;
 }
 
-@keyframes datepickerSlideUp {
+@keyframes datepickerFadeIn {
     from {
-        transform: translateY(100%);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
     }
     to {
-        transform: translateY(0);
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 
