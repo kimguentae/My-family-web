@@ -15,7 +15,17 @@ const supabaseClient =
         "function"
         ? window.supabase.createClient(
               SUPABASE_URL,
-              SUPABASE_ANON_KEY
+              SUPABASE_ANON_KEY,
+              {
+                  auth: {
+                      persistSession: true,
+                      autoRefreshToken: true,
+                      detectSessionInUrl: true,
+                      storage: window.localStorage,
+                      storageKey:
+                          "household-auth-token"
+                  }
+              }
           )
         : null;
 
@@ -112,8 +122,6 @@ function openAppModal(options) {
 
 
             if (!els.overlay) {
-
-                /* 모달 요소가 없을 경우를 대비한 안전장치 */
 
                 resolve(
                     options.showInput
@@ -222,7 +230,25 @@ function openAppModal(options) {
 
                         els.input.focus();
 
-                        els.input.select();
+                        /* 커서를 끝으로 이동 */
+
+                        const length =
+                            els.input.value.length;
+
+                        try {
+
+                            els.input.setSelectionRange(
+                                length,
+                                length
+                            );
+
+                        }
+
+                        catch (error) {
+
+                            /* 일부 input type에서는 setSelectionRange 미지원 */
+
+                        }
 
                     },
                     50
@@ -449,6 +475,10 @@ document.addEventListener(
 );
 
 
+/* =========================
+   상태 변수
+========================= */
+
 /* 현재 로그인 사용자 (없으면 null = 로컬 전용 모드) */
 
 let currentUser = null;
@@ -457,6 +487,7 @@ let syncUserDataTimer = null;
 
 let isLoadingUserData = false;
 
+let authListenerRegistered = false;
 
 
 let transactions = JSON.parse(
@@ -889,11 +920,6 @@ function setSyncStatus(text) {
 
     if (inputStatus) {
 
-        const dot =
-            inputStatus.querySelector(
-                ".sync-status-dot"
-            );
-
         inputStatus.classList.remove(
             "success",
             "warning",
@@ -933,7 +959,12 @@ function setSyncStatus(text) {
             );
 
         }
-        else {
+        else if (
+            text &&
+            text.includes(
+                "로그아웃"
+            )
+        ) {
 
             inputStatus.classList.add(
                 "error"
@@ -942,6 +973,141 @@ function setSyncStatus(text) {
         }
 
     }
+
+}
+
+
+/* =========================
+   Supabase 인증 리스너 (핵심)
+   - 토큰 자동 갱신
+   - 세션 복원
+   - 만료 감지
+========================= */
+
+function registerAuthListener() {
+
+    if (
+        !supabaseClient ||
+        authListenerRegistered
+    ) {
+
+        return;
+
+    }
+
+
+    authListenerRegistered = true;
+
+
+    supabaseClient.auth.onAuthStateChange(
+        function(event, session) {
+
+            /* 토큰이 갱신된 경우: 사용자 정보 최신화 */
+
+            if (
+                event === "TOKEN_REFRESHED" ||
+                event === "SIGNED_IN" ||
+                event === "INITIAL_SESSION"
+            ) {
+
+                if (
+                    session &&
+                    session.user
+                ) {
+
+                    currentUser = {
+                        id: session.user.id,
+                        email: session.user.email
+                    };
+
+
+                    updateAccountUI();
+
+                    setSyncStatus(
+                        "동기화 완료"
+                    );
+
+                }
+
+                return;
+
+            }
+
+
+            /* 진짜 로그아웃 이벤트만 처리 */
+
+            if (event === "SIGNED_OUT") {
+
+                /* 
+                   SIGNED_OUT 이벤트가 발생했더라도,
+                   저장된 refresh token이 아직 유효하면
+                   자동 복원을 시도한다.
+                */
+
+                attemptAutoRecoverSession();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* 세션 자동 복원 시도 */
+
+async function attemptAutoRecoverSession() {
+
+    if (!supabaseClient) {
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.refreshSession();
+
+
+    if (
+        error ||
+        !data ||
+        !data.session ||
+        !data.session.user
+    ) {
+
+        /* 복원 실패 = 진짜 로그아웃 상태 */
+
+        currentUser = null;
+
+        updateAccountUI();
+
+        setSyncStatus(
+            "로그아웃됨"
+        );
+
+        return;
+
+    }
+
+
+    currentUser = {
+        id: data.session.user.id,
+        email: data.session.user.email
+    };
+
+
+    updateAccountUI();
+
+    setSyncStatus(
+        "동기화 완료"
+    );
+
+
+    await loadUserDataFromSupabase();
 
 }
 
@@ -957,6 +1123,8 @@ async function checkExistingSession() {
     }
 
 
+    /* 1차: 현재 저장된 세션 확인 */
+
     const {
         data,
         error
@@ -964,18 +1132,8 @@ async function checkExistingSession() {
         await supabaseClient.auth.getSession();
 
 
-    if (error) {
-
-        console.error(
-            error
-        );
-
-        return;
-
-    }
-
-
     if (
+        !error &&
         data &&
         data.session &&
         data.session.user
@@ -990,6 +1148,39 @@ async function checkExistingSession() {
         updateAccountUI();
 
         await loadUserDataFromSupabase();
+
+        return;
+
+    }
+
+
+    /* 2차: refresh token으로 재시도 */
+
+    const {
+        data: refreshData,
+        error: refreshError
+    } =
+        await supabaseClient.auth.refreshSession();
+
+
+    if (
+        !refreshError &&
+        refreshData &&
+        refreshData.session &&
+        refreshData.session.user
+    ) {
+
+        currentUser = {
+            id: refreshData.session.user.id,
+            email: refreshData.session.user.email
+        };
+
+
+        updateAccountUI();
+
+        await loadUserDataFromSupabase();
+
+        return;
 
     }
 
@@ -1239,147 +1430,13 @@ async function handleSignOut() {
     );
 
 
-    /* 로그인 중 불러온 데이터가 로그아웃 후에도
-       화면에 남아있지 않도록 로컬 데이터를 초기화 */
-
-    resetLocalDataToDefaults();
+    /*
+       로그아웃 시 로컬 데이터는 삭제하지 않는다.
+       (재로그인 시 서버에서 다시 동기화됨)
+       → 오프라인 상태에서도 데이터가 남아있도록 함.
+    */
 
     updateAccountUI();
-
-}
-
-
-/* 로그아웃 시 로컬 데이터(거래내역/설정/카테고리/결제수단/주체)를
-   최초 설치 상태로 되돌림 - 다른 계정 데이터가 남아있지 않도록 함 */
-
-function resetLocalDataToDefaults() {
-
-    transactions = [];
-
-    settings = {
-
-        memoEnabled: true,
-        paymentEnabled: true,
-        categoryEnabled: true,
-        subjectEnabled: true,
-
-        memoExpenseEnabled: true,
-        memoIncomeEnabled: true,
-
-        paymentExpenseEnabled: true,
-        paymentIncomeEnabled: true,
-
-        categoryExpenseEnabled: true,
-        categoryIncomeEnabled: true,
-
-        subjectExpenseEnabled: true,
-        subjectIncomeEnabled: true,
-
-        analysisCategoryEnabled: true,
-        analysisPaymentEnabled: true,
-        analysisSubjectEnabled: true,
-
-        analysisGroupOrder: [
-            "monthlyChart",
-            "category",
-            "payment",
-            "subject"
-        ],
-
-        monthlyChartEnabled: true,
-
-        budgets: {}
-
-    };
-
-    categories = {
-
-        expense: [
-            "식비",
-            "교통",
-            "쇼핑",
-            "생활",
-            "의료",
-            "교육",
-            "여가",
-            "기타"
-        ],
-
-        income: [
-            "급여",
-            "용돈",
-            "이자",
-            "투자수익",
-            "기타"
-        ]
-
-    };
-
-    paymentMethods = [
-        "카드1",
-        "카드2",
-        "현금",
-        "상품권"
-    ];
-
-    subjects = [
-        "남편",
-        "아내",
-        "아기",
-        "기타"
-    ];
-
-
-    localStorage.setItem(
-        "householdTransactions",
-        JSON.stringify(transactions)
-    );
-
-    localStorage.setItem(
-        "householdSettings",
-        JSON.stringify(settings)
-    );
-
-    localStorage.setItem(
-        "householdCategories",
-        JSON.stringify(categories)
-    );
-
-    localStorage.setItem(
-        "householdPaymentMethods",
-        JSON.stringify(paymentMethods)
-    );
-
-    localStorage.setItem(
-        "householdSubjects",
-        JSON.stringify(subjects)
-    );
-
-
-    selectedCategory = "";
-    selectedPayment = "";
-    selectedSubject = "";
-
-    if (
-        typeof analysisSelectedCategory !==
-        "undefined"
-    ) {
-
-        analysisSelectedCategory = "";
-        analysisSelectedPayment = "";
-        analysisSelectedSubject = "";
-
-    }
-
-
-    calendarDate = new Date();
-
-    selectedDate = getTodayString();
-
-    historySearchKeyword = "";
-
-
-    refreshAllScreens();
 
 }
 
@@ -1404,7 +1461,6 @@ async function loadUserDataFromSupabase() {
 
 
     isLoadingUserData = true;
-
     setSyncStatus(
         "동기화 중..."
     );
@@ -1644,8 +1700,12 @@ async function pushLocalDataToSupabase() {
             transactions.map(
                 transaction => ({
 
+                    /* id는 문자열로 저장하여 Date.now() 충돌 방지 */
+
                     id:
-                        transaction.id,
+                        String(
+                            transaction.id
+                        ),
 
                     user_id:
                         currentUser.id,
@@ -1845,7 +1905,9 @@ function syncInsertTransaction(
         .insert({
 
             id:
-                transaction.id,
+                String(
+                    transaction.id
+                ),
 
             user_id:
                 currentUser.id,
@@ -1917,7 +1979,7 @@ function syncUpdateTransaction(
         )
         .eq(
             "id",
-            id
+            String(id)
         )
         .eq(
             "user_id",
@@ -1959,7 +2021,7 @@ function syncDeleteTransaction(id) {
         .delete()
         .eq(
             "id",
-            id
+            String(id)
         )
         .eq(
             "user_id",
@@ -2315,6 +2377,15 @@ function showScreen(screenName) {
     if (screenName === "historyExport") {
 
         initializeExportDates();
+
+    }
+
+
+    if (screenName === "analysis") {
+
+        initializeAnalysisDates();
+
+        renderAnalysis();
 
     }
 
@@ -3006,26 +3077,6 @@ function updateSettingsUI() {
             "subjectIncomeToggle"
         );
 
-    const analysisCategoryToggle =
-        document.getElementById(
-            "analysisCategoryToggle"
-        );
-
-    const analysisPaymentToggle =
-        document.getElementById(
-            "analysisPaymentToggle"
-        );
-
-    const analysisSubjectToggle =
-        document.getElementById(
-            "analysisSubjectToggle"
-        );
-
-    const monthlyChartToggle =
-        document.getElementById(
-            "monthlyChartToggle"
-        );
-
 
     if (memoExpenseToggle) {
 
@@ -3087,38 +3138,6 @@ function updateSettingsUI() {
 
         subjectIncomeToggle.checked =
             settings.subjectIncomeEnabled;
-
-    }
-
-
-    if (analysisCategoryToggle) {
-
-        analysisCategoryToggle.checked =
-            settings.analysisCategoryEnabled;
-
-    }
-
-
-    if (analysisPaymentToggle) {
-
-        analysisPaymentToggle.checked =
-            settings.analysisPaymentEnabled;
-
-    }
-
-
-    if (analysisSubjectToggle) {
-
-        analysisSubjectToggle.checked =
-            settings.analysisSubjectEnabled;
-
-    }
-
-
-    if (monthlyChartToggle) {
-
-        monthlyChartToggle.checked =
-            settings.monthlyChartEnabled;
 
     }
 
@@ -3442,51 +3461,6 @@ function updateAnalysisGroupVisibility() {
 }
 
 
-function toggleAnalysisCategory() {
-
-    settings.analysisCategoryEnabled =
-        document.getElementById(
-            "analysisCategoryToggle"
-        ).checked;
-
-
-    saveSettings();
-
-    updateAnalysisGroupVisibility();
-
-}
-
-
-function toggleAnalysisPayment() {
-
-    settings.analysisPaymentEnabled =
-        document.getElementById(
-            "analysisPaymentToggle"
-        ).checked;
-
-
-    saveSettings();
-
-    updateAnalysisGroupVisibility();
-
-}
-
-
-function toggleAnalysisSubject() {
-
-    settings.analysisSubjectEnabled =
-        document.getElementById(
-            "analysisSubjectToggle"
-        ).checked;
-
-
-    saveSettings();
-
-    updateAnalysisGroupVisibility();
-
-}
-
-
 /* 분석 항목(카테고리 / 결제수단 / 주체) 표시 & 순서 관리 */
 
 const analysisGroupMeta = {
@@ -3628,6 +3602,23 @@ function renderAnalysisGroupOrderList() {
 
                     updateAnalysisGroupVisibility();
 
+                    /* 분석 화면이 활성 상태일 때만 다시 렌더 */
+
+                    const analysisScreen =
+                        document.getElementById(
+                            "analysisScreen"
+                        );
+
+                    if (
+                        analysisScreen &&
+                        analysisScreen.classList
+                            .contains("active")
+                    ) {
+
+                        renderAnalysis();
+
+                    }
+
                 };
 
 
@@ -3752,9 +3743,17 @@ function initializeAnalysisGroupOrderDrag(
                 startY;
 
 
-            if (
-                Math.abs(diff) < 20
-            ) {
+            /* 한 번에 여러 칸도 이동 가능하도록 임계값 기준 계산 */
+
+            const itemHeight = 54;
+
+            const steps =
+                Math.trunc(
+                    diff / itemHeight
+                );
+
+
+            if (steps === 0) {
 
                 return;
 
@@ -3767,23 +3766,34 @@ function initializeAnalysisGroupOrderDrag(
                 );
 
 
-            const direction =
-                diff > 0
-                    ? 1
-                    : -1;
-
-
-            const newIndex =
+            let newIndex =
                 currentIndex +
-                direction;
+                steps;
+
+
+            if (newIndex < 0) {
+
+                newIndex = 0;
+
+            }
 
 
             if (
-                newIndex < 0 ||
                 newIndex >=
-                    settings
-                        .analysisGroupOrder
-                        .length
+                settings.analysisGroupOrder
+                    .length
+            ) {
+
+                newIndex =
+                    settings.analysisGroupOrder
+                        .length - 1;
+
+            }
+
+
+            if (
+                newIndex ===
+                currentIndex
             ) {
 
                 return;
@@ -3791,33 +3801,48 @@ function initializeAnalysisGroupOrderDrag(
             }
 
 
-            const temp =
-                settings.analysisGroupOrder[
-                    currentIndex
-                ];
+            const moved =
+                settings.analysisGroupOrder
+                    .splice(
+                        currentIndex,
+                        1
+                    )[0];
 
 
-            settings.analysisGroupOrder[
-                currentIndex
-            ] =
-                settings.analysisGroupOrder[
-                    newIndex
-                ];
-
-
-            settings.analysisGroupOrder[
-                newIndex
-            ] = temp;
+            settings.analysisGroupOrder
+                .splice(
+                    newIndex,
+                    0,
+                    moved
+                );
 
 
             saveSettings();
 
+
+            /* 시작 위치 갱신 */
+
+            startY =
+                currentY;
+
+
             renderAnalysisGroupOrderList();
 
-            renderAnalysis();
 
+            const analysisScreen =
+                document.getElementById(
+                    "analysisScreen"
+                );
 
-            dragging = false;
+            if (
+                analysisScreen &&
+                analysisScreen.classList
+                    .contains("active")
+            ) {
+
+                renderAnalysis();
+
+            }
 
         },
         {
@@ -3906,6 +3931,7 @@ function reorderAnalysisGroupsInDOM() {
 
         }
     );
+
 
 }
 
@@ -4017,7 +4043,14 @@ function saveTransaction() {
 
     const newTransaction = {
 
-        id: Date.now(),
+        /* Date.now() + 랜덤 접미사로 충돌 방지 */
+
+        id:
+            String(Date.now()) +
+            "-" +
+            Math.random()
+                .toString(36)
+                .slice(2, 8),
 
         date: date,
 
@@ -4610,14 +4643,6 @@ function isKoreanHoliday(dateString) {
     ];
 
 
-    /*
-     * 원래 공휴일 목록을 먼저 복사
-     *
-     * 계산 중 새로 만들어지는
-     * 대체공휴일을 다시 대상으로
-     * 삼지 않도록 함
-     */
-
     const originalHolidayEntries =
         Object.entries(
             holidays
@@ -4648,11 +4673,6 @@ function isKoreanHoliday(dateString) {
                 date.getDay();
 
 
-            /*
-             * 토요일 또는 일요일에
-             * 해당하는 경우
-             */
-
             if (
                 day !== 0 &&
                 day !== 6
@@ -4673,11 +4693,6 @@ function isKoreanHoliday(dateString) {
                 substitute.getDate() + 1
             );
 
-
-            /*
-             * 이미 공휴일인 날짜라면
-             * 다음 날짜로 이동
-             */
 
             while (
                 holidays[
@@ -4704,10 +4719,6 @@ function isKoreanHoliday(dateString) {
     );
 
 
-
-    /*
-     * 요청한 날짜가 공휴일인지 반환
-     */
 
     return (
         holidays[dateString] ||
@@ -4820,10 +4831,6 @@ function renderCalendar() {
         const dayOfWeek =
             date.getDay();
 
-
-        /*
-         * 일요일 / 공휴일 / 토요일
-         */
 
         const holidayName =
             isKoreanHoliday(
@@ -5219,16 +5226,14 @@ function getHistorySearchResults() {
         })
         .sort(
             (a, b) =>
-                b.date.localeCompare(
-                    a.date
+                String(b.date).localeCompare(
+                    String(a.date)
                 )
         );
 
 }
 
 
-
-/* 검색 결과 날짜 */
 
 function formatHistoryResultDate(
     dateString
@@ -5476,7 +5481,9 @@ function renderSelectedDate() {
             )
             .sort(
                 (a, b) =>
-                    b.id - a.id
+                    String(b.id).localeCompare(
+                        String(a.id)
+                    )
             );
 
 
@@ -5812,12 +5819,16 @@ function createTransactionCard(
     amount.innerText =
         transaction.type === "expense"
             ? "-" +
-              transaction.amount.toLocaleString(
+              Number(
+                  transaction.amount
+              ).toLocaleString(
                   "ko-KR"
               ) +
               "원"
             : "+" +
-              transaction.amount.toLocaleString(
+              Number(
+                  transaction.amount
+              ).toLocaleString(
                   "ko-KR"
               ) +
               "원";
@@ -5850,11 +5861,72 @@ function createTransactionCard(
 
 
 
-/* 거래 스와이프 */
+/* =========================
+   거래 스와이프
+   - document 이벤트 위임 방식으로 변경 (성능 개선)
+========================= */
+
+const activeSwipeCards = new WeakSet();
+
+
+/* document에 한 번만 등록되는 외부 탭 감지 리스너 */
+
+document.addEventListener(
+    "touchstart",
+    function(event) {
+
+        const target =
+            event.target;
+
+
+        /* 열려있는 카드 중 탭 대상이 아닌 카드만 닫기 */
+
+        document
+            .querySelectorAll(
+                ".transaction-content.swiped-open"
+            )
+            .forEach(
+                function(content) {
+
+                    if (
+                        !content.contains(
+                            target
+                        )
+                    ) {
+
+                        content.classList.remove(
+                            "swiped-open"
+                        );
+
+                        content.style.transition =
+                            "transform 0.2s ease";
+
+                        content.style.transform =
+                            "translateX(0)";
+
+                    }
+
+                }
+            );
+
+    },
+    {
+        passive: true
+    }
+);
+
 
 function initializeSwipe(card) {
 
     if (!card) return;
+
+    if (activeSwipeCards.has(card)) {
+
+        return;
+
+    }
+
+    activeSwipeCards.add(card);
 
 
     const content =
@@ -6028,12 +6100,20 @@ function initializeSwipe(card) {
                 content.style.transform =
                     `translateX(-${revealWidth}px)`;
 
+                content.classList.add(
+                    "swiped-open"
+                );
+
             }
 
             else {
 
                 content.style.transform =
                     "translateX(0)";
+
+                content.classList.remove(
+                    "swiped-open"
+                );
 
             }
 
@@ -6042,31 +6122,6 @@ function initializeSwipe(card) {
             startY = 0;
             currentX = 0;
 
-        }
-    );
-
-
-    document.addEventListener(
-        "touchstart",
-        function(event) {
-
-            if (
-                !card.contains(
-                    event.target
-                )
-            ) {
-
-                content.style.transition =
-                    "transform 0.2s ease";
-
-                content.style.transform =
-                    "translateX(0)";
-
-            }
-
-        },
-        {
-            passive: true
         }
     );
 
@@ -6081,7 +6136,8 @@ function editTransaction(id) {
     const transaction =
         transactions.find(
             item =>
-                item.id === id
+                String(item.id) ===
+                String(id)
         );
 
 
@@ -6162,7 +6218,8 @@ function deleteTransaction(id) {
     const transaction =
         transactions.find(
             item =>
-                item.id === id
+                String(item.id) ===
+                String(id)
         );
 
 
@@ -6184,7 +6241,8 @@ function deleteTransaction(id) {
     transactions =
         transactions.filter(
             item =>
-                item.id !== id
+                String(item.id) !==
+                String(id)
         );
 
 
@@ -6379,8 +6437,8 @@ function setExportRangeAll() {
     const sorted =
         [...transactions].sort(
             (a, b) =>
-                a.date.localeCompare(
-                    b.date
+                String(a.date).localeCompare(
+                    String(b.date)
                 )
         );
 
@@ -6483,10 +6541,12 @@ function exportTransactionsToExcel() {
             )
             .sort(
                 (a, b) =>
-                    a.date.localeCompare(
-                        b.date
+                    String(a.date).localeCompare(
+                        String(b.date)
                     ) ||
-                    a.id - b.id
+                    String(a.id).localeCompare(
+                        String(b.id)
+                    )
             );
 
 
@@ -6580,10 +6640,84 @@ function exportTransactionsToExcel() {
         `가계부_거래내역_${start}_${end}.xlsx`;
 
 
-    XLSX.writeFile(
-        workbook,
-        fileName
-    );
+    /* =========================
+       iOS Safari 대응: 수동 Blob 다운로드
+    ========================= */
+
+    try {
+
+        const workbookArray =
+            XLSX.write(
+                workbook,
+                {
+                    bookType: "xlsx",
+                    type: "array"
+                }
+            );
+
+
+        const blob =
+            new Blob(
+                [workbookArray],
+                {
+                    type:
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.href = url;
+
+        link.download = fileName;
+
+        link.style.display = "none";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        setTimeout(
+            function() {
+
+                document.body.removeChild(
+                    link
+                );
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+            },
+            1000
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        /* 폴백: 기존 방식 */
+
+        XLSX.writeFile(
+            workbook,
+            fileName
+        );
+
+    }
 
 }
 
@@ -6900,6 +7034,10 @@ function initializeSingleCategorySwipe(
 
 
 
+/* =========================
+   드래그 (연속 이동 가능)
+========================= */
+
 function initializeCategoryDrag(
     item,
     handle,
@@ -6947,13 +7085,18 @@ function initializeCategoryDrag(
 
 
             const diff =
-                currentY -
-                startY;
+                currentY - startY;
 
 
-            if (
-                Math.abs(diff) < 20
-            ) {
+            const itemHeight = 54;
+
+            const steps =
+                Math.trunc(
+                    diff / itemHeight
+                );
+
+
+            if (steps === 0) {
 
                 return;
 
@@ -6966,21 +7109,32 @@ function initializeCategoryDrag(
                 );
 
 
-            const direction =
-                diff > 0
-                    ? 1
-                    : -1;
+            let newIndex =
+                currentIndex + steps;
 
 
-            const newIndex =
-                currentIndex +
-                direction;
+            if (newIndex < 0) {
+
+                newIndex = 0;
+
+            }
 
 
             if (
-                newIndex < 0 ||
                 newIndex >=
-                    categories[type].length
+                categories[type].length
+            ) {
+
+                newIndex =
+                    categories[type].length -
+                    1;
+
+            }
+
+
+            if (
+                newIndex ===
+                currentIndex
             ) {
 
                 return;
@@ -6988,33 +7142,27 @@ function initializeCategoryDrag(
             }
 
 
-            const temp =
-                categories[type][
-                    currentIndex
-                ];
+            const moved =
+                categories[type].splice(
+                    currentIndex,
+                    1
+                )[0];
 
 
-            categories[type][
-                currentIndex
-            ] =
-                categories[type][
-                    newIndex
-                ];
-
-
-            categories[type][
-                newIndex
-            ] = temp;
+            categories[type].splice(
+                newIndex,
+                0,
+                moved
+            );
 
 
             saveCategories();
 
+            startY = currentY;
+
             renderCategoryManagement();
 
             renderCategoryButtons();
-
-
-            dragging = false;
 
         },
         {
@@ -7228,8 +7376,22 @@ function deleteCategory(
         categories[type][index];
 
 
+    const hasBudget =
+        settings.budgets &&
+        Object.prototype.hasOwnProperty.call(
+            settings.budgets,
+            name
+        );
+
+
+    const message =
+        hasBudget
+            ? `"${name}" 카테고리를 삭제할까요?\n\n· 기존 거래 내역은 삭제되지 않습니다.\n· 이 카테고리에 설정한 예산도 함께 삭제됩니다.`
+            : `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`;
+
+
     appConfirm(
-        `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
+        message,
         {
             title: "카테고리 삭제",
             confirmText: "삭제",
@@ -7732,13 +7894,18 @@ function initializePaymentDrag(
 
 
             const diff =
-                currentY -
-                startY;
+                currentY - startY;
 
 
-            if (
-                Math.abs(diff) < 20
-            ) {
+            const itemHeight = 54;
+
+            const steps =
+                Math.trunc(
+                    diff / itemHeight
+                );
+
+
+            if (steps === 0) {
 
                 return;
 
@@ -7751,21 +7918,32 @@ function initializePaymentDrag(
                 );
 
 
-            const direction =
-                diff > 0
-                    ? 1
-                    : -1;
+            let newIndex =
+                currentIndex + steps;
 
 
-            const newIndex =
-                currentIndex +
-                direction;
+            if (newIndex < 0) {
+
+                newIndex = 0;
+
+            }
 
 
             if (
-                newIndex < 0 ||
                 newIndex >=
-                    paymentMethods.length
+                paymentMethods.length
+            ) {
+
+                newIndex =
+                    paymentMethods.length -
+                    1;
+
+            }
+
+
+            if (
+                newIndex ===
+                currentIndex
             ) {
 
                 return;
@@ -7773,33 +7951,27 @@ function initializePaymentDrag(
             }
 
 
-            const temp =
-                paymentMethods[
-                    currentIndex
-                ];
+            const moved =
+                paymentMethods.splice(
+                    currentIndex,
+                    1
+                )[0];
 
 
-            paymentMethods[
-                currentIndex
-            ] =
-                paymentMethods[
-                    newIndex
-                ];
-
-
-            paymentMethods[
-                newIndex
-            ] = temp;
+            paymentMethods.splice(
+                newIndex,
+                0,
+                moved
+            );
 
 
             savePaymentMethods();
 
+            startY = currentY;
+
             renderPaymentManagement();
 
             renderPaymentButtons();
-
-
-            dragging = false;
 
         },
         {
@@ -8256,13 +8428,18 @@ function initializeSubjectDrag(
 
 
             const diff =
-                currentY -
-                startY;
+                currentY - startY;
 
 
-            if (
-                Math.abs(diff) < 20
-            ) {
+            const itemHeight = 54;
+
+            const steps =
+                Math.trunc(
+                    diff / itemHeight
+                );
+
+
+            if (steps === 0) {
 
                 return;
 
@@ -8275,21 +8452,31 @@ function initializeSubjectDrag(
                 );
 
 
-            const direction =
-                diff > 0
-                    ? 1
-                    : -1;
+            let newIndex =
+                currentIndex + steps;
 
 
-            const newIndex =
-                currentIndex +
-                direction;
+            if (newIndex < 0) {
+
+                newIndex = 0;
+
+            }
 
 
             if (
-                newIndex < 0 ||
                 newIndex >=
-                    subjects.length
+                subjects.length
+            ) {
+
+                newIndex =
+                    subjects.length - 1;
+
+            }
+
+
+            if (
+                newIndex ===
+                currentIndex
             ) {
 
                 return;
@@ -8297,33 +8484,27 @@ function initializeSubjectDrag(
             }
 
 
-            const temp =
-                subjects[
-                    currentIndex
-                ];
+            const moved =
+                subjects.splice(
+                    currentIndex,
+                    1
+                )[0];
 
 
-            subjects[
-                currentIndex
-            ] =
-                subjects[
-                    newIndex
-                ];
-
-
-            subjects[
-                newIndex
-            ] = temp;
+            subjects.splice(
+                newIndex,
+                0,
+                moved
+            );
 
 
             saveSubjects();
 
+            startY = currentY;
+
             renderSubjectManagement();
 
             renderSubjectButtons();
-
-
-            dragging = false;
 
         },
         {
@@ -8551,7 +8732,9 @@ function deleteSubject(index) {
 
 
 
-/* 최초 실행 */
+/* =========================
+   최초 실행
+========================= */
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -8600,10 +8783,70 @@ document.addEventListener(
         }
 
 
+        /* 1. 인증 리스너 등록 */
+
+        registerAuthListener();
+
+
+        /* 2. 기존 세션 확인 및 데이터 로드 */
+
         checkExistingSession();
 
     }
 );
+
+
+
+/* =========================================================
+   앱이 다시 활성화될 때 세션 재확인
+   (백그라운드에서 오래 있다가 돌아올 때 세션 유지)
+========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    function() {
+
+        if (
+            document.visibilityState ===
+            "visible"
+        ) {
+
+            /* 앱이 다시 보일 때 세션 재확인 (너무 자주는 X) */
+
+            if (
+                supabaseClient &&
+                !currentUser
+            ) {
+
+                checkExistingSession();
+
+            }
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "online",
+    function() {
+
+        /* 네트워크가 복구되면 세션 재확인 */
+
+        if (
+            supabaseClient &&
+            !currentUser
+        ) {
+
+            checkExistingSession();
+
+        }
+
+    }
+);
+
+
 
 /* =========================================================
    분석
@@ -8679,13 +8922,7 @@ function getAnalysisDays(startDate, endDate) {
 }
 
 
-/* 월평균
-   산식: 총액 ÷ 조회기간에 포함된 개월 수
-   예:
-   1/1 ~ 9/16 = 9개월
-   9/1 ~ 9/16 = 1개월
-   9/16 ~ 9/16 = 1개월
-*/
+/* 월평균 */
 
 function getAnalysisMonthlyAverage(
     amount,
@@ -8808,7 +9045,7 @@ function setAnalysisType(type) {
 }
 
 
-/* 날짜 표시 (2026년 1월 1일 형식) */
+/* 날짜 표시 */
 
 function formatAnalysisDateDisplay(
     dateString
@@ -9121,7 +9358,7 @@ function getAnalysisSubjectData(
 }
 
 
-/* 카테고리 / 결제수단 / 주체 비율 그래프 (그룹 제목 바로 아래, 한 줄) */
+/* 카테고리 / 결제수단 / 주체 비율 그래프 */
 
 const analysisBarColors = [
     "#222222",
@@ -9138,8 +9375,6 @@ const analysisBarColors = [
     "#cfcfcf"
 ];
 
-
-/* 항목을 금액이 큰 순으로 정렬 */
 
 function sortAnalysisEntriesByAmount(
     dataObject
@@ -9435,7 +9670,7 @@ function createAnalysisCategoryItem(
         "analysis-item-inner";
 
 
-    /* 앞면: 이름 · 금액 · 월평균 */
+    /* 앞면 */
 
     const front =
         document.createElement(
@@ -9501,7 +9736,7 @@ function createAnalysisCategoryItem(
     );
 
 
-    /* 뒷면: 예산 · 월평균 (초과 시 옅은 빨간색) */
+    /* 뒷면 */
 
     const back =
         document.createElement(
@@ -9539,7 +9774,7 @@ function createAnalysisCategoryItem(
 
     budgetElement.textContent =
         budget > 0
-            ? 
+            ?
               formatAnalysisAmount(
                   budget
               ) +
@@ -9666,7 +9901,7 @@ function renderAnalysisSummary(
 }
 
 
-/* 전체금액 / 월평균 (지출·수입 아래) */
+/* 전체금액 / 월평균 */
 
 function renderAnalysisOverallSummary(
     total,
@@ -9814,8 +10049,8 @@ function renderAnalysisDetails(
     filtered
         .sort(
             (a, b) =>
-                a.date.localeCompare(
-                    b.date
+                String(a.date).localeCompare(
+                    String(b.date)
                 )
         )
         .forEach(
@@ -10132,8 +10367,6 @@ function selectAnalysisSubject(
 
 /* =========================================================
    월별 세로 막대그래프
-   (기간 내 각 월의 합계를,
-    카테고리 비율로 색을 나눠 쌓아 표시)
 ========================================================= */
 
 const monthlyChartColors = [
@@ -10151,8 +10384,6 @@ const monthlyChartColors = [
     "#c9c9c9"
 ];
 
-
-/* 기간에 포함된 월(YYYY-MM) 목록 */
 
 function getAnalysisMonthKeys(
     startDate,
@@ -10261,8 +10492,6 @@ function renderAnalysisMonthlyChart(
         );
 
 
-    /* 월별 · 카테고리별 집계 */
-
     const monthData = {};
 
     monthKeys.forEach(
@@ -10315,8 +10544,6 @@ function renderAnalysisMonthlyChart(
         }
     );
 
-
-    /* 기간 전체 기준 카테고리 비중 순서 및 색상 매핑 */
 
     const categoryTotals = {};
 
@@ -10562,8 +10789,6 @@ function renderAnalysisMonthlyChart(
         }
     );
 
-
-    /* 범례 */
 
     sortedCategoryNames.forEach(
         name => {
@@ -10985,57 +11210,13 @@ document.addEventListener(
 
         renderAnalysis();
 
-
-        const analysisScreen =
-            document.getElementById(
-                "analysisScreen"
-            );
-
-
-        if (
-            analysisScreen
-        ) {
-
-            const observer =
-                new MutationObserver(
-                    function() {
-
-                        if (
-                            analysisScreen.classList.contains(
-                                "active"
-                            )
-                        ) {
-
-                            initializeAnalysisDates();
-
-                            renderAnalysis();
-
-                        }
-
-                    }
-                );
-
-
-            observer.observe(
-                analysisScreen,
-                {
-                    attributes: true,
-                    attributeFilter: [
-                        "class"
-                    ]
-                }
-            );
-
-        }
-
     }
 );
 
 
+
 /* =========================================================
    키보드 관련 스크롤 보정
-   - 키보드가 열릴 때: 입력창이 키보드에 가려지지 않도록 스크롤
-   - 키보드가 닫힐 때: 화면이 위로 밀린 채 고정되지 않도록 원위치
 ========================================================= */
 
 function resetPageScrollPosition() {
@@ -11051,8 +11232,6 @@ function resetPageScrollPosition() {
 
 }
 
-
-/* 포커스된 입력창을 감싸는, 실제로 스크롤 가능한 조상 요소 찾기 */
 
 function findScrollableAncestor(
     element
@@ -11095,8 +11274,6 @@ function findScrollableAncestor(
 
 }
 
-
-/* 입력창이 키보드에 가려지지 않도록 필요한 만큼만 스크롤 */
 
 function scrollFocusedInputIntoView(
     target
@@ -11188,8 +11365,6 @@ document.addEventListener(
         }
 
 
-        /* 키보드가 올라오는 애니메이션 시간을 기다린 뒤 위치 보정 */
-
         setTimeout(
             function() {
 
@@ -11260,9 +11435,6 @@ if (window.visualViewport) {
 
             if (isTyping) {
 
-                /* 키보드가 열리는 중: 입력창이 보이도록만 스크롤,
-                   페이지를 강제로 원위치시키지 않음 */
-
                 setTimeout(
                     function() {
 
@@ -11277,8 +11449,6 @@ if (window.visualViewport) {
             }
 
             else {
-
-                /* 입력 중이 아닐 때(키보드가 닫힐 때 등)만 원위치 */
 
                 setTimeout(
                     resetPageScrollPosition,
@@ -11304,4 +11474,3 @@ window.addEventListener(
 
     }
 );
-

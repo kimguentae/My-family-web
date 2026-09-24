@@ -1680,3 +1680,8 @@ input {
 .sync-status.error .sync-status-dot {
     background: #df5b5b;
 }
+
+/* 스와이프로 열린 거래 카드 */
+.transaction-content.swiped-open {
+    transform: translateX(-130px);
+}
