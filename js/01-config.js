@@ -24,7 +24,7 @@ function getTodayString() {
 
     return `${year}-${month}-${day}`;
 
-}node --check js/01-config.js
+}
 
 const SUPABASE_URL =
     "https://lyassaicxiixzyqlewhx.supabase.co";
