@@ -9,14 +9,24 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     >
 
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
-
     <title>가계부</title>
 
-    <link rel="stylesheet" href="style.css">
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.json">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="가계부">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="apple-touch-icon" href="./icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/screens.css">
+    <link rel="stylesheet" href="./css/modal.css">
+    <link rel="stylesheet" href="./css/offline.css">
 </head>
 
 <body>
@@ -317,8 +327,6 @@
     ></div>
 
 
-    <!-- 월별 그래프 -->
-
     <div
         id="analysisMonthlyChartGroup"
         class="analysis-group"
@@ -340,8 +348,6 @@
 
     </div>
 
-
-    <!-- 카테고리 -->
 
     <div id="analysisCategoryGroup" class="analysis-group">
 
@@ -372,8 +378,6 @@
     </div>
 
 
-    <!-- 결제수단 -->
-
     <div id="analysisPaymentGroup" class="analysis-group">
 
         <div class="analysis-group-title">
@@ -402,8 +406,6 @@
 
     </div>
 
-
-    <!-- 주체 -->
 
     <div id="analysisSubjectGroup" class="analysis-group">
 
@@ -1192,7 +1194,7 @@
     </nav>
 
 
-    <!-- 공용 모달 (alert / confirm / prompt 대체) -->
+    <!-- 공용 모달 -->
 
     <div
         id="appModalOverlay"
@@ -1258,9 +1260,36 @@
 </div>
 
 
+<!-- 외부 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+
+<!-- 앱 스크립트 (순서 중요!) -->
+<script src="./js/01-config.js"></script>
+<script src="./js/02-utils.js"></script>
+<script src="./js/03-auth.js"></script>
+<script src="./js/04-sync.js"></script>
+<script src="./js/05-offline.js"></script>
+<script src="./js/06-navigation.js"></script>
+<script src="./js/07-features-1.js"></script>
+<script src="./js/07-features-2.js"></script>
+<script src="./js/08-main.js"></script>
+
+<!-- 서비스 워커 등록 -->
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+        navigator.serviceWorker
+            .register("./sw.js")
+            .then(function(registration) {
+                console.log("SW 등록 완료:", registration.scope);
+            })
+            .catch(function(error) {
+                console.error("SW 등록 실패:", error);
+            });
+    });
+}
+</script>
 
 </body>
 </html>
