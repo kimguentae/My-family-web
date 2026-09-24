@@ -6,7 +6,7 @@
    공용 모달
 ========================= */
 
-let modalResolver = null;
+var modalResolver = null;
 
 
 function getModalElements() {
@@ -757,8 +757,6 @@ window.addEventListener(
    드래그 유틸 (카테고리/결제수단/주체/분석 공용)
 ========================= */
 
-/* 공용: 아이템 재정렬 */
-
 function moveArrayItem(array, from, to) {
 
     if (
@@ -784,21 +782,11 @@ function moveArrayItem(array, from, to) {
 }
 
 
-/* 공용: 드래그 초기화 */
-
 function initializeDragSort(
     item,
     handle,
     options
 ) {
-
-    /* options:
-       - getArray: () => 배열 반환
-       - getItemHeight: () => 54
-       - onSave: () => 저장 함수
-       - onRender: () => 다시 그리기
-       - onAfterMove: () => 추가 콜백(선택)
-    */
 
     let startY = 0;
     let dragging = false;

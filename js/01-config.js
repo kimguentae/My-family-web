@@ -9,7 +9,7 @@ const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5YXNzYWljeGlpeHp5cWxld2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NjEwMDMsImV4cCI6MjEwNTAzNzAwM30.pHAYhGkx-NE9-_Ep44uKxADRyR5qR--UsYlIuwFKalw";
 
 
-const supabaseClient =
+var supabaseClient =
     typeof window !== "undefined" &&
     window.supabase &&
     typeof window.supabase.createClient ===
@@ -36,27 +36,27 @@ const supabaseClient =
    전역 상태
 ========================= */
 
-let currentUser = null;
+var currentUser = null;
 
-let syncUserDataTimer = null;
+var syncUserDataTimer = null;
 
-let isLoadingUserData = false;
+var isLoadingUserData = false;
 
-let authListenerRegistered = false;
+var authListenerRegistered = false;
 
-let isSigningOut = false;
+var isSigningOut = false;
 
 
 /* =========================
    로컬 데이터 로드
 ========================= */
 
-let transactions = JSON.parse(
+var transactions = JSON.parse(
     localStorage.getItem("householdTransactions") || "[]"
 );
 
 
-let settings = JSON.parse(
+var settings = JSON.parse(
     localStorage.getItem("householdSettings") || "null"
 );
 
@@ -223,7 +223,7 @@ if (
 
 
 
-let categories = JSON.parse(
+var categories = JSON.parse(
     localStorage.getItem("householdCategories") || "null"
 );
 
@@ -266,7 +266,7 @@ if (!Array.isArray(categories.income)) {
 
 
 
-let paymentMethods = JSON.parse(
+var paymentMethods = JSON.parse(
     localStorage.getItem("householdPaymentMethods") || "null"
 );
 
@@ -284,7 +284,7 @@ if (!Array.isArray(paymentMethods)) {
 
 
 
-let subjects = JSON.parse(
+var subjects = JSON.parse(
     localStorage.getItem("householdSubjects") || "null"
 );
 
@@ -304,29 +304,29 @@ if (!Array.isArray(subjects)) {
 
 /* UI 상태 */
 
-let currentType = "expense";
+var currentType = "expense";
 
-let selectedCategory = "";
-let selectedPayment = "";
-let selectedSubject = "";
+var selectedCategory = "";
+var selectedPayment = "";
+var selectedSubject = "";
 
-let selectedDate = getTodayString();
+var selectedDate = getTodayString();
 
-let calendarDate = new Date();
+var calendarDate = new Date();
 
-let historySearchKeyword = "";
+var historySearchKeyword = "";
 
-let currentScreen = "input";
-let previousScreen = "input";
+var currentScreen = "input";
+var previousScreen = "input";
 
 
 /* 분석 상태 */
 
-let analysisType = "expense";
+var analysisType = "expense";
 
-let analysisSelectedCategory = "";
-let analysisSelectedPayment = "";
-let analysisSelectedSubject = "";
+var analysisSelectedCategory = "";
+var analysisSelectedPayment = "";
+var analysisSelectedSubject = "";
 
 
 

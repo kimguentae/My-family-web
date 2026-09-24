@@ -1493,7 +1493,7 @@ function createTransactionCard(
    거래 스와이프
 ========================= */
 
-const activeSwipeCards = new WeakSet();
+var activeSwipeCards = new WeakSet();
 
 
 document.addEventListener(

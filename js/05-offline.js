@@ -2,9 +2,9 @@
    05. 오프라인 감지 및 자동 동기화
 ========================= */
 
-let offlineBanner = null;
+var offlineBanner = null;
 
-let pendingSyncWhenOnline = false;
+var pendingSyncWhenOnline = false;
 
 
 function showOfflineBanner() {
