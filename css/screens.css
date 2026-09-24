@@ -870,23 +870,33 @@
     color: #3d78d8;
 }
 
-/* 월별 그래프 */
+/* =========================
+   월별 그래프
+========================= */
 
 .monthly-chart {
     display: flex;
     align-items: flex-end;
-    gap: 10px;
-    overflow-x: auto;
+    justify-content: space-between;
+    gap: 4px;
     padding: 10px 2px 4px;
+    width: 100%;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.monthly-chart::-webkit-scrollbar {
+    display: none;
 }
 
 .monthly-chart-col {
-    flex: 0 0 auto;
-    width: 36px;
+    flex: 1 1 0;
+    min-width: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
 .monthly-chart-amount {
@@ -894,19 +904,27 @@
     color: #999;
     margin-bottom: 4px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+    max-width: 100%;
+    transform: scale(0.9);
+    transform-origin: center bottom;
 }
 
 .monthly-chart-bar-wrap {
     display: flex;
     align-items: flex-end;
+    justify-content: center;
     height: 180px;
+    width: 100%;
 }
 
 .monthly-chart-bar {
-    width: 26px;
+    width: 100%;
+    max-width: 26px;
     display: flex;
     flex-direction: column-reverse;
-    border-radius: 5px 5px 0 0;
+    border-radius: 4px 4px 0 0;
     overflow: hidden;
     background: #f2f2f2;
 }
@@ -922,19 +940,21 @@
 .monthly-chart-segment-label {
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    font-size: 9px;
+    font-size: 8px;
     color: white;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
 }
 
 .monthly-chart-month {
     margin-top: 6px;
-    font-size: 11px;
+    font-size: 10px;
     color: #555;
     font-weight: 600;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
 }
 
 .monthly-chart-empty {
@@ -947,7 +967,7 @@
 .monthly-chart-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 14px;
+    gap: 8px 12px;
     margin-top: 14px;
     padding-top: 10px;
     border-top: 1px solid #eee;
@@ -968,6 +988,31 @@
     display: inline-block;
     flex: 0 0 auto;
 }
+
+/* 12개월 초과 시 가로 스크롤 강제 (최소 너비) */
+
+.monthly-chart.many-months .monthly-chart-col {
+    flex: 0 0 auto;
+    width: 34px;
+    min-width: 34px;
+}
+
+/* 작은 화면 폰트 조정 */
+
+@media (max-width: 480px) {
+    .monthly-chart-amount {
+        font-size: 8px;
+    }
+
+    .monthly-chart-month {
+        font-size: 9px;
+    }
+
+    .monthly-chart-segment-label {
+        font-size: 7px;
+    }
+}
+
 
 /* =========================
    설정 화면

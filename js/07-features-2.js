@@ -1340,6 +1340,16 @@ function renderAnalysisMonthlyChart(
         getAnalysisMonthKeys(startDate, endDate);
 
 
+    /* 12개월 초과면 스크롤 모드 */
+
+    if (monthKeys.length > 12) {
+        container.classList.add("many-months");
+    }
+    else {
+        container.classList.remove("many-months");
+    }
+
+
     const monthData = {};
 
     monthKeys.forEach(key => {
@@ -1456,7 +1466,9 @@ function renderAnalysisMonthlyChart(
                 `${name} · ${Math.round(ratio * 100)}%`;
 
 
-            if (ratio >= 0.1) {
+            /* 10% 이상일 때만 라벨 표시 */
+
+            if (ratio >= 0.15) {
 
                 const label = document.createElement("span");
                 label.className = "monthly-chart-segment-label";
