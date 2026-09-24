@@ -88,20 +88,22 @@ function ensureDatepickerDOM() {
 
             <div id="dpBody"></div>
 
-            <div class="datepicker-actions">
+            <div class="datepicker-actions" id="dpActions">
                 <button
                     type="button"
-                    class="datepicker-action-btn datepicker-action-cancel"
-                    onclick="datepickerCancel()"
+                    class="datepicker-action-btn datepicker-action-year"
+                    id="dpThisYearBtn"
+                    onclick="datepickerSelectThisYear()"
                 >
-                    취소
+                    이번년도
                 </button>
                 <button
                     type="button"
-                    class="datepicker-action-btn datepicker-action-today"
-                    onclick="datepickerSelectToday()"
+                    class="datepicker-action-btn datepicker-action-month"
+                    id="dpThisMonthBtn"
+                    onclick="datepickerSelectThisMonth()"
                 >
-                    오늘
+                    이번 달
                 </button>
                 <button
                     type="button"
@@ -226,7 +228,12 @@ function showDatepickerOverlay() {
     if (!overlay || !sheet) return;
 
 
-    /* 현재 화면에 맞춰 위치 조정 */
+    /* 오버레이 활성화 */
+
+    overlay.classList.add("active");
+
+
+    /* 텍스트 위치에 맞게 시트 배치 */
 
     let anchorRect = null;
 
@@ -266,62 +273,79 @@ function showDatepickerOverlay() {
 
     /* 스타일 초기화 */
 
-    sheet.style.marginTop = "";
-    sheet.style.top = "";
-    sheet.style.position = "";
+    sheet.style.position = "fixed";
     sheet.style.transform = "";
+    sheet.style.marginTop = "";
 
 
-    if (anchorRect) {
+    if (!anchorRect) {
 
-        /* 텍스트 하단 + 8px 아래에서 시작 */
+        /* 앵커 없으면 중앙 */
 
-        const top = anchorRect.bottom + 8;
+        sheet.style.top = "50%";
+        sheet.style.left = "50%";
+        sheet.style.transform = "translate(-50%, -50%)";
 
-        /* 시트가 화면 아래로 넘치지 않게 조정 */
-
-        const viewportHeight = window.innerHeight;
-
-        const sheetHeight = Math.min(
-            500,
-            sheet.scrollHeight || 500
-        );
-
-        let finalTop = top;
-
-        if (top + sheetHeight > viewportHeight - 20) {
-
-            /* 아래 공간 부족 → 위쪽에 표시 */
-
-            const aboveTop =
-                anchorRect.top - sheetHeight - 8;
-
-            if (aboveTop > 20) {
-                finalTop = aboveTop;
-            }
-            else {
-                /* 위아래 다 부족 → 화면 중앙 */
-
-                finalTop = Math.max(
-                    20,
-                    (viewportHeight - sheetHeight) / 2
-                );
-
-            }
-
-        }
-
-
-        /* position: fixed로 정확히 배치 */
-
-        sheet.style.position = "fixed";
-        sheet.style.top = finalTop + "px";
-        sheet.style.marginTop = "0";
+        return;
 
     }
 
 
-    overlay.classList.add("active");
+    /* 시트 실제 높이 측정 (일단 표시 후) */
+
+    const sheetWidth = Math.min(380, window.innerWidth - 32);
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+
+    /* 가로: 앵커 중앙에 맞춤 */
+
+    let left = anchorRect.left + anchorRect.width / 2 - sheetWidth / 2;
+
+    if (left < 16) left = 16;
+    if (left + sheetWidth > viewportWidth - 16) {
+        left = viewportWidth - sheetWidth - 16;
+    }
+
+
+    /* 세로: 일단 앵커 아래로 */
+
+    let top = anchorRect.bottom + 8;
+
+
+    /* 표시 후 실제 높이 재기 (임시 위치로) */
+
+    sheet.style.left = left + "px";
+    sheet.style.top = top + "px";
+
+
+    requestAnimationFrame(function() {
+
+        const sheetHeight = sheet.offsetHeight;
+
+        /* 아래로 넘치면 위로 */
+
+        if (top + sheetHeight > viewportHeight - 20) {
+
+            const aboveTop = anchorRect.top - sheetHeight - 8;
+
+            if (aboveTop > 20) {
+                sheet.style.top = aboveTop + "px";
+            }
+            else {
+                /* 위아래 다 부족 → 화면 중앙 */
+
+                sheet.style.top =
+                    Math.max(
+                        20,
+                        (viewportHeight - sheetHeight) / 2
+                    ) + "px";
+            }
+
+        }
+
+    });
 
 }
 
@@ -469,22 +493,28 @@ function renderDatepicker() {
     const body =
         document.getElementById("dpBody");
 
+    const actions =
+        document.getElementById("dpActions");
+
     const confirmBtn =
         document.getElementById("dpConfirmBtn");
+
+    const thisYearBtn =
+        document.getElementById("dpThisYearBtn");
+
+    const thisMonthBtn =
+        document.getElementById("dpThisMonthBtn");
 
 
     if (!body) return;
 
 
-    /* 연도 버튼 */
+    /* 연도/월 버튼 라벨 */
 
     if (yearBtn) {
         yearBtn.textContent =
             datepickerState.viewYear + "년";
     }
-
-
-    /* 월 버튼 */
 
     if (monthBtn) {
         monthBtn.textContent =
@@ -492,18 +522,38 @@ function renderDatepicker() {
     }
 
 
-    /* 확인 버튼 활성화 여부 */
+    /* 모드별 액션 버튼 표시 */
+
+    if (actions) {
+
+        if (datepickerState.mode === "single") {
+
+            /* 입력탭: 액션 버튼 전부 숨김 (날짜 탭하면 바로 확정) */
+
+            actions.classList.add("hidden");
+
+        }
+        else {
+
+            /* 분석탭: 이번년도, 이번달, 확인만 */
+
+            actions.classList.remove("hidden");
+
+        }
+
+    }
+
+
+    /* 확인 버튼 활성화 (분석탭만) */
 
     if (confirmBtn) {
 
-        if (datepickerState.mode === "single") {
-            confirmBtn.disabled =
-                !datepickerState.selectedDate;
-        }
-        else {
+        if (datepickerState.mode === "range") {
+
             confirmBtn.disabled =
                 !datepickerState.rangeStart ||
                 !datepickerState.rangeEnd;
+
         }
 
     }
@@ -745,49 +795,51 @@ function datepickerSelectDay(dateStr) {
 
         datepickerState.selectedDate = dateStr;
 
-        /* 자동으로 다음 달로 이동하지 않음 */
-        renderDatepicker();
+
+        /* 바로 확정 + 닫기 */
+
+        if (typeof datepickerState.onConfirm === "function") {
+
+            datepickerState.onConfirm(dateStr);
+
+        }
+
+        closeDatepickerOverlay();
+
+        return;
 
     }
 
+
+    /* 분석탭 (range 모드) */
+
+    if (datepickerState.editingField === "start") {
+
+        datepickerState.rangeStart = dateStr;
+
+        if (
+            datepickerState.rangeEnd &&
+            dateStr > datepickerState.rangeEnd
+        ) {
+            datepickerState.rangeEnd = "";
+        }
+
+    }
     else {
 
-        /* 범위 모드 */
+        datepickerState.rangeEnd = dateStr;
 
-        if (datepickerState.editingField === "start") {
-
-            datepickerState.rangeStart = dateStr;
-
-            /* 시작일이 종료일보다 늦으면 종료일 비움 */
-
-            if (
-                datepickerState.rangeEnd &&
-                dateStr > datepickerState.rangeEnd
-            ) {
-                datepickerState.rangeEnd = "";
-            }
-
+        if (
+            datepickerState.rangeStart &&
+            dateStr < datepickerState.rangeStart
+        ) {
+            datepickerState.rangeStart = "";
         }
-
-        else {
-
-            datepickerState.rangeEnd = dateStr;
-
-            /* 종료일이 시작일보다 이르면 시작일 비움 */
-
-            if (
-                datepickerState.rangeStart &&
-                dateStr < datepickerState.rangeStart
-            ) {
-                datepickerState.rangeStart = "";
-            }
-
-        }
-
-
-        renderDatepicker();
 
     }
+
+
+    renderDatepicker();
 
 }
 
@@ -849,6 +901,61 @@ function datepickerSelectToday() {
 
 }
 
+/* 이번년도: 1월 1일 ~ 오늘 */
+
+function datepickerSelectThisYear() {
+
+    const today = getTodayString();
+
+    const year = new Date().getFullYear();
+
+    const startOfYear = `${year}-01-01`;
+
+
+    datepickerState.rangeStart = startOfYear;
+
+    datepickerState.rangeEnd = today;
+
+
+    /* 표시 중인 달도 이번 달로 */
+
+    const now = new Date();
+
+    datepickerState.viewYear = now.getFullYear();
+
+    datepickerState.viewMonth = now.getMonth();
+
+
+    renderDatepicker();
+
+}
+
+
+/* 이번 달: 이번 달 1일 ~ 오늘 */
+
+function datepickerSelectThisMonth() {
+
+    const today = getTodayString();
+
+    const now = new Date();
+
+    const startOfMonth =
+        `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
+
+    datepickerState.rangeStart = startOfMonth;
+
+    datepickerState.rangeEnd = today;
+
+
+    datepickerState.viewYear = now.getFullYear();
+
+    datepickerState.viewMonth = now.getMonth();
+
+
+    renderDatepicker();
+
+}
 
 function datepickerConfirm() {
 

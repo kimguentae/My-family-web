@@ -1071,6 +1071,16 @@ function openMonthPicker() {
 
 }
 
+/* 오버레이 클릭 시 닫기 */
+
+function handleMonthPickerOverlayClick(event) {
+
+    if (event.target.id === "monthPicker") {
+        closeMonthPicker();
+    }
+
+}
+
 
 function closeMonthPicker() {
 

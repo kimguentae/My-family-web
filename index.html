@@ -233,38 +233,37 @@
 
             <!-- 월 선택 피커 (calendar-header 밖!) -->
 
-            <div
-                id="monthPicker"
-                class="month-picker"
+<div id="monthPicker" class="month-picker" onclick="handleMonthPickerOverlayClick(event)">
+    <div class="month-picker-inner" onclick="event.stopPropagation()">
+        <div class="month-picker-year-row">
+            <button
+                type="button"
+                class="month-picker-year-btn"
+                onclick="changeMonthPickerYear(-1)"
             >
-                <div class="month-picker-year-row">
-                    <button
-                        type="button"
-                        class="month-picker-year-btn"
-                        onclick="changeMonthPickerYear(-1)"
-                    >
-                        ‹
-                    </button>
+                ‹
+            </button>
 
-                    <div
-                        id="monthPickerYear"
-                        class="month-picker-year"
-                    ></div>
+            <div
+                id="monthPickerYear"
+                class="month-picker-year"
+            ></div>
 
-                    <button
-                        type="button"
-                        class="month-picker-year-btn"
-                        onclick="changeMonthPickerYear(1)"
-                    >
-                        ›
-                    </button>
-                </div>
+            <button
+                type="button"
+                class="month-picker-year-btn"
+                onclick="changeMonthPickerYear(1)"
+            >
+                ›
+            </button>
+        </div>
 
-                <div
-                    id="monthPickerMonths"
-                    class="month-picker-months"
-                ></div>
-            </div>
+        <div
+            id="monthPickerMonths"
+            class="month-picker-months"
+        ></div>
+    </div>
+</div>
 
 
             <div

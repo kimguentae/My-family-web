@@ -1,31 +1,30 @@
 /* =========================
    커스텀 날짜 선택기 (입력/분석 공용)
 ========================= */
-
-/* 오버레이: 배경 어둡게 X, 그냥 뒤 탭 감지만 */
+/* =========================
+   오버레이 (모달처럼 뜸, 달력 안 밀림)
+========================= */
 
 .datepicker-overlay {
     position: fixed;
     inset: 0;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.4);
     z-index: 2000;
     display: none;
     align-items: flex-start;
     justify-content: center;
     padding: 0 16px;
-    pointer-events: none;
 }
 
 .datepicker-overlay.active {
     display: flex;
-    pointer-events: auto;
 }
 
-/* 시트: 화면 아래가 아니라 텍스트 아래 팝업처럼 */
+/* 시트: 텍스트 위치에 맞게 JS로 배치 */
 
 .datepicker-sheet {
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     background: white;
     border-radius: 16px;
     padding: 16px;
@@ -33,7 +32,6 @@
     animation: datepickerFadeIn 0.18s ease;
     max-height: 80vh;
     overflow-y: auto;
-    pointer-events: auto;
 }
 
 @keyframes datepickerFadeIn {
@@ -45,6 +43,71 @@
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* 기존 slideUp 제거 */
+
+/* =========================
+   하단 액션 버튼 (분석탭 등 필요할 때만)
+========================= */
+
+.datepicker-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.datepicker-actions.hidden {
+    display: none;
+}
+
+.datepicker-action-btn {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.datepicker-action-btn:active {
+    transform: scale(0.98);
+}
+
+.datepicker-action-cancel {
+    background: #f3f3f3;
+    color: #666;
+}
+
+.datepicker-action-today {
+    background: #eef4fd;
+    color: #3d78d8;
+}
+
+.datepicker-action-year {
+    background: #eef4fd;
+    color: #3d78d8;
+}
+
+.datepicker-action-month {
+    background: #eef4fd;
+    color: #3d78d8;
+}
+
+.datepicker-action-confirm {
+    background: #222;
+    color: white;
+}
+
+.datepicker-action-confirm:disabled {
+    background: #cfcfcf;
+    color: white;
 }
 
 /* 헤더 */
