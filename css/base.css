@@ -437,8 +437,7 @@ input {
 }
 
 /* =========================
-   카드형 가로 리스트
-   (카테고리 / 결제수단 / 주체 관리)
+   카드형 그리드 (카테고리/결제수단/주체 관리)
 ========================= */
 
 .card-section-title {
@@ -449,26 +448,17 @@ input {
     padding: 0 2px;
 }
 
-.card-horizontal-list {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 4px 2px 12px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.card-horizontal-list::-webkit-scrollbar {
-    display: none;
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 2px 0 8px;
 }
 
 /* 관리 카드 */
 
 .manage-card {
-    flex: 0 0 auto;
-    width: 90px;
-    height: 90px;
+    aspect-ratio: 1 / 1;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 12px;
@@ -476,7 +466,7 @@ input {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    padding: 6px;
     position: relative;
     cursor: pointer;
     user-select: none;
@@ -486,7 +476,7 @@ input {
         transform 0.15s ease,
         box-shadow 0.15s ease,
         opacity 0.15s ease;
-    touch-action: pan-y;
+    touch-action: manipulation;
 }
 
 .manage-card:active {
@@ -497,16 +487,16 @@ input {
     opacity: 0.9;
     z-index: 100;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .manage-card-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #222;
     text-align: center;
     word-break: break-word;
-    line-height: 1.3;
+    line-height: 1.25;
     max-width: 100%;
     overflow: hidden;
     display: -webkit-box;
@@ -523,14 +513,14 @@ input {
 }
 
 .manage-card.add-card .manage-card-plus {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 300;
     line-height: 1;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .manage-card.add-card .manage-card-name {
-    font-size: 12px;
+    font-size: 11px;
     color: #999;
     font-weight: 500;
 }
@@ -546,7 +536,7 @@ input {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     z-index: 5;
 }
 
@@ -557,11 +547,11 @@ input {
 .card-actions-overlay button {
     border: none;
     background: transparent;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 8px;
-    width: 70px;
+    min-width: 58px;
     text-align: center;
 }
 
@@ -575,11 +565,19 @@ input {
     background: #fdeeee !important;
 }
 
-/* 반응형 */
+/* 작은 화면에서 카드 비율 조정 */
 
-@media (max-width: 480px) {
-    .manage-card {
-        width: 84px;
-        height: 84px;
+@media (max-width: 360px) {
+    .card-grid {
+        gap: 6px;
+    }
+
+    .manage-card-name {
+        font-size: 11px;
+    }
+
+    .card-actions-overlay button {
+        font-size: 11px;
+        min-width: 52px;
     }
 }

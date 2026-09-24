@@ -291,3 +291,196 @@ function toggleSettingsCollapse(bodyId, button) {
     }
 
 }
+/* =========================
+   탭 간 좌우 스와이프
+   입력 ↔ 내역 ↔ 분석 ↔ 설정
+========================= */
+
+const TAB_ORDER = [
+    "input",
+    "history",
+    "analysis",
+    "settings"
+];
+
+const TAB_SWIPE_THRESHOLD = 60;   /* 스와이프 인식 최소 거리(px) */
+const TAB_SWIPE_MAX_Y = 80;       /* 세로로 너무 많이 움직이면 무시 */
+
+let tabSwipeStartX = 0;
+let tabSwipeStartY = 0;
+let tabSwipeTracking = false;
+
+
+document.addEventListener(
+    "touchstart",
+    function(event) {
+
+        /* 1. 스와이프 대상 확인 */
+
+        /* 모달 열려 있으면 무시 */
+
+        const modal = document.getElementById("appModalOverlay");
+
+        if (
+            modal &&
+            modal.classList.contains("active")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 카드 드래그 중이면 무시 */
+
+        if (
+            event.target.closest &&
+            event.target.closest(".manage-card")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 가로 스크롤 영역이면 무시 */
+
+        if (
+            event.target.closest &&
+            event.target.closest(".card-horizontal-list")
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 차트/캘린더 등 특정 영역 무시 */
+
+        if (
+            event.target.closest &&
+            (
+                event.target.closest(".monthly-chart") ||
+                event.target.closest(".history-calendar-fixed")
+            )
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* 설정 하위 화면이면 무시 (설정 메인 탭에서만) */
+
+        if (
+            currentScreen !== "input" &&
+            currentScreen !== "history" &&
+            currentScreen !== "analysis" &&
+            currentScreen !== "settings"
+        ) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        /* input, textarea 위에서 시작하면 무시 */
+
+        const tag = (event.target.tagName || "").toLowerCase();
+
+        if (tag === "input" || tag === "textarea") {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        if (event.touches.length !== 1) {
+            tabSwipeTracking = false;
+            return;
+        }
+
+
+        const touch = event.touches[0];
+
+        tabSwipeStartX = touch.clientX;
+        tabSwipeStartY = touch.clientY;
+
+        tabSwipeTracking = true;
+
+    },
+    { passive: true }
+);
+
+
+
+document.addEventListener(
+    "touchend",
+    function(event) {
+
+        if (!tabSwipeTracking) return;
+
+        tabSwipeTracking = false;
+
+
+        if (event.changedTouches.length !== 1) return;
+
+
+        const touch = event.changedTouches[0];
+
+        const diffX = touch.clientX - tabSwipeStartX;
+        const diffY = touch.clientY - tabSwipeStartY;
+
+
+        /* 세로로 많이 움직였으면 무시 */
+
+        if (Math.abs(diffY) > TAB_SWIPE_MAX_Y) return;
+
+
+        /* 가로 스와이프 거리 부족하면 무시 */
+
+        if (Math.abs(diffX) < TAB_SWIPE_THRESHOLD) return;
+
+
+        /* 세로가 가로보다 크면 무시 */
+
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+
+        const currentIdx = TAB_ORDER.indexOf(currentScreen);
+
+        if (currentIdx === -1) return;
+
+
+        let targetIdx = currentIdx;
+
+
+        if (diffX < 0) {
+
+            /* 왼쪽으로 스와이프 → 다음 탭 */
+
+            targetIdx = currentIdx + 1;
+
+        }
+        else {
+
+            /* 오른쪽으로 스와이프 → 이전 탭 */
+
+            targetIdx = currentIdx - 1;
+
+        }
+
+
+        if (targetIdx < 0 || targetIdx >= TAB_ORDER.length) {
+            return;
+        }
+
+
+        showScreen(TAB_ORDER[targetIdx]);
+
+    },
+    { passive: true }
+);
+
+
+
+document.addEventListener(
+    "touchcancel",
+    function() {
+        tabSwipeTracking = false;
+    }
+);

@@ -2585,7 +2585,7 @@ function createManageCard(
 
 
 /* =========================
-   관리 카드 좌우 드래그 (순서 변경)
+   관리 카드 자유 드래그 (그리드 순서 변경)
 ========================= */
 
 function initializeManageCardDrag(
@@ -2595,6 +2595,7 @@ function initializeManageCardDrag(
 
     let startX = 0;
     let startY = 0;
+
     let currentX = 0;
     let currentY = 0;
 
@@ -2603,9 +2604,16 @@ function initializeManageCardDrag(
 
     let isLongPress = false;
 
-    const CARD_WIDTH = 100; /* 카드 90px + gap 10px */
+    /* 카드 실제 크기 (드래그 시작 시점에 계산) */
+
+    let CELL_W = 100;
+    let CELL_H = 100;
+
+    const COLUMNS = 4;
+
     const LONG_PRESS_MS = 500;
     const MOVE_THRESHOLD = 8;
+    const DRAG_START_THRESHOLD = 10;
 
 
     /* 시작 */
@@ -2624,6 +2632,16 @@ function initializeManageCardDrag(
 
             currentX = startX;
             currentY = startY;
+
+
+            /* 실제 카드 크기 + gap 측정 */
+
+            const rect = card.getBoundingClientRect();
+
+            const gap = 8;
+
+            CELL_W = rect.width + gap;
+            CELL_H = rect.height + gap;
 
 
             isLongPress = false;
@@ -2685,29 +2703,21 @@ function initializeManageCardDrag(
             }
 
 
-            /* 이미 오버레이가 떠 있으면 드래그 안 함 */
+            /* 오버레이 떠 있으면 드래그 안 함 */
 
             if (card.classList.contains("actions-visible")) return;
 
 
-            /* 세로 이동이 더 크면 스크롤 */
-
-            if (
-                !dragging &&
-                Math.abs(diffY) > Math.abs(diffX) &&
-                Math.abs(diffY) > 10
-            ) {
-
-                return;
-
-            }
-
+            /* 드래그 시작 판정 */
 
             if (!dragging) {
 
-                /* 가로로 충분히 움직였을 때 드래그 시작 */
-
-                if (Math.abs(diffX) < 10) return;
+                if (
+                    Math.abs(diffX) < DRAG_START_THRESHOLD &&
+                    Math.abs(diffY) < DRAG_START_THRESHOLD
+                ) {
+                    return;
+                }
 
                 dragging = true;
 
@@ -2719,50 +2729,50 @@ function initializeManageCardDrag(
             /* 카드 자체 이동 */
 
             card.style.transform =
-                `translateX(${diffX}px) scale(1.05)`;
+                `translate(${diffX}px, ${diffY}px) scale(1.08)`;
 
 
-            /* 좌우 자리 교환 판정 */
+            /* 이동 칸 계산 */
 
-            const steps = Math.round(diffX / CARD_WIDTH);
-
-
-            if (steps !== 0) {
-
-                const array = options.getArray();
-
-                const currentIdx = Number(card.dataset.index);
-
-                let newIdx = currentIdx + steps;
+            const stepX = Math.round(diffX / CELL_W);
+            const stepY = Math.round(diffY / CELL_H);
 
 
-                if (newIdx < 0) newIdx = 0;
-
-                if (newIdx >= array.length) {
-                    newIdx = array.length - 1;
-                }
+            if (stepX === 0 && stepY === 0) return;
 
 
-                if (newIdx !== currentIdx) {
+            const array = options.getArray();
 
-                    moveArrayItem(array, currentIdx, newIdx);
+            const currentIdx = Number(card.dataset.index);
 
-                    options.onSave();
+            let newIdx = currentIdx + stepX + stepY * COLUMNS;
 
-                    /* 시작 위치 조정 */
 
-                    startX += steps * CARD_WIDTH;
+            if (newIdx < 0) newIdx = 0;
 
-                    options.onRender();
+            if (newIdx >= array.length) {
+                newIdx = array.length - 1;
+            }
 
-                    if (options.onAfterMove) {
-                        options.onAfterMove();
-                    }
 
-                    return;
+            if (newIdx === currentIdx) return;
 
-                }
 
+            moveArrayItem(array, currentIdx, newIdx);
+
+            options.onSave();
+
+
+            /* 시작 위치 재조정 */
+
+            startX += stepX * CELL_W;
+            startY += stepY * CELL_H;
+
+
+            options.onRender();
+
+            if (options.onAfterMove) {
+                options.onAfterMove();
             }
 
         },
