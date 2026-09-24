@@ -412,6 +412,30 @@ document.addEventListener(
 
                 }
 
+                
+        /* 동기화 상태 아이콘 탭 → 계정 설정 */
+
+        const syncStatusElement =
+            document.getElementById("syncStatus");
+
+        if (syncStatusElement) {
+
+            syncStatusElement.style.cursor = "pointer";
+
+            syncStatusElement.addEventListener(
+                "click",
+                function(event) {
+
+                    event.stopPropagation();
+
+                    showScreen("accountSettings");
+
+                }
+            );
+
+        }
+
+
             }
         );
 
