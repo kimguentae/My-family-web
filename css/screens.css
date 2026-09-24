@@ -1127,3 +1127,121 @@
         padding-right: 2px;
     }
 }
+
+/* =========================
+   월 선택 피커
+========================= */
+
+.calendar-header-left #calendarTitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 4px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-header-left #calendarTitle:active {
+    background: #f0f0f0;
+}
+
+/* 피커 컨테이너 */
+
+.month-picker {
+    display: none;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 14px;
+    margin: 8px 0 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.month-picker.active {
+    display: block;
+    animation: monthPickerFadeIn 0.18s ease;
+}
+
+@keyframes monthPickerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 연도 선택 행 */
+
+.month-picker-year-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+
+.month-picker-year {
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.month-picker-year-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.month-picker-year-btn:active {
+    background: #f0f0f0;
+}
+
+/* 월 버튼 그리드 */
+
+.month-picker-months {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.month-picker-month-btn {
+    border: none;
+    background: #f7f7f7;
+    color: #444;
+    border-radius: 10px;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.month-picker-month-btn:active {
+    background: #eaeaea;
+    transform: scale(0.97);
+}
+
+.month-picker-month-btn.selected {
+    background: #222;
+    color: white;
+}
+
+.month-picker-month-btn.current {
+    color: #3d78d8;
+    font-weight: 700;
+}

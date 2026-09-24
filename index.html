@@ -195,25 +195,64 @@
 
             <div class="calendar-header">
 
-                <div class="calendar-header-left">
+               <div class="calendar-header-left">
 
-                    <button
-                        type="button"
-                        onclick="changeMonth(-1)"
-                    >
-                        ‹
-                    </button>
+    <button
+        type="button"
+        onclick="changeMonth(-1)"
+    >
+        ‹
+    </button>
 
-                    <div id="calendarTitle"></div>
+    <div
+        id="calendarTitle"
+        onclick="toggleMonthPicker()"
+    ></div>
 
-                    <button
-                        type="button"
-                        onclick="changeMonth(1)"
-                    >
-                        ›
-                    </button>
+    <button
+        type="button"
+        onclick="changeMonth(1)"
+    >
+        ›
+    </button>
 
-                </div>
+</div>
+
+
+<!-- 월 선택 피커 (숨김 상태로 시작) -->
+
+<div
+    id="monthPicker"
+    class="month-picker"
+>
+    <div class="month-picker-year-row">
+        <button
+            type="button"
+            class="month-picker-year-btn"
+            onclick="changeMonthPickerYear(-1)"
+        >
+            ‹
+        </button>
+
+        <div
+            id="monthPickerYear"
+            class="month-picker-year"
+        ></div>
+
+        <button
+            type="button"
+            class="month-picker-year-btn"
+            onclick="changeMonthPickerYear(1)"
+        >
+            ›
+        </button>
+    </div>
+
+    <div
+        id="monthPickerMonths"
+        class="month-picker-months"
+    ></div>
+</div>
 
                 <button
                     type="button"

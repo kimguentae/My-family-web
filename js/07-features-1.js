@@ -979,6 +979,197 @@ function changeMonth(delta) {
 
 }
 
+/* =========================
+   월 선택 피커
+========================= */
+
+let monthPickerYear =
+    new Date().getFullYear();
+
+let monthPickerOpen = false;
+
+
+/* 피커 열기/닫기 토글 */
+
+function toggleMonthPicker() {
+
+    const picker =
+        document.getElementById("monthPicker");
+
+    if (!picker) return;
+
+
+    if (monthPickerOpen) {
+
+        closeMonthPicker();
+
+    }
+
+    else {
+
+        openMonthPicker();
+
+    }
+
+}
+
+
+function openMonthPicker() {
+
+    const picker =
+        document.getElementById("monthPicker");
+
+    if (!picker) return;
+
+
+    /* 현재 보고 있는 달의 연도로 시작 */
+
+    monthPickerYear =
+        calendarDate.getFullYear();
+
+
+    renderMonthPicker();
+
+    picker.classList.add("active");
+
+    monthPickerOpen = true;
+
+}
+
+
+function closeMonthPicker() {
+
+    const picker =
+        document.getElementById("monthPicker");
+
+    if (!picker) return;
+
+
+    picker.classList.remove("active");
+
+    monthPickerOpen = false;
+
+}
+
+
+/* 피커의 연도 이동 */
+
+function changeMonthPickerYear(delta) {
+
+    monthPickerYear += delta;
+
+    renderMonthPicker();
+
+}
+
+
+/* 피커 렌더 */
+
+function renderMonthPicker() {
+
+    const yearLabel =
+        document.getElementById("monthPickerYear");
+
+    const monthsContainer =
+        document.getElementById("monthPickerMonths");
+
+
+    if (!yearLabel || !monthsContainer) return;
+
+
+    yearLabel.innerText =
+        monthPickerYear + "년";
+
+
+    monthsContainer.innerHTML = "";
+
+
+    const currentYear =
+        new Date().getFullYear();
+
+    const currentMonth =
+        new Date().getMonth();
+
+
+    const selectedYear =
+        calendarDate.getFullYear();
+
+    const selectedMonth =
+        calendarDate.getMonth();
+
+
+    for (let m = 0; m < 12; m++) {
+
+        const btn =
+            document.createElement("button");
+
+        btn.type = "button";
+
+        btn.className = "month-picker-month-btn";
+
+        btn.textContent = (m + 1) + "월";
+
+
+        /* 현재 선택된 달 */
+
+        if (
+            monthPickerYear === selectedYear &&
+            m === selectedMonth
+        ) {
+
+            btn.classList.add("selected");
+
+        }
+
+
+        /* 오늘 기준 이번 달 */
+
+        if (
+            monthPickerYear === currentYear &&
+            m === currentMonth
+        ) {
+
+            btn.classList.add("current");
+
+        }
+
+
+        btn.onclick =
+            (function(month) {
+
+                return function() {
+
+                    selectMonthFromPicker(
+                        monthPickerYear,
+                        month
+                    );
+
+                };
+
+            })(m);
+
+
+        monthsContainer.appendChild(btn);
+
+    }
+
+}
+
+
+/* 월 선택 → 그 달로 이동 + 피커 닫기 */
+
+function selectMonthFromPicker(year, month) {
+
+    calendarDate =
+        new Date(year, month, 1);
+
+
+    closeMonthPicker();
+
+    renderCalendar();
+
+}
+
 
 
 /* =========================
