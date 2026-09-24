@@ -352,6 +352,9 @@ input {
     margin-left: 8px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    z-index: 10;              /* ★ 추가 */
+    position: relative;       /* ★ 추가 (z-index 작동 조건) */
+    pointer-events: auto;     /* ★ 추가 */
 }
 
 .sync-status svg {
