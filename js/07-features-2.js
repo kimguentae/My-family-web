@@ -1777,7 +1777,7 @@ function renderBudgetSettings() {
 
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "budget-card";
+        button.className = "analysis-item";
 
         button.onclick = function() {
             editCategoryBudget(category);
@@ -1785,21 +1785,16 @@ function renderBudgetSettings() {
 
 
         const nameElement = document.createElement("span");
-        nameElement.className = "budget-card-name";
+        nameElement.className = "analysis-item-name";
         nameElement.textContent = category;
 
 
         const amountElement = document.createElement("span");
-        amountElement.className = "budget-card-amount";
-
-        if (budget > 0) {
-            amountElement.textContent =
-                formatAnalysisAmount(budget) + "원";
-        }
-        else {
-            amountElement.classList.add("empty");
-            amountElement.textContent = "미설정";
-        }
+        amountElement.className = "analysis-item-amount";
+        amountElement.textContent =
+            budget > 0
+                ? formatAnalysisAmount(budget) + "원"
+                : "미설정";
 
 
         button.appendChild(nameElement);
