@@ -25,7 +25,11 @@
     font-weight: 700;
     line-height: 1.35;
     text-align: center;
-    pointer-events: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    padding: 8px 0;
+    position: relative;
+    z-index: 5;
 }
 
 .input-date-picker {
@@ -558,7 +562,11 @@
     line-height: 1.35;
     text-align: center;
     white-space: nowrap;
-    pointer-events: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    padding: 8px 4px;
+    position: relative;
+    z-index: 5;
 }
 
 .analysis-date-picker {
