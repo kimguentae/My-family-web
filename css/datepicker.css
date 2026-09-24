@@ -23,7 +23,10 @@
 /* 시트: 텍스트 위치에 맞게 JS로 배치 */
 
 .datepicker-sheet {
-    width: 100%;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
     max-width: 380px;
     background: white;
     border-radius: 16px;
@@ -32,16 +35,17 @@
     animation: datepickerFadeIn 0.18s ease;
     max-height: 80vh;
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 @keyframes datepickerFadeIn {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.98);
+        transform: translateX(-50%) translateY(-8px) scale(0.98);
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateX(-50%) translateY(0) scale(1);
     }
 }
 

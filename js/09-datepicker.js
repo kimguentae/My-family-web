@@ -233,13 +233,11 @@ function showDatepickerOverlay() {
     overlay.classList.add("active");
 
 
-    /* 텍스트 위치에 맞게 시트 배치 */
+    /* 앵커 위치 계산 */
 
     let anchorRect = null;
 
     if (datepickerState.mode === "single") {
-
-        /* 입력탭: inputDateText 아래 */
 
         const inputDateText =
             document.getElementById("inputDateText");
@@ -250,8 +248,6 @@ function showDatepickerOverlay() {
 
     }
     else {
-
-        /* 분석탭: 편집 중인 필드 아래 */
 
         const startText =
             document.getElementById("analysisStartDateText");
@@ -271,60 +267,42 @@ function showDatepickerOverlay() {
     }
 
 
-    /* 스타일 초기화 */
-
-    sheet.style.position = "fixed";
-    sheet.style.transform = "";
-    sheet.style.marginTop = "";
-
+    /* 세로 위치만 JS로 계산 (가로는 CSS가 담당) */
 
     if (!anchorRect) {
 
-        /* 앵커 없으면 중앙 */
+        /* 앵커 없으면 화면 중앙 */
 
         sheet.style.top = "50%";
-        sheet.style.left = "50%";
-        sheet.style.transform = "translate(-50%, -50%)";
+        sheet.style.transform =
+            "translateX(-50%) translateY(-50%)";
 
         return;
 
     }
 
 
-    /* 시트 실제 높이 측정 (일단 표시 후) */
+    /* transform 초기화 (CSS의 translateX(-50%) 유지하면서 top만 이동) */
 
-    const sheetWidth = Math.min(380, window.innerWidth - 32);
+    sheet.style.transform = "translateX(-50%)";
 
-    const viewportWidth = window.innerWidth;
+
+    /* 일단 앵커 아래로 */
+
     const viewportHeight = window.innerHeight;
-
-
-    /* 가로: 앵커 중앙에 맞춤 */
-
-    let left = anchorRect.left + anchorRect.width / 2 - sheetWidth / 2;
-
-    if (left < 16) left = 16;
-    if (left + sheetWidth > viewportWidth - 16) {
-        left = viewportWidth - sheetWidth - 16;
-    }
-
-
-    /* 세로: 일단 앵커 아래로 */
 
     let top = anchorRect.bottom + 8;
 
 
-    /* 표시 후 실제 높이 재기 (임시 위치로) */
-
-    sheet.style.left = left + "px";
     sheet.style.top = top + "px";
 
+
+    /* 표시 후 실제 높이 재기 → 아래 넘치면 위로 */
 
     requestAnimationFrame(function() {
 
         const sheetHeight = sheet.offsetHeight;
 
-        /* 아래로 넘치면 위로 */
 
         if (top + sheetHeight > viewportHeight - 20) {
 
@@ -334,8 +312,6 @@ function showDatepickerOverlay() {
                 sheet.style.top = aboveTop + "px";
             }
             else {
-                /* 위아래 다 부족 → 화면 중앙 */
-
                 sheet.style.top =
                     Math.max(
                         20,
