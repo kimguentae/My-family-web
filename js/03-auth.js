@@ -52,6 +52,8 @@ function setAuthMessage(text) {
 
 function setSyncStatus(text) {
 
+    /* 계정 설정 화면의 텍스트 상태 */
+
     const accountStatus =
         document.getElementById("accountSyncStatus");
 
@@ -60,30 +62,61 @@ function setSyncStatus(text) {
     }
 
 
+    /* 입력 화면의 아이콘 상태 */
+
     const inputStatus =
         document.getElementById("syncStatus");
 
-    if (inputStatus) {
-
-        inputStatus.classList.remove(
-            "success",
-            "warning",
-            "error"
-        );
+    if (!inputStatus) return;
 
 
-        if (text === "동기화 완료") {
-            inputStatus.classList.add("success");
-        }
-        else if (text === "동기화 중...") {
-            inputStatus.classList.add("warning");
-        }
-        else if (text && text.includes("동기화 실패")) {
-            inputStatus.classList.add("error");
-        }
-        else if (text && text.includes("로그아웃")) {
-            inputStatus.classList.add("error");
-        }
+    inputStatus.classList.remove(
+        "success",
+        "warning",
+        "error"
+    );
+
+
+    /* 텍스트 → 상태 매핑 */
+
+    if (!text) {
+
+        /* 아무 상태도 없음 → 기본 회색 */
+
+        return;
+
+    }
+
+
+    if (text === "동기화 완료") {
+
+        inputStatus.classList.add("success");
+
+        return;
+
+    }
+
+
+    if (
+        text === "동기화 중..." ||
+        text.includes("동기화 중")
+    ) {
+
+        inputStatus.classList.add("warning");
+
+        return;
+
+    }
+
+
+    if (
+        text.includes("실패") ||
+        text.includes("로그아웃")
+    ) {
+
+        inputStatus.classList.add("error");
+
+        return;
 
     }
 
