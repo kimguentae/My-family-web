@@ -519,6 +519,78 @@ function saveTransaction() {
 
     renderCalendar();
 
+    /* ★ 토스트 표시 */
+
+    showSaveToast(
+        (newTransaction.type === "expense"
+            ? "지출"
+            : "수입") + "이 저장되었습니다"
+    );
+
+}
+
+/* =========================
+   저장 토스트
+========================= */
+
+var saveToastTimer = null;
+
+function showSaveToast(message) {
+
+    /* 기존 토스트 제거 */
+
+    const existing =
+        document.querySelector(".save-toast");
+
+    if (existing) {
+        existing.remove();
+    }
+
+
+    if (saveToastTimer) {
+        clearTimeout(saveToastTimer);
+        saveToastTimer = null;
+    }
+
+
+    /* 토스트 생성 */
+
+    const toast =
+        document.createElement("div");
+
+    toast.className = "save-toast";
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+
+    /* 애니메이션 트리거 */
+
+    requestAnimationFrame(function() {
+
+        toast.classList.add("active");
+
+    });
+
+
+    /* 0.5초 후 제거 */
+
+    saveToastTimer = setTimeout(function() {
+
+        toast.classList.remove("active");
+
+        setTimeout(function() {
+
+            if (toast.parentNode) {
+                toast.remove();
+            }
+
+        }, 250);
+
+        saveToastTimer = null;
+
+    }, 500);
+
 }
 
 
@@ -1351,11 +1423,30 @@ function clearHistorySearch() {
 
     historySearchKeyword = "";
 
-    if (input) input.value = "";
+    if (input) {
+        input.value = "";
+    }
 
 
     renderCalendar();
     renderSelectedDate();
+
+
+    /* ★ 검색창 다시 열기 (포커스 유지) */
+
+    const area =
+        document.getElementById("historySearchArea");
+
+    if (area && !area.classList.contains("active")) {
+        area.classList.add("active");
+    }
+
+
+    if (input) {
+        setTimeout(function() {
+            input.focus();
+        }, 50);
+    }
 
 }
 

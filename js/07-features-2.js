@@ -1192,6 +1192,9 @@ function renderAnalysisDetails(
 
 }
 
+/* 월별 그래프에서 선택된 카테고리 */
+
+var monthlyChartSelectedCategory = "";
 
 function selectAnalysisCategory(category) {
 
@@ -1484,6 +1487,15 @@ function renderAnalysisMonthlyChart(
 
         monthCategoriesSorted.forEach(([name, amount]) => {
 
+            /* 선택된 카테고리 없으면 전부 표시 */
+
+            const isSelected =
+                monthlyChartSelectedCategory === "" ||
+                monthlyChartSelectedCategory === name;
+
+            if (!isSelected) return;
+
+
             const ratio =
                 data.total > 0 ? amount / data.total : 0;
 
@@ -1494,7 +1506,6 @@ function renderAnalysisMonthlyChart(
 
             segment.title =
                 `${name} · ${Math.round(ratio * 100)}%`;
-
 
             /* 10% 이상일 때만 라벨 표시 */
 
@@ -1535,10 +1546,27 @@ function renderAnalysisMonthlyChart(
     });
 
 
+    /* 범례 컨테이너 흐림 초기화 */
+
+    legend.classList.remove("dimmed");
+
+
+    if (monthlyChartSelectedCategory) {
+        legend.classList.add("dimmed");
+    }
+
+
     sortedCategoryNames.forEach(name => {
 
         const item = document.createElement("div");
         item.className = "monthly-chart-legend-item";
+
+
+        /* 선택된 카테고리 표시 */
+
+        if (monthlyChartSelectedCategory === name) {
+            item.classList.add("selected");
+        }
 
 
         const dot = document.createElement("span");
@@ -1553,13 +1581,66 @@ function renderAnalysisMonthlyChart(
         item.appendChild(dot);
         item.appendChild(label);
 
+
+        /* 탭 이벤트 */
+
+        item.onclick = function() {
+
+            toggleMonthlyChartCategory(name);
+
+        };
+
+
         legend.appendChild(item);
 
     });
 
 }
 
+/* =========================
+   월별 그래프 카테고리 필터 토글
+========================= */
 
+function toggleMonthlyChartCategory(name) {
+
+    if (monthlyChartSelectedCategory === name) {
+
+        /* 같은 것 다시 탭 → 전체 표시 */
+
+        monthlyChartSelectedCategory = "";
+
+    }
+    else {
+
+        /* 다른 것 탭 → 그 카테고리만 */
+
+        monthlyChartSelectedCategory = name;
+
+    }
+
+
+    /* 그래프 다시 그리기 */
+
+    const startInput =
+        document.getElementById("analysisStartDate");
+
+    const endInput =
+        document.getElementById("analysisEndDate");
+
+    if (!startInput || !endInput) return;
+
+
+    const transactions =
+        getAnalysisTransactions();
+
+
+    renderAnalysisMonthlyChart(
+        transactions,
+        startInput.value,
+        endInput.value
+    );
+
+}
 
 /* =========================
    분석 전체 렌더링

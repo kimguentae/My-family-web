@@ -259,6 +259,10 @@
     border: none;
     background: transparent;
     font-size: 20px;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .history-search-area {
@@ -987,6 +991,37 @@
     gap: 5px;
     font-size: 11px;
     color: #555;
+    padding: 4px 8px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    border: 1px solid transparent;
+}
+
+.monthly-chart-legend-item:active {
+    background: #f0f0f0;
+}
+
+/* 선택됨 */
+
+.monthly-chart-legend-item.selected {
+    background: #222;
+    color: white;
+    font-weight: 600;
+}
+
+/* 선택된 상태에서 다른 항목은 흐리게 */
+
+.monthly-chart-legend.dimmed
+    .monthly-chart-legend-item:not(.selected) {
+    opacity: 0.35;
+}
+
+/* 그래프 막대 흐리게 처리용 */
+
+.monthly-chart-bar.filtered-out {
+    opacity: 0.15;
 }
 
 .monthly-chart-legend-dot {
