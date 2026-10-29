@@ -589,7 +589,7 @@ function showSaveToast(message) {
 
         saveToastTimer = null;
 
-    }, 500);
+    }, 1000);
 
 }
 
