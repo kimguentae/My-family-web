@@ -155,6 +155,14 @@ function openAppModal(options) {
                         ? "numeric"
                         : "text";
 
+                /* iOS Safari 키보드 자동 노출 우회:
+                   readOnly 상태에서 focus() 후 해제 */
+
+                els.input.setAttribute(
+                    "readonly",
+                    "readonly"
+                );
+
             }
 
             else {
@@ -165,6 +173,10 @@ function openAppModal(options) {
 
                 els.input.dataset.formatAmount =
                     "";
+
+                els.input.removeAttribute(
+                    "readonly"
+                );
 
             }
 
@@ -196,8 +208,19 @@ function openAppModal(options) {
 
             if (options.showInput) {
 
+                /* 1차: 동기 focus */
+
+                els.input.focus();
+
+
+                /* 2차: readOnly 해제 + 재focus (iOS 키보드 트리거) */
+
                 setTimeout(
                     function() {
+
+                        els.input.removeAttribute(
+                            "readonly"
+                        );
 
                         els.input.focus();
 
@@ -547,6 +570,7 @@ function formatCompactAmount(amount) {
 function formatAnalysisAmount(amount) {
 
     return Number(amount || 0).toLocaleString("ko-KR");
+
 }
 
 
