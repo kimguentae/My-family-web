@@ -255,7 +255,7 @@ function updateAnalysisGroupVisibility() {
 
 
 /* =========================
-   분석 항목 표시 (카드형, 순서 변경 없음)
+   분석 항목 표시 (카드형 + 순서 변경)
 ========================= */
 
 const analysisGroupMeta = {
@@ -308,7 +308,7 @@ function renderAnalysisGroupOrderList() {
             : ["monthlyChart", "category", "payment", "subject"];
 
 
-    order.forEach((key) => {
+    order.forEach((key, index) => {
 
         const meta = analysisGroupMeta[key];
 
@@ -318,6 +318,8 @@ function renderAnalysisGroupOrderList() {
         const card = document.createElement("div");
 
         card.className = "analysis-setting-card";
+
+        card.dataset.index = index;
 
         card.dataset.key = key;
 
@@ -385,6 +387,32 @@ function renderAnalysisGroupOrderList() {
 
 
         container.appendChild(card);
+
+
+        /* 카드 드래그 (순서 변경) */
+
+        initializeManageCardDrag(
+            card,
+            {
+                enableLongPress: false,
+                getArray: () => settings.analysisGroupOrder,
+                onSave: saveSettings,
+                onRender: renderAnalysisGroupOrderList,
+                onAfterMove: function() {
+
+                    const analysisScreen =
+                        document.getElementById("analysisScreen");
+
+                    if (
+                        analysisScreen &&
+                        analysisScreen.classList.contains("active")
+                    ) {
+                        renderAnalysis();
+                    }
+
+                }
+            }
+        );
 
     });
 
@@ -2689,6 +2717,9 @@ function initializeManageCardDrag(
     options
 ) {
 
+    const enableLongPress =
+        options.enableLongPress !== false;
+
     let startX = 0;
     let startY = 0;
 
@@ -2894,20 +2925,24 @@ function initializeManageCardDrag(
 
             isLongPress = false;
 
-            longPressTimer = setTimeout(
-                function() {
+            if (enableLongPress) {
 
-                    isLongPress = true;
+                longPressTimer = setTimeout(
+                    function() {
 
-                    card.classList.add("actions-visible");
+                        isLongPress = true;
 
-                    if (navigator.vibrate) {
-                        navigator.vibrate(15);
-                    }
+                        card.classList.add("actions-visible");
 
-                },
-                LONG_PRESS_MS
-            );
+                        if (navigator.vibrate) {
+                            navigator.vibrate(15);
+                        }
+
+                    },
+                    LONG_PRESS_MS
+                );
+
+            }
 
         },
         { passive: true }
