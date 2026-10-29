@@ -573,7 +573,7 @@ function showSaveToast(message) {
     });
 
 
-    /* 0.5초 후 제거 */
+    /* 1초 후 제거 */
 
     saveToastTimer = setTimeout(function() {
 
@@ -2243,6 +2243,48 @@ function setExportDates(start, end) {
     if (startInput) startInput.value = start;
     if (endInput) endInput.value = end;
 
+
+    updateExportDateTexts();
+
+}
+
+
+function formatExportDateDisplay(dateString) {
+
+    if (!dateString) return "날짜 선택";
+
+    const date = new Date(dateString + "T00:00:00");
+
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+
+}
+
+
+function updateExportDateTexts() {
+
+    const startInput =
+        document.getElementById("exportStartDate");
+
+    const endInput =
+        document.getElementById("exportEndDate");
+
+    const startText =
+        document.getElementById("exportStartDateText");
+
+    const endText =
+        document.getElementById("exportEndDateText");
+
+
+    if (startText) {
+        startText.innerText =
+            formatExportDateDisplay(startInput ? startInput.value : "");
+    }
+
+    if (endText) {
+        endText.innerText =
+            formatExportDateDisplay(endInput ? endInput.value : "");
+    }
+
 }
 
 
@@ -2355,6 +2397,67 @@ function initializeExportDates() {
     if (!startInput.value || !endInput.value) {
         setExportRangeThisMonth();
     }
+    else {
+        updateExportDateTexts();
+    }
+
+}
+
+
+/* =========================
+   엑셀 저장 — 날짜 선택기 트리거
+========================= */
+
+function openExportStartDatePicker() {
+
+    const startInput =
+        document.getElementById("exportStartDate");
+
+    const endInput =
+        document.getElementById("exportEndDate");
+
+
+    openDatepickerRange(
+        startInput ? startInput.value : "",
+        endInput ? endInput.value : "",
+        "start",
+        function(start, end) {
+
+            if (startInput) startInput.value = start;
+            if (endInput) endInput.value = end;
+
+            updateExportDateTexts();
+
+        },
+        { anchorId: "exportStartDateText" }
+    );
+
+}
+
+
+function openExportEndDatePicker() {
+
+    const startInput =
+        document.getElementById("exportStartDate");
+
+    const endInput =
+        document.getElementById("exportEndDate");
+
+
+    openDatepickerRange(
+        startInput ? startInput.value : "",
+        endInput ? endInput.value : "",
+        "end",
+        function(start, end) {
+
+            if (startInput) startInput.value = start;
+            if (endInput) endInput.value = end;
+
+            updateExportDateTexts();
+
+        },
+        { anchorId: "exportEndDateText" }
+    );
 
 }
 

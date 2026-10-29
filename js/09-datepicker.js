@@ -187,10 +187,14 @@ function openDatepickerRange(
     startDate,
     endDate,
     editingField,
-    onConfirm
+    onConfirm,
+    options
 ) {
 
     ensureDatepickerDOM();
+
+
+    options = options || {};
 
 
     datepickerState.mode = "range";
@@ -200,10 +204,8 @@ function openDatepickerRange(
     datepickerState.onConfirm = onConfirm;
     datepickerState.yearMode = false;
     datepickerState.monthMode = false;
-    datepickerState.anchorId = "";
+    datepickerState.anchorId = options.anchorId || "";
 
-
-    /* 편집 중인 필드의 날짜를 기준으로 달 표시 */
 
     const baseStr =
         editingField === "start"
@@ -278,19 +280,39 @@ function showDatepickerOverlay() {
     }
     else {
 
-        const startText =
-            document.getElementById("analysisStartDateText");
+        /* 커스텀 앵커가 있으면 우선 사용 (엑셀 저장 등) */
 
-        const endText =
-            document.getElementById("analysisEndDateText");
+        if (datepickerState.anchorId) {
 
-        const targetText =
-            datepickerState.editingField === "start"
-                ? startText
-                : endText;
+            const customAnchor =
+                document.getElementById(datepickerState.anchorId);
 
-        if (targetText) {
-            anchorRect = targetText.getBoundingClientRect();
+            if (customAnchor) {
+                anchorRect = customAnchor.getBoundingClientRect();
+            }
+
+        }
+
+
+        /* 없으면 분석 탭 날짜 텍스트 */
+
+        if (!anchorRect) {
+
+            const startText =
+                document.getElementById("analysisStartDateText");
+
+            const endText =
+                document.getElementById("analysisEndDateText");
+
+            const targetText =
+                datepickerState.editingField === "start"
+                    ? startText
+                    : endText;
+
+            if (targetText) {
+                anchorRect = targetText.getBoundingClientRect();
+            }
+
         }
 
     }

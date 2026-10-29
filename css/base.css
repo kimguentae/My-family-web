@@ -1294,3 +1294,50 @@ input {
     box-sizing: border-box;
     padding-bottom: 110px;
 }
+
+/* =========================
+   엑셀 저장 — 날짜 텍스트 (분석 탭과 통일감)
+========================= */
+
+.export-date-row-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 4px 0;
+}
+
+.export-date-row-text .export-date-text {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+}
+
+.export-date-row-text .export-date-text:active {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.export-date-row-text .export-date-separator {
+    flex: 0 0 auto;
+    color: #999;
+    font-size: 15px;
+    font-weight: 600;
+}

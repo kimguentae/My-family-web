@@ -696,20 +696,30 @@
                 기간 선택
             </div>
 
-            <div class="export-date-row">
+            <div class="export-date-row export-date-row-text">
+
+                <div
+                    id="exportStartDateText"
+                    class="export-date-text"
+                    onclick="openExportStartDatePicker()"
+                ></div>
 
                 <input
-                    type="date"
+                    type="hidden"
                     id="exportStartDate"
-                    class="export-date-input"
                 >
 
                 <span class="export-date-separator">~</span>
 
+                <div
+                    id="exportEndDateText"
+                    class="export-date-text"
+                    onclick="openExportEndDatePicker()"
+                ></div>
+
                 <input
-                    type="date"
+                    type="hidden"
                     id="exportEndDate"
-                    class="export-date-input"
                 >
 
             </div>
