@@ -1381,8 +1381,10 @@ input {
     color: #222;
 }
 
-/* 비밀번호 input일 때 오른쪽 여백 */
+/* 비밀번호 input일 때 오른쪽 여백 + 가운데 정렬 */
 
 .modal-input-wrap.password-mode .modal-input {
+    padding-left: 44px;
     padding-right: 44px;
+    text-align: center;
 }
