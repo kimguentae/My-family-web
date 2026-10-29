@@ -689,7 +689,6 @@ function initializeAnalysisDates() {
 
     updateAnalysisDateText();
 
-    /* onchange는 이제 커스텀 피커가 처리하므로 삭제 */
 }
 
 
@@ -1487,8 +1486,6 @@ function renderAnalysisMonthlyChart(
 
         monthCategoriesSorted.forEach(([name, amount]) => {
 
-            /* 선택된 카테고리 없으면 전부 표시 */
-
             const isSelected =
                 monthlyChartSelectedCategory === "" ||
                 monthlyChartSelectedCategory === name;
@@ -1506,8 +1503,6 @@ function renderAnalysisMonthlyChart(
 
             segment.title =
                 `${name} · ${Math.round(ratio * 100)}%`;
-
-            /* 10% 이상일 때만 라벨 표시 */
 
             if (ratio >= 0.15) {
 
@@ -1546,8 +1541,6 @@ function renderAnalysisMonthlyChart(
     });
 
 
-    /* 범례 컨테이너 흐림 초기화 */
-
     legend.classList.remove("dimmed");
 
 
@@ -1561,8 +1554,6 @@ function renderAnalysisMonthlyChart(
         const item = document.createElement("div");
         item.className = "monthly-chart-legend-item";
 
-
-        /* 선택된 카테고리 표시 */
 
         if (monthlyChartSelectedCategory === name) {
             item.classList.add("selected");
@@ -1581,8 +1572,6 @@ function renderAnalysisMonthlyChart(
         item.appendChild(dot);
         item.appendChild(label);
 
-
-        /* 탭 이벤트 */
 
         item.onclick = function() {
 
@@ -1605,21 +1594,15 @@ function toggleMonthlyChartCategory(name) {
 
     if (monthlyChartSelectedCategory === name) {
 
-        /* 같은 것 다시 탭 → 전체 표시 */
-
         monthlyChartSelectedCategory = "";
 
     }
     else {
 
-        /* 다른 것 탭 → 그 카테고리만 */
-
         monthlyChartSelectedCategory = name;
 
     }
 
-
-    /* 그래프 다시 그리기 */
 
     const startInput =
         document.getElementById("analysisStartDate");
@@ -1885,45 +1868,59 @@ function renderBudgetSettings() {
     if (!list.length) {
 
         container.innerHTML =
-            `<div class="no-transactions">지출 카테고리가 없습니다.</div>`;
+            `<div class="no-transactions" style="grid-column: 1 / -1;">지출 카테고리가 없습니다.</div>`;
 
         return;
 
     }
 
 
-    list.forEach(category => {
+    list.forEach((category, index) => {
 
         const budget =
             Number(settings.budgets[category]) || 0;
 
 
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "analysis-item";
+        const card = document.createElement("div");
 
-        button.onclick = function() {
+        card.className = "manage-card budget-card";
+
+        card.dataset.index = index;
+
+
+        const label = document.createElement("div");
+
+        label.className = "manage-card-name";
+
+        label.textContent = category;
+
+
+        const amount = document.createElement("div");
+
+        amount.className = "budget-card-amount";
+
+        amount.textContent =
+            budget > 0
+                ? formatCompactAmount(budget) + "원"
+                : "미설정";
+
+
+        if (budget <= 0) {
+            amount.classList.add("budget-card-amount-empty");
+        }
+
+
+        card.appendChild(label);
+
+        card.appendChild(amount);
+
+
+        card.onclick = function() {
             editCategoryBudget(category);
         };
 
 
-        const nameElement = document.createElement("span");
-        nameElement.className = "analysis-item-name";
-        nameElement.textContent = category;
-
-
-        const amountElement = document.createElement("span");
-        amountElement.className = "analysis-item-amount";
-        amountElement.textContent =
-            budget > 0
-                ? formatAnalysisAmount(budget) + "원"
-                : "미설정";
-
-
-        button.appendChild(nameElement);
-        button.appendChild(amountElement);
-
-        container.appendChild(button);
+        container.appendChild(card);
 
     });
 
@@ -2601,7 +2598,7 @@ function deleteSubject(index) {
 
 
 /* =========================
-   관리 카드 (카테고리/결제수단/주체 공용)
+   관리 카드 (카테고리/결제수단/주체/예산 공용)
 ========================= */
 
 function createManageCard(
@@ -2727,7 +2724,7 @@ function initializeManageCardDrag(
 
     let isLongPress = false;
 
-    /* 카드 실제 크기 (드래그 시작 시점에 계산) */
+    /* 카드 실제 크기 */
 
     let CELL_W = 100;
     let CELL_H = 100;
@@ -2735,8 +2732,18 @@ function initializeManageCardDrag(
     const COLUMNS = 4;
 
     const LONG_PRESS_MS = 500;
-    const MOVE_THRESHOLD = 8;
-    const DRAG_START_THRESHOLD = 10;
+
+    /* 확실히 커진 임계값 */
+
+    const MOVE_THRESHOLD = 10;
+
+    /* 드래그 시작까지 더 확실히 기다림 */
+
+    const DRAG_START_THRESHOLD = 18;
+
+    /* 이동 감지 최소 비율 (카드 크기의 60% 이상 이동해야 칸 변경) */
+
+    const SWAP_RATIO = 0.6;
 
 
     /* 시작 */
@@ -2756,8 +2763,6 @@ function initializeManageCardDrag(
             currentX = startX;
             currentY = startY;
 
-
-            /* 실제 카드 크기 + gap 측정 */
 
             const rect = card.getBoundingClientRect();
 
@@ -2808,8 +2813,6 @@ function initializeManageCardDrag(
             const diffY = currentY - startY;
 
 
-            /* 롱프레스 전에 손가락이 많이 움직이면 롱프레스 취소 */
-
             if (
                 !isLongPress &&
                 longPressTimer &&
@@ -2826,12 +2829,8 @@ function initializeManageCardDrag(
             }
 
 
-            /* 오버레이 떠 있으면 드래그 안 함 */
-
             if (card.classList.contains("actions-visible")) return;
 
-
-            /* 드래그 시작 판정 */
 
             if (!dragging) {
 
@@ -2846,22 +2845,34 @@ function initializeManageCardDrag(
 
                 card.classList.add("dragging");
 
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+
             }
 
-
-            /* 카드 자체 이동 */
 
             card.style.transform =
                 `translate(${diffX}px, ${diffY}px) scale(1.08)`;
 
-
-            /* 이동 칸 계산 */
 
             const stepX = Math.round(diffX / CELL_W);
             const stepY = Math.round(diffY / CELL_H);
 
 
             if (stepX === 0 && stepY === 0) return;
+
+
+            const movedDistanceX = Math.abs(diffX) / CELL_W;
+            const movedDistanceY = Math.abs(diffY) / CELL_H;
+
+
+            if (
+                movedDistanceX < SWAP_RATIO &&
+                movedDistanceY < SWAP_RATIO
+            ) {
+                return;
+            }
 
 
             const array = options.getArray();
@@ -2885,8 +2896,6 @@ function initializeManageCardDrag(
 
             options.onSave();
 
-
-            /* 시작 위치 재조정 */
 
             startX += stepX * CELL_W;
             startY += stepY * CELL_H;

@@ -538,60 +538,22 @@
         class="screen"
     >
 
-        <div class="settings-groups">
+        <div class="settings-list">
 
-            <!-- 입력 -->
-
-            <div class="settings-section">
-
-                <div class="settings-section-title">입력</div>
-
-                <div class="settings-card">
-
-                    <div
-                        class="settings-item"
-                        onclick="showScreen('inputSettings')"
-                    >
-                        <span class="settings-item-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20h9"/>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                            </svg>
-                        </span>
-                        <span class="settings-item-label">입력 설정</span>
-                        <span class="settings-item-arrow">›</span>
-                    </div>
-
-                </div>
-
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('inputSettings')"
+            >
+                <span>입력 설정</span>
+                <span class="arrow">›</span>
             </div>
 
-
-            <!-- 분석 -->
-
-            <div class="settings-section">
-
-                <div class="settings-section-title">분석</div>
-
-                <div class="settings-card">
-
-                    <div
-                        class="settings-item"
-                        onclick="showScreen('analysisSettings')"
-                    >
-                        <span class="settings-item-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="20" x2="18" y2="10"/>
-                                <line x1="12" y1="20" x2="12" y2="4"/>
-                                <line x1="6" y1="20" x2="6" y2="14"/>
-                            </svg>
-                        </span>
-                        <span class="settings-item-label">분석 설정</span>
-                        <span class="settings-item-arrow">›</span>
-                    </div>
-
-                </div>
-
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('analysisSettings')"
+            >
+                <span>분석 설정</span>
+                <span class="arrow">›</span>
             </div>
 
         </div>
@@ -892,18 +854,12 @@
         class="screen"
     >
 
-        <div class="settings-group">
+        <div class="card-section-title">지출 카테고리별 월 예산</div>
 
-            <div class="settings-group-title">
-                카테고리별 월 예산
-            </div>
-
-            <div
-                id="budgetCategoryList"
-                class="analysis-button-grid"
-            ></div>
-
-        </div>
+        <div
+            id="budgetCategoryList"
+            class="card-grid"
+        ></div>
 
     </section>
 
@@ -995,18 +951,6 @@
         class="screen"
     >
 
-        <div class="settings-list">
-
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('historyExport')"
-            >
-                <span>엑셀로 저장</span>
-                <span class="arrow">›</span>
-            </div>
-
-        </div>
-
         <div class="settings-group">
 
             <div class="settings-group-title">
@@ -1017,6 +961,18 @@
                 id="analysisGroupOrderList"
                 class="category-manage-list"
             ></div>
+
+        </div>
+
+        <div class="settings-list">
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('historyExport')"
+            >
+                <span>엑셀로 저장</span>
+                <span class="arrow">›</span>
+            </div>
 
         </div>
 
