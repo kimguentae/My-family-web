@@ -490,6 +490,15 @@ function renderHeaderProfileButton() {
 
         img.style.display = "block";
 
+        /* 크기 강제 */
+
+        img.style.width = "36px";
+        img.style.height = "36px";
+        img.style.maxWidth = "36px";
+        img.style.maxHeight = "36px";
+        img.style.borderRadius = "50%";
+        img.style.objectFit = "cover";
+
         placeholder.style.display = "none";
 
     }

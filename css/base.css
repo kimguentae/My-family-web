@@ -42,13 +42,17 @@ input {
     position: relative;
 }
 
+/* =========================
+   헤더
+========================= */
+
 .header {
     position: relative;
     min-height: 58px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 50px;
+    padding: 8px 52px;
     background: white;
 }
 
@@ -61,6 +65,10 @@ input {
     font-size: 20px;
     font-weight: 700;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .header-back-button {
@@ -79,11 +87,64 @@ input {
     align-items: center;
     justify-content: center;
     padding: 0;
+    z-index: 2;
 }
 
 .header-back-button:active {
     background: #f5f5f5;
     border-radius: 10px;
+}
+
+/* 헤더 우측 프로필 버튼 */
+
+.header-profile-button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.header-profile-button:active {
+    background: #f5f5f5;
+}
+
+.header-profile-avatar-img {
+    width: 36px;
+    height: 36px;
+    max-width: 36px;
+    max-height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.header-profile-avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    max-width: 36px;
+    max-height: 36px;
+    border-radius: 50%;
+    background: #f3f3f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    flex-shrink: 0;
 }
 
 .screen {
@@ -442,7 +503,7 @@ input {
 }
 
 /* =========================
-   카드형 그리드 (카테고리/결제수단/주체/예산 관리)
+   카드형 그리드
 ========================= */
 
 .card-section-title {
@@ -488,8 +549,6 @@ input {
     transform: scale(0.97);
 }
 
-/* 드래그 중인 카드 */
-
 .manage-card.dragging {
     z-index: 50;
     opacity: 0.98;
@@ -498,15 +557,11 @@ input {
     transition: box-shadow 0.15s ease;
 }
 
-/* 드래그 중엔 다른 카드들이 부드럽게 자리 이동 */
-
 .card-grid.dragging-active .manage-card:not(.dragging) {
     transition:
         transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
         opacity 0.22s ease;
 }
-
-/* 드래그 중인 카드의 원본 자리 표시 */
 
 .manage-card.dragging::before {
     content: "";
@@ -646,8 +701,6 @@ input {
     display: block;
 }
 
-/* 입력 필드 */
-
 .auth-field {
     margin-bottom: 16px;
 }
@@ -688,8 +741,6 @@ input {
     color: #bbb;
 }
 
-/* 비밀번호 표시 토글 */
-
 .auth-password-toggle {
     position: absolute;
     right: 8px;
@@ -717,8 +768,6 @@ input {
     color: #222;
 }
 
-/* 에러 메시지 */
-
 .auth-field-error {
     min-height: 16px;
     margin-top: 6px;
@@ -727,8 +776,6 @@ input {
     padding-left: 2px;
     line-height: 1.4;
 }
-
-/* 전체 메시지 */
 
 .auth-message {
     min-height: 20px;
@@ -743,8 +790,6 @@ input {
 .auth-message.error { color: #e05252; }
 .auth-message.success { color: #4caf68; }
 .auth-message.info { color: #777; }
-
-/* 제출 버튼 */
 
 .auth-submit-btn {
     width: 100%;
@@ -769,8 +814,6 @@ input {
     background: #bbb;
     cursor: not-allowed;
 }
-
-/* 모드 전환 힌트 */
 
 .auth-mode-hint {
     margin-top: 18px;
@@ -1033,8 +1076,6 @@ input {
     color: #222;
     font-weight: 600;
 }
-
-/* 로그아웃 버튼 */
 
 .auth-logout-btn {
     width: 100%;
