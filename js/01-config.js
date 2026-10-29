@@ -246,6 +246,35 @@ if (
 }
 
 
+/* 무지출 챌린지 시작일 마이그레이션 */
+
+if (
+    typeof settings.noSpendStartDate !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(settings.noSpendStartDate)
+) {
+
+    settings.noSpendStartDate =
+        (function() {
+            const year = new Date().getFullYear();
+            return `${year}-01-01`;
+        })();
+
+}
+
+
+/* 이번 달 목표 마이그레이션 */
+
+if (
+    typeof settings.monthlyBudget !== "number" ||
+    isNaN(settings.monthlyBudget) ||
+    settings.monthlyBudget < 0
+) {
+
+    settings.monthlyBudget = 0;
+
+}
+
+
 
 var categories = JSON.parse(
     localStorage.getItem("householdCategories") || "null"
@@ -415,6 +444,7 @@ function saveSubjects() {
 
 }
 
+
 /* =========================
    기본 데이터 (로그아웃 초기화용)
 ========================= */
@@ -453,7 +483,14 @@ function getDefaultSettings() {
 
         monthlyChartEnabled: true,
 
-        budgets: {}
+        budgets: {},
+
+        noSpendStartDate: (function() {
+            const year = new Date().getFullYear();
+            return `${year}-01-01`;
+        })(),
+
+        monthlyBudget: 0
 
     };
 

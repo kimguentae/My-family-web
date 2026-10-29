@@ -53,8 +53,6 @@
 
     <!-- 입력 -->
 
-    <!-- 입력 -->
-
     <section id="inputScreen" class="screen">
 
 <div class="input-date-row">
@@ -233,7 +231,7 @@
             </div>
 
 
-            <!-- 월 선택 피커 (calendar-header 밖!) -->
+            <!-- 월 선택 피커 -->
 
 <div id="monthPicker" class="month-picker" onclick="handleMonthPickerOverlayClick(event)">
     <div class="month-picker-inner" onclick="event.stopPropagation()">
@@ -1023,7 +1021,7 @@
             </div>
 
 
-            <!-- 로그인 폼 (최근 로그인 없을 때 or 직접 입력) -->
+            <!-- 로그인 폼 -->
 
             <div
                 id="authFormView"
@@ -1331,58 +1329,92 @@
             </div>
 
 
-            <!-- 소비 리포트 -->
+            <!-- 무지출 챌린지 -->
 
             <div class="auth-report-card">
 
                 <div class="auth-report-title">
-                    <span id="authReportMonthLabel">이번 달</span>
-                    <span class="auth-report-sub" id="authReportMonthSub"></span>
+                    <span>🎯 무지출 챌린지</span>
                 </div>
 
-                <div class="auth-report-grid">
+                <div class="no-spend-stats">
 
-                    <div class="auth-report-item">
-                        <div class="auth-report-item-label">오늘 지출</div>
+                    <div class="no-spend-stat">
                         <div
-                            class="auth-report-item-value"
-                            id="authReportTodayExpense"
-                        >0원</div>
-                    </div>
-
-                    <div class="auth-report-item">
-                        <div class="auth-report-item-label">이번 주 지출</div>
-                        <div
-                            class="auth-report-item-value"
-                            id="authReportWeekExpense"
-                        >0원</div>
-                    </div>
-
-                    <div class="auth-report-item auth-report-item-wide">
-                        <div class="auth-report-item-label">가장 많이 쓴 카테고리</div>
-                        <div
-                            class="auth-report-item-value"
-                            id="authReportTopCategory"
-                        >-</div>
-                        <div
-                            class="auth-report-item-sub"
-                            id="authReportTopCategoryAmount"
-                        ></div>
-                    </div>
-
-                    <div class="auth-report-item auth-report-item-wide">
-                        <div class="auth-report-item-label">연속 기록</div>
-                        <div
-                            class="auth-report-item-value auth-report-streak"
-                            id="authReportStreak"
+                            class="no-spend-stat-value"
+                            id="noSpendTotalDays"
                         >0일</div>
+                        <div class="no-spend-stat-label">총 무지출</div>
+                    </div>
+
+                    <div class="no-spend-stat">
                         <div
-                            class="auth-report-item-sub"
-                            id="authReportStreakSub"
-                        ></div>
+                            class="no-spend-stat-value"
+                            id="noSpendStreak"
+                        >0일</div>
+                        <div class="no-spend-stat-label">현재 연속</div>
+                    </div>
+
+                    <div class="no-spend-stat">
+                        <div
+                            class="no-spend-stat-value"
+                            id="noSpendBest"
+                        >0일</div>
+                        <div class="no-spend-stat-label">최고 기록</div>
                     </div>
 
                 </div>
+
+                <div
+                    class="no-spend-today"
+                    id="noSpendTodayStatus"
+                ></div>
+
+                <button
+                    type="button"
+                    class="no-spend-start-date"
+                    onclick="openNoSpendStartDatePicker()"
+                >
+                    <span>시작일</span>
+                    <span id="noSpendStartDateText">-</span>
+                </button>
+
+            </div>
+
+
+            <!-- 이번 달 목표 -->
+
+            <div class="auth-report-card">
+
+                <div class="auth-report-title">
+                    <span>💰 이번 달 목표</span>
+                    <button
+                        type="button"
+                        class="auth-report-title-edit"
+                        id="monthlyBudgetEditBtn"
+                        onclick="editMonthlyBudget()"
+                    >
+                        설정
+                    </button>
+                </div>
+
+                <div id="monthlyBudgetContent"></div>
+
+            </div>
+
+
+            <!-- 지난달 비교 -->
+
+            <div class="auth-report-card">
+
+                <div class="auth-report-title">
+                    <span>📊 지난달 비교</span>
+                </div>
+
+                <div
+                    class="month-compare-content"
+                    id="monthCompareContent"
+                ></div>
 
             </div>
 
@@ -1398,6 +1430,7 @@
         </div>
 
     </section>
+
 
     <!-- 하단 메뉴 -->
 
@@ -1545,7 +1578,6 @@
 <script src="./js/09-datepicker.js"></script>
 
 
-<!-- 서비스 워커 등록 -->
 <!-- 서비스 워커 등록 -->
 <script>
 if ("serviceWorker" in navigator) {

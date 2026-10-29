@@ -2,7 +2,7 @@
    Service Worker
 ========================= */
 
-const CACHE_VERSION = "household-v12";
+const CACHE_VERSION = "household-v13";
 
 const CACHE_FILES = [
     "./",
@@ -12,6 +12,7 @@ const CACHE_FILES = [
     "./css/screens.css",
     "./css/modal.css",
     "./css/offline.css",
+    "./css/datepicker.css",
     "./js/01-config.js",
     "./js/02-utils.js",
     "./js/03-auth.js",
