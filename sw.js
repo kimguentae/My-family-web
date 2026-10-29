@@ -2,12 +2,15 @@
    Service Worker
 ========================= */
 
-const CACHE_VERSION = "household-v36";
+const CACHE_VERSION = "household-v37";
 
 const CACHE_FILES = [
     "./",
     "./index.html",
     "./manifest.json",
+    "./icons/icon-180.png",
+    "./icons/icon-192.png",
+    "./icons/icon-512.png",
     "./css/base.css",
     "./css/screens.css",
     "./css/modal.css",
