@@ -405,8 +405,6 @@ function updateAccountUI() {
     }
 
 
-    /* 헤더 우측 프로필 버튼 갱신 */
-
     renderHeaderProfileButton();
 
 }
@@ -490,12 +488,12 @@ function renderHeaderProfileButton() {
 
         img.style.display = "block";
 
-        /* 크기 강제 */
+        /* 크기 강제 (28px) */
 
-        img.style.width = "36px";
-        img.style.height = "36px";
-        img.style.maxWidth = "36px";
-        img.style.maxHeight = "36px";
+        img.style.width = "28px";
+        img.style.height = "28px";
+        img.style.maxWidth = "28px";
+        img.style.maxHeight = "28px";
         img.style.borderRadius = "50%";
         img.style.objectFit = "cover";
 
