@@ -4,6 +4,10 @@
 
 var currentAuthMode = "login";
 
+/* 최근 로그인 폼 강제 표시 여부 */
+
+var forceShowAuthForm = false;
+
 
 /* =========================
    최근 로그인 계정 (localStorage)
@@ -68,14 +72,10 @@ function addRecentAccount(user) {
     let list = getRecentAccounts();
 
 
-    /* 중복 제거 */
-
     list = list.filter(function(item) {
         return item.userId !== user.id;
     });
 
-
-    /* 맨 앞에 추가 */
 
     list.unshift({
         userId: user.id,
@@ -84,14 +84,10 @@ function addRecentAccount(user) {
     });
 
 
-    /* 최대 5개 */
-
     list = list.slice(0, 5);
 
 
     saveRecentAccounts(list);
-
-    renderRecentAccounts();
 
 }
 
@@ -106,57 +102,77 @@ function removeRecentAccount(userId) {
 
     saveRecentAccounts(list);
 
-    renderRecentAccounts();
+    renderAuthMode();
 
 }
 
 
-function renderRecentAccounts() {
+/* =========================
+   로그인 화면 모드 결정
+   - 최근 로그인 있음 + forceShowAuthForm=false → 아바타만
+   - 최근 로그인 없음 or forceShowAuthForm=true → 폼
+========================= */
 
-    const wrap =
-        document.getElementById("authRecentAccounts");
+function renderAuthMode() {
 
-    const listElement =
-        document.getElementById("authRecentAccountsList");
+    const recentOnlyView =
+        document.getElementById("authRecentOnlyView");
 
-
-    if (!wrap || !listElement) return;
-
+    const formView =
+        document.getElementById("authFormView");
 
     const list = getRecentAccounts();
 
 
-    if (!list.length) {
+    if (!recentOnlyView || !formView) return;
 
-        wrap.style.display = "none";
 
-        listElement.innerHTML = "";
+    const hasRecent = list.length > 0;
 
-        return;
+    const showRecentOnly = hasRecent && !forceShowAuthForm;
+
+
+    if (showRecentOnly) {
+
+        recentOnlyView.style.display = "block";
+        formView.style.display = "none";
+
+        renderRecentOnlyList(list);
+
+    }
+    else {
+
+        recentOnlyView.style.display = "none";
+        formView.style.display = "block";
 
     }
 
+}
 
-    wrap.style.display = "block";
 
-    listElement.innerHTML = "";
+function renderRecentOnlyList(list) {
+
+    const container =
+        document.getElementById("authRecentOnlyList");
+
+    if (!container) return;
+
+    container.innerHTML = "";
 
 
     list.forEach(function(account) {
 
         const item = document.createElement("div");
 
-        item.className = "auth-recent-item";
+        item.className = "auth-recent-only-item";
 
 
-        const button = document.createElement("button");
+        const avatarBtn = document.createElement("button");
 
-        button.type = "button";
+        avatarBtn.type = "button";
 
-        button.className = "auth-recent-avatar-btn";
+        avatarBtn.className = "auth-recent-only-avatar-btn";
 
-
-        /* 아바타 이미지 or 이니셜 */
 
         const avatarDataUrl =
             localStorage.getItem(
@@ -168,13 +184,13 @@ function renderRecentAccounts() {
 
             const img = document.createElement("img");
 
-            img.className = "auth-recent-avatar-img";
+            img.className = "auth-recent-only-avatar-img";
 
             img.src = avatarDataUrl;
 
             img.alt = account.email;
 
-            button.appendChild(img);
+            avatarBtn.appendChild(img);
 
         }
 
@@ -182,31 +198,31 @@ function renderRecentAccounts() {
 
             const initial = document.createElement("span");
 
-            initial.className = "auth-recent-avatar-initial";
+            initial.className = "auth-recent-only-avatar-initial";
 
             initial.innerText =
                 (account.email[0] || "?").toUpperCase();
 
-            button.appendChild(initial);
+            avatarBtn.appendChild(initial);
 
         }
 
 
-        button.onclick = function() {
+        const emailLabel = document.createElement("div");
 
-            selectRecentAccount(account);
+        emailLabel.className = "auth-recent-only-email";
 
+        emailLabel.innerText = account.email;
+
+
+        /* 탭 → 비밀번호 모달 */
+
+        avatarBtn.onclick = function() {
+            openRecentPasswordModal(account);
         };
 
 
-        const label = document.createElement("div");
-
-        label.className = "auth-recent-email";
-
-        label.innerText = account.email;
-
-
-        /* 삭제 (길게 누르기) */
+        /* 길게 누르기 → 삭제 */
 
         let pressTimer = null;
 
@@ -216,9 +232,9 @@ function renderRecentAccounts() {
 
                 pressTimer = setTimeout(function() {
 
-                    removeRecentAccount(account.userId);
-
                     pressTimer = null;
+
+                    removeRecentAccount(account.userId);
 
                 }, 700);
 
@@ -254,18 +270,49 @@ function renderRecentAccounts() {
         );
 
 
-        item.appendChild(button);
+        /* 마우스(PC) 우클릭 삭제 */
 
-        item.appendChild(label);
+        avatarBtn.addEventListener(
+            "contextmenu",
+            function(event) {
 
-        listElement.appendChild(item);
+                event.preventDefault();
+
+                removeRecentAccount(account.userId);
+
+            }
+        );
+
+
+        item.appendChild(avatarBtn);
+
+        item.appendChild(emailLabel);
+
+        container.appendChild(item);
 
     });
 
 }
 
 
-function selectRecentAccount(account) {
+/* 직접 입력 버튼 */
+
+function showAuthFormView() {
+
+    forceShowAuthForm = true;
+
+    switchAuthMode("login");
+
+    renderAuthMode();
+
+}
+
+
+/* =========================
+   최근 로그인 비밀번호 모달
+========================= */
+
+function openRecentPasswordModal(account) {
 
     if (!account) return;
 
@@ -278,28 +325,49 @@ function selectRecentAccount(account) {
 
 
     if (emailInput) {
-
         emailInput.value = account.email;
-
-        setAuthFieldError("authEmailError", "");
-
     }
-
 
     if (passwordInput) {
-
         passwordInput.value = "";
-
-        setAuthFieldError("authPasswordError", "");
-
-        setTimeout(function() {
-            passwordInput.focus();
-        }, 100);
-
     }
 
 
+    setAuthFieldError("authEmailError", "");
+    setAuthFieldError("authPasswordError", "");
     setAuthMessage("", "");
+
+
+    appPrompt(
+        account.email,
+        "",
+        {
+            title: "비밀번호 입력",
+            placeholder: "비밀번호",
+            confirmText: "로그인",
+            cancelText: "취소"
+        }
+    ).then(function(password) {
+
+        if (password === null) return;
+
+        if (!password || password.length < 6) {
+
+            appAlert("비밀번호는 6자 이상이어야 해요.");
+
+            return;
+
+        }
+
+
+        if (passwordInput) {
+            passwordInput.value = password;
+        }
+
+
+        handleSignIn();
+
+    });
 
 }
 
@@ -341,6 +409,8 @@ function updateAccountUI() {
 
         loggedOut.style.display = "block";
         loggedIn.style.display = "none";
+
+        renderAuthMode();
 
     }
 
@@ -473,8 +543,6 @@ function handleAvatarFileChange(event) {
                     );
 
                     renderProfileAvatar();
-
-                    renderRecentAccounts();
 
                 }
 
@@ -896,11 +964,6 @@ function switchAuthMode(mode) {
     setAuthFieldError("authSignupEmailError", "");
     setAuthFieldError("authSignupPasswordError", "");
     setAuthFieldError("authSignupPasswordConfirmError", "");
-
-
-    if (mode === "login") {
-        renderRecentAccounts();
-    }
 
 
     resetPageScrollPosition();
@@ -1372,9 +1435,6 @@ async function handleSignIn() {
     if (!validateSignInInputs(email, password)) return;
 
 
-    setAuthMessage("로그인 중...", "info");
-
-
     const submitBtn =
         document.getElementById("authSubmitBtn");
 
@@ -1392,7 +1452,20 @@ async function handleSignIn() {
 
         if (error) {
 
-            setAuthMessage(error.message, "error");
+            /* 최근 로그인 모달에서 실패한 경우 */
+
+            if (forceShowAuthForm === false) {
+
+                appAlert(
+                    "로그인 실패: " + error.message
+                );
+
+            }
+            else {
+
+                setAuthMessage(error.message, "error");
+
+            }
 
             return;
 
@@ -1414,16 +1487,30 @@ async function handleSignIn() {
         await loadUserDataFromSupabase();
 
 
+        forceShowAuthForm = false;
+
         showScreen("input");
 
     }
 
     catch (error) {
 
-        setAuthMessage(
-            error.message || "오류가 발생했습니다.",
-            "error"
-        );
+        if (forceShowAuthForm === false) {
+
+            appAlert(
+                "로그인 실패: " +
+                (error.message || "오류가 발생했습니다.")
+            );
+
+        }
+        else {
+
+            setAuthMessage(
+                error.message || "오류가 발생했습니다.",
+                "error"
+            );
+
+        }
 
     }
 
@@ -1537,6 +1624,12 @@ async function handleSignOut() {
     setSignupMessage("", "");
 
     setSyncStatus("");
+
+
+    /* 로그아웃 후에는 폼이 아닌 아바타 뷰 우선 */
+
+    forceShowAuthForm = false;
+
 
     updateAccountUI();
 
@@ -1713,11 +1806,6 @@ document.addEventListener(
             );
 
         }
-
-
-        /* 최근 로그인 계정 초기 렌더 */
-
-        renderRecentAccounts();
 
     }
 );

@@ -996,257 +996,273 @@
             class="auth-section"
         >
 
-            <!-- 로그인 모드 -->
+            <!-- 최근 로그인 계정 (있을 때만 표시) -->
 
-            <div id="authLoginView" class="auth-view">
-
-                <div class="auth-field">
-
-                    <label class="auth-field-label">
-                        이메일
-                    </label>
-
-                    <input
-                        type="email"
-                        id="authEmailInput"
-                        class="auth-input"
-                        placeholder="you@example.com"
-                        autocomplete="email"
-                        autocapitalize="off"
-                        spellcheck="false"
-                    >
-
-                    <div
-                        id="authEmailError"
-                        class="auth-field-error"
-                    ></div>
-
-                </div>
-
-
-                <div class="auth-field">
-
-                    <label class="auth-field-label">
-                        비밀번호
-                    </label>
-
-                    <div class="auth-input-wrap">
-
-                        <input
-                            type="password"
-                            id="authPasswordInput"
-                            class="auth-input"
-                            placeholder="6자 이상"
-                            autocomplete="current-password"
-                        >
-
-                        <button
-                            type="button"
-                            id="authPasswordToggle"
-                            class="auth-password-toggle"
-                            onclick="togglePasswordVisibility()"
-                            aria-label="비밀번호 표시"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                        </button>
-
-                    </div>
-
-                    <div
-                        id="authPasswordError"
-                        class="auth-field-error"
-                    ></div>
-
-                </div>
-
+            <div
+                id="authRecentOnlyView"
+                class="auth-view"
+                style="display: none;"
+            >
 
                 <div
-                    id="authMessage"
-                    class="auth-message"
+                    id="authRecentOnlyList"
+                    class="auth-recent-only-list"
                 ></div>
 
-
-                <button
-                    type="button"
-                    id="authSubmitBtn"
-                    class="auth-submit-btn"
-                    onclick="handleSignIn()"
-                >
-                    로그인
-                </button>
-
-
-                <!-- 최근 로그인 계정 -->
-
-                <div
-                    id="authRecentAccounts"
-                    class="auth-recent-accounts"
-                    style="display: none;"
-                >
-
-                    <div class="auth-recent-divider">
-                        <span>최근 로그인</span>
-                    </div>
-
-                    <div
-                        id="authRecentAccountsList"
-                        class="auth-recent-list"
-                    ></div>
-
-                </div>
-
-
                 <div class="auth-mode-hint">
-                    계정이 없으신가요?
+                    다른 계정으로 로그인하시겠어요?
                     <button
                         type="button"
                         class="auth-mode-hint-btn"
-                        onclick="switchAuthMode('signup')"
+                        onclick="showAuthFormView()"
                     >
-                        회원가입
+                        직접 입력
                     </button>
                 </div>
 
             </div>
 
 
-            <!-- 회원가입 모드 -->
+            <!-- 로그인 폼 (최근 로그인 없을 때 or 직접 입력) -->
 
-            <div id="authSignupView" class="auth-view" style="display: none;">
+            <div
+                id="authFormView"
+                class="auth-view"
+            >
 
-                <div class="auth-field">
+                <!-- 로그인 모드 -->
 
-                    <label class="auth-field-label">
-                        이메일
-                    </label>
+                <div id="authLoginView" class="auth-view-inner">
 
-                    <input
-                        type="email"
-                        id="authSignupEmailInput"
-                        class="auth-input"
-                        placeholder="you@example.com"
-                        autocomplete="email"
-                        autocapitalize="off"
-                        spellcheck="false"
-                    >
+                    <div class="auth-field">
 
-                    <div
-                        id="authSignupEmailError"
-                        class="auth-field-error"
-                    ></div>
-
-                </div>
-
-
-                <div class="auth-field">
-
-                    <label class="auth-field-label">
-                        비밀번호
-                    </label>
-
-                    <div class="auth-input-wrap">
+                        <label class="auth-field-label">
+                            이메일
+                        </label>
 
                         <input
-                            type="password"
-                            id="authSignupPasswordInput"
+                            type="email"
+                            id="authEmailInput"
                             class="auth-input"
-                            placeholder="6자 이상"
-                            autocomplete="new-password"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
 
-                        <button
-                            type="button"
-                            id="authSignupPasswordToggle"
-                            class="auth-password-toggle"
-                            onclick="toggleSignupPasswordVisibility()"
-                            aria-label="비밀번호 표시"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                        </button>
+                        <div
+                            id="authEmailError"
+                            class="auth-field-error"
+                        ></div>
 
                     </div>
 
+
+                    <div class="auth-field">
+
+                        <label class="auth-field-label">
+                            비밀번호
+                        </label>
+
+                        <div class="auth-input-wrap">
+
+                            <input
+                                type="password"
+                                id="authPasswordInput"
+                                class="auth-input"
+                                placeholder="6자 이상"
+                                autocomplete="current-password"
+                            >
+
+                            <button
+                                type="button"
+                                id="authPasswordToggle"
+                                class="auth-password-toggle"
+                                onclick="togglePasswordVisibility()"
+                                aria-label="비밀번호 표시"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                        <div
+                            id="authPasswordError"
+                            class="auth-field-error"
+                        ></div>
+
+                    </div>
+
+
                     <div
-                        id="authSignupPasswordError"
-                        class="auth-field-error"
+                        id="authMessage"
+                        class="auth-message"
                     ></div>
 
-                </div>
 
-
-                <div class="auth-field">
-
-                    <label class="auth-field-label">
-                        비밀번호 확인
-                    </label>
-
-                    <input
-                        type="password"
-                        id="authSignupPasswordConfirmInput"
-                        class="auth-input"
-                        placeholder="비밀번호 재입력"
-                        autocomplete="new-password"
-                    >
-
-                    <div
-                        id="authSignupPasswordConfirmError"
-                        class="auth-field-error"
-                    ></div>
-
-                </div>
-
-
-                <div
-                    id="authSignupMessage"
-                    class="auth-message"
-                ></div>
-
-
-                <button
-                    type="button"
-                    id="authSignupSubmitBtn"
-                    class="auth-submit-btn"
-                    onclick="handleSignUp()"
-                >
-                    회원가입
-                </button>
-
-
-                <div class="auth-mode-hint">
-                    이미 계정이 있으신가요?
                     <button
                         type="button"
-                        class="auth-mode-hint-btn"
-                        onclick="switchAuthMode('login')"
+                        id="authSubmitBtn"
+                        class="auth-submit-btn"
+                        onclick="handleSignIn()"
                     >
                         로그인
                     </button>
+
+
+                    <div class="auth-mode-hint">
+                        계정이 없으신가요?
+                        <button
+                            type="button"
+                            class="auth-mode-hint-btn"
+                            onclick="switchAuthMode('signup')"
+                        >
+                            회원가입
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- 회원가입 모드 -->
+
+                <div id="authSignupView" class="auth-view-inner" style="display: none;">
+
+                    <div class="auth-field">
+
+                        <label class="auth-field-label">
+                            이메일
+                        </label>
+
+                        <input
+                            type="email"
+                            id="authSignupEmailInput"
+                            class="auth-input"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            autocapitalize="off"
+                            spellcheck="false"
+                        >
+
+                        <div
+                            id="authSignupEmailError"
+                            class="auth-field-error"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="auth-field">
+
+                        <label class="auth-field-label">
+                            비밀번호
+                        </label>
+
+                        <div class="auth-input-wrap">
+
+                            <input
+                                type="password"
+                                id="authSignupPasswordInput"
+                                class="auth-input"
+                                placeholder="6자 이상"
+                                autocomplete="new-password"
+                            >
+
+                            <button
+                                type="button"
+                                id="authSignupPasswordToggle"
+                                class="auth-password-toggle"
+                                onclick="toggleSignupPasswordVisibility()"
+                                aria-label="비밀번호 표시"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+
+                        </div>
+
+                        <div
+                            id="authSignupPasswordError"
+                            class="auth-field-error"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="auth-field">
+
+                        <label class="auth-field-label">
+                            비밀번호 확인
+                        </label>
+
+                        <input
+                            type="password"
+                            id="authSignupPasswordConfirmInput"
+                            class="auth-input"
+                            placeholder="비밀번호 재입력"
+                            autocomplete="new-password"
+                        >
+
+                        <div
+                            id="authSignupPasswordConfirmError"
+                            class="auth-field-error"
+                        ></div>
+
+                    </div>
+
+
+                    <div
+                        id="authSignupMessage"
+                        class="auth-message"
+                    ></div>
+
+
+                    <button
+                        type="button"
+                        id="authSignupSubmitBtn"
+                        class="auth-submit-btn"
+                        onclick="handleSignUp()"
+                    >
+                        회원가입
+                    </button>
+
+
+                    <div class="auth-mode-hint">
+                        이미 계정이 있으신가요?
+                        <button
+                            type="button"
+                            class="auth-mode-hint-btn"
+                            onclick="switchAuthMode('login')"
+                        >
+                            로그인
+                        </button>
+                    </div>
+
                 </div>
 
             </div>
