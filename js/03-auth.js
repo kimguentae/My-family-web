@@ -660,44 +660,55 @@ function resizeAvatarImage(dataUrl, maxSize, callback) {
 
 
 /* =========================
-   이번 달 요약
+   소비 리포트
 ========================= */
 
 function renderAccountMonthSummary() {
 
-    const label =
-        document.getElementById("authMonthSummaryMonth");
+    /* 기존 이름 유지 (다른 곳에서 호출 중이므로) */
 
-    const expenseElement =
-        document.getElementById("authMonthExpense");
+    renderAccountReport();
 
-    const incomeElement =
-        document.getElementById("authMonthIncome");
-
-    const balanceElement =
-        document.getElementById("authMonthBalance");
-
-    const budgetWrap =
-        document.getElementById("authMonthBudgetWrap");
-
-    const budgetPercent =
-        document.getElementById("authMonthBudgetPercent");
-
-    const budgetFill =
-        document.getElementById("authMonthBudgetFill");
+}
 
 
-    if (!expenseElement || !incomeElement || !balanceElement) {
-        return;
-    }
+function renderAccountReport() {
+
+    const monthLabel =
+        document.getElementById("authReportMonthLabel");
+
+    const monthSub =
+        document.getElementById("authReportMonthSub");
+
+    const todayExpenseEl =
+        document.getElementById("authReportTodayExpense");
+
+    const weekExpenseEl =
+        document.getElementById("authReportWeekExpense");
+
+    const topCategoryEl =
+        document.getElementById("authReportTopCategory");
+
+    const topCategoryAmountEl =
+        document.getElementById("authReportTopCategoryAmount");
+
+    const streakEl =
+        document.getElementById("authReportStreak");
+
+    const streakSubEl =
+        document.getElementById("authReportStreakSub");
 
 
-    const now = new Date();
+    if (!todayExpenseEl) return;
 
-    const year = now.getFullYear();
 
-    const month = now.getMonth();
+    const today = new Date();
 
+    const todayStr = getTodayString();
+
+    const year = today.getFullYear();
+
+    const month = today.getMonth();
 
     const monthStart =
         `${year}-${String(month + 1).padStart(2, "0")}-01`;
@@ -708,106 +719,230 @@ function renderAccountMonthSummary() {
         ).padStart(2, "0")}`;
 
 
-    if (label) {
-        label.innerText = `${month + 1}월`;
+    if (monthLabel) {
+        monthLabel.innerText = `${month + 1}월`;
+    }
+
+    if (monthSub) {
+        monthSub.innerText = `${year}년`;
     }
 
 
-    let expenseTotal = 0;
-    let incomeTotal = 0;
+    /* 이번 주 범위 (월~일) */
+
+    const dayOfWeek = today.getDay();
+
+    const mondayOffset =
+        dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+    const weekStartDate =
+        new Date(today.getFullYear(), today.getMonth(), today.getDate() + mondayOffset);
+
+    const weekEndDate =
+        new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() + 6);
+
+    const pad = function(n) { return String(n).padStart(2, "0"); };
+
+    const weekStart =
+        `${weekStartDate.getFullYear()}-${pad(weekStartDate.getMonth() + 1)}-${pad(weekStartDate.getDate())}`;
+
+    const weekEnd =
+        `${weekEndDate.getFullYear()}-${pad(weekEndDate.getMonth() + 1)}-${pad(weekEndDate.getDate())}`;
+
+
+    let todayExpense = 0;
+    let weekExpense = 0;
+
+    const monthCategoryTotals = {};
 
 
     (transactions || []).forEach(function(transaction) {
 
+        const amount = Number(transaction.amount) || 0;
+
+        /* 오늘 지출 */
+
         if (
-            transaction.date < monthStart ||
-            transaction.date > monthEnd
+            transaction.type === "expense" &&
+            transaction.date === todayStr
         ) {
-            return;
+            todayExpense += amount;
         }
 
-        if (transaction.type === "expense") {
-            expenseTotal += Number(transaction.amount) || 0;
+
+        /* 이번 주 지출 */
+
+        if (
+            transaction.type === "expense" &&
+            transaction.date >= weekStart &&
+            transaction.date <= weekEnd
+        ) {
+            weekExpense += amount;
         }
-        else {
-            incomeTotal += Number(transaction.amount) || 0;
+
+
+        /* 이번 달 카테고리 집계 */
+
+        if (
+            transaction.type === "expense" &&
+            transaction.date >= monthStart &&
+            transaction.date <= monthEnd
+        ) {
+
+            const category = transaction.category || "미분류";
+
+            if (!monthCategoryTotals[category]) {
+                monthCategoryTotals[category] = 0;
+            }
+
+            monthCategoryTotals[category] += amount;
+
         }
 
     });
 
 
-    const balance = incomeTotal - expenseTotal;
+    todayExpenseEl.innerText =
+        formatAnalysisAmount(todayExpense) + "원";
+
+    weekExpenseEl.innerText =
+        formatAnalysisAmount(weekExpense) + "원";
 
 
-    expenseElement.innerText =
-        formatAnalysisAmount(expenseTotal) + "원";
+    /* 가장 많이 쓴 카테고리 */
 
-    incomeElement.innerText =
-        formatAnalysisAmount(incomeTotal) + "원";
-
-    balanceElement.innerText =
-        (balance < 0 ? "-" : "") +
-        formatAnalysisAmount(Math.abs(balance)) + "원";
-
-    balanceElement.classList.remove("expense", "income", "negative");
-
-    if (balance < 0) {
-        balanceElement.classList.add("expense");
-    }
-    else if (balance > 0) {
-        balanceElement.classList.add("income");
-    }
+    const sortedCategories =
+        Object.entries(monthCategoryTotals)
+            .sort(function(a, b) {
+                return b[1] - a[1];
+            });
 
 
-    /* 예산 사용률 */
+    if (topCategoryEl && topCategoryAmountEl) {
 
-    const budgets =
-        (settings && settings.budgets) || {};
+        if (sortedCategories.length > 0) {
 
+            const [topName, topAmount] = sortedCategories[0];
 
-    const totalBudget =
-        Object.values(budgets).reduce(
-            function(sum, value) {
-                return sum + (Number(value) || 0);
-            },
-            0
-        );
+            topCategoryEl.innerText = topName;
 
+            const monthExpenseTotal =
+                Object.values(monthCategoryTotals)
+                    .reduce(function(s, v) { return s + v; }, 0);
 
-    if (totalBudget > 0 && budgetWrap) {
+            const percent =
+                monthExpenseTotal > 0
+                    ? Math.round((topAmount / monthExpenseTotal) * 100)
+                    : 0;
 
-        budgetWrap.style.display = "block";
+            topCategoryAmountEl.innerText =
+                formatAnalysisAmount(topAmount) + "원 · " + percent + "%";
 
-
-        const percent =
-            Math.min(
-                100,
-                Math.round((expenseTotal / totalBudget) * 100)
-            );
-
-
-        if (budgetPercent) {
-            budgetPercent.innerText = percent + "%";
         }
+        else {
 
-        if (budgetFill) {
+            topCategoryEl.innerText = "-";
 
-            budgetFill.style.width = percent + "%";
-
-            budgetFill.classList.toggle(
-                "over",
-                expenseTotal > totalBudget
-            );
+            topCategoryAmountEl.innerText = "";
 
         }
 
     }
 
-    else if (budgetWrap) {
 
-        budgetWrap.style.display = "none";
+    /* 연속 기록 */
+
+    const streak = calculateStreak();
+
+    if (streakEl) {
+        streakEl.innerText = streak + "일";
+    }
+
+    if (streakSubEl) {
+
+        if (streak >= 30) {
+            streakSubEl.innerText = "🔥 한 달 넘게 이어가는 중";
+        }
+        else if (streak >= 7) {
+            streakSubEl.innerText = "🔥 일주일 넘게 이어가는 중";
+        }
+        else if (streak >= 3) {
+            streakSubEl.innerText = "💪 좋은 습관이에요";
+        }
+        else if (streak >= 1) {
+            streakSubEl.innerText = "시작이 반이에요";
+        }
+        else {
+            streakSubEl.innerText = "오늘 기록하고 시작해보세요";
+        }
 
     }
+
+}
+
+
+function calculateStreak() {
+
+    if (!transactions || !transactions.length) return 0;
+
+
+    /* 거래가 있는 날짜 Set */
+
+    const datesWithTransactions = new Set();
+
+    transactions.forEach(function(t) {
+        if (t.date) {
+            datesWithTransactions.add(t.date);
+        }
+    });
+
+
+    let streak = 0;
+
+    const cursor = new Date();
+
+    /* 오늘부터 거꾸로 세기 */
+
+    while (true) {
+
+        const pad = function(n) { return String(n).padStart(2, "0"); };
+
+        const dateStr =
+            `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}-${pad(cursor.getDate())}`;
+
+
+        if (datesWithTransactions.has(dateStr)) {
+
+            streak += 1;
+
+            cursor.setDate(cursor.getDate() - 1);
+
+        }
+        else {
+
+            /* 오늘 기록이 없으면 어제부터 체크 (오늘 아직 안 쓴 경우) */
+
+            if (streak === 0) {
+
+                cursor.setDate(cursor.getDate() - 1);
+
+                const yesterdayStr =
+                    `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}-${pad(cursor.getDate())}`;
+
+                if (datesWithTransactions.has(yesterdayStr)) {
+                    continue;
+                }
+
+            }
+
+            break;
+
+        }
+
+    }
+
+
+    return streak;
 
 }
 
@@ -1530,7 +1665,7 @@ async function handleSignIn() {
 function confirmSignOut() {
 
     appConfirm(
-        "로그아웃하시겠어요?\n\n서버에 저장된 데이터는 안전하게 보관됩니다.\n이 기기의 임시 데이터만 정리됩니다.",
+        "서버에 저장된 데이터는 안전하게 보관됩니다.\n이 기기의 임시 데이터만 정리됩니다.",
         {
             title: "로그아웃",
             confirmText: "로그아웃",

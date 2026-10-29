@@ -1314,23 +1314,6 @@
                         </svg>
                     </div>
 
-                    <div class="auth-profile-avatar-edit">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M12 20h9"/>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                        </svg>
-                    </div>
-
                 </button>
 
                 <input
@@ -1348,59 +1331,54 @@
             </div>
 
 
-            <!-- 이번 달 요약 -->
+            <!-- 소비 리포트 -->
 
-            <div class="auth-month-summary">
+            <div class="auth-report-card">
 
-                <div class="auth-month-summary-title">
-                    <span id="authMonthSummaryLabel">이번 달</span>
-                    <span class="auth-month-summary-sub" id="authMonthSummaryMonth"></span>
+                <div class="auth-report-title">
+                    <span id="authReportMonthLabel">이번 달</span>
+                    <span class="auth-report-sub" id="authReportMonthSub"></span>
                 </div>
 
-                <div class="auth-month-summary-rows">
+                <div class="auth-report-grid">
 
-                    <div class="auth-month-summary-row">
-                        <span class="auth-month-summary-row-label">지출</span>
-                        <span
-                            class="auth-month-summary-row-value expense"
-                            id="authMonthExpense"
-                        >0원</span>
-                    </div>
-
-                    <div class="auth-month-summary-row">
-                        <span class="auth-month-summary-row-label">수입</span>
-                        <span
-                            class="auth-month-summary-row-value income"
-                            id="authMonthIncome"
-                        >0원</span>
-                    </div>
-
-                    <div class="auth-month-summary-row auth-month-summary-row-balance">
-                        <span class="auth-month-summary-row-label">잔액</span>
-                        <span
-                            class="auth-month-summary-row-value"
-                            id="authMonthBalance"
-                        >0원</span>
-                    </div>
-
-                </div>
-
-                <div
-                    id="authMonthBudgetWrap"
-                    class="auth-month-budget"
-                    style="display: none;"
-                >
-
-                    <div class="auth-month-budget-header">
-                        <span>예산 사용률</span>
-                        <span id="authMonthBudgetPercent">0%</span>
-                    </div>
-
-                    <div class="auth-month-budget-bar">
+                    <div class="auth-report-item">
+                        <div class="auth-report-item-label">오늘 지출</div>
                         <div
-                            id="authMonthBudgetFill"
-                            class="auth-month-budget-fill"
-                            style="width: 0%;"
+                            class="auth-report-item-value"
+                            id="authReportTodayExpense"
+                        >0원</div>
+                    </div>
+
+                    <div class="auth-report-item">
+                        <div class="auth-report-item-label">이번 주 지출</div>
+                        <div
+                            class="auth-report-item-value"
+                            id="authReportWeekExpense"
+                        >0원</div>
+                    </div>
+
+                    <div class="auth-report-item auth-report-item-wide">
+                        <div class="auth-report-item-label">가장 많이 쓴 카테고리</div>
+                        <div
+                            class="auth-report-item-value"
+                            id="authReportTopCategory"
+                        >-</div>
+                        <div
+                            class="auth-report-item-sub"
+                            id="authReportTopCategoryAmount"
+                        ></div>
+                    </div>
+
+                    <div class="auth-report-item auth-report-item-wide">
+                        <div class="auth-report-item-label">연속 기록</div>
+                        <div
+                            class="auth-report-item-value auth-report-streak"
+                            id="authReportStreak"
+                        >0일</div>
+                        <div
+                            class="auth-report-item-sub"
+                            id="authReportStreakSub"
                         ></div>
                     </div>
 
