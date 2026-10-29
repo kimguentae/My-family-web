@@ -1195,3 +1195,67 @@ input {
         font-size: 11px;
     }
 }
+
+/* =========================
+   사용 설정 카드 (지출/수입 토글)
+========================= */
+
+.usage-setting-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 2px 0 8px;
+}
+
+.usage-setting-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 60px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.usage-setting-card-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    line-height: 1.3;
+    word-break: keep-all;
+    flex: 1;
+    min-width: 0;
+}
+
+.usage-setting-card .switch {
+    flex-shrink: 0;
+    width: 44px;
+    height: 26px;
+}
+
+.usage-setting-card .slider::before {
+    width: 20px;
+    height: 20px;
+}
+
+.usage-setting-card .switch input:checked + .slider::before {
+    transform: translateX(18px);
+}
+
+@media (max-width: 360px) {
+    .usage-setting-grid {
+        gap: 8px;
+    }
+
+    .usage-setting-card {
+        padding: 12px 12px 10px;
+        min-height: 56px;
+    }
+
+    .usage-setting-card-label {
+        font-size: 13px;
+    }
+}

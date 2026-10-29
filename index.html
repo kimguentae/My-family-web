@@ -574,33 +574,17 @@
 
             <div
                 class="setting-row setting-link"
-                onclick="showScreen('memoSettings')"
+                onclick="showScreen('usageSettings')"
             >
-                <span>메모 설정</span>
+                <span>사용 설정</span>
                 <span class="arrow">›</span>
             </div>
 
             <div
                 class="setting-row setting-link"
-                onclick="showScreen('categorySettings')"
+                onclick="showScreen('manageSettings')"
             >
-                <span>카테고리 설정</span>
-                <span class="arrow">›</span>
-            </div>
-
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('paymentSettings')"
-            >
-                <span>결제수단 설정</span>
-                <span class="arrow">›</span>
-            </div>
-
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('subjectSettings')"
-            >
-                <span>주체 설정</span>
+                <span>카테고리·결제수단·주체 관리</span>
                 <span class="arrow">›</span>
             </div>
 
@@ -617,105 +601,38 @@
     </section>
 
 
-    <!-- 메모 설정 -->
+    <!-- 사용 설정 -->
 
     <section
-        id="memoSettingsScreen"
+        id="usageSettingsScreen"
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="card-section-title">지출</div>
 
-            <div class="setting-row">
+        <div
+            id="usageExpenseGrid"
+            class="usage-setting-grid"
+        ></div>
 
-                <span>지출에서 사용</span>
+        <div class="card-section-title">수입</div>
 
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="memoExpenseToggle"
-                        onchange="toggleMemoExpense()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-            <div class="setting-row">
-
-                <span>수입에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="memoIncomeToggle"
-                        onchange="toggleMemoIncome()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-        </div>
+        <div
+            id="usageIncomeGrid"
+            class="usage-setting-grid"
+        ></div>
 
     </section>
 
 
-    <!-- 카테고리 설정 -->
+    <!-- 카테고리·결제수단·주체 관리 -->
 
     <section
-        id="categorySettingsScreen"
+        id="manageSettingsScreen"
         class="screen"
     >
 
-        <div class="settings-list">
-
-            <div class="setting-row">
-
-                <span>지출에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="categoryExpenseToggle"
-                        onchange="toggleCategoryExpense()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-            <div class="setting-row">
-
-                <span>수입에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="categoryIncomeToggle"
-                        onchange="toggleCategoryIncome()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-        </div>
-
-
-        <div class="card-section-title">지출</div>
+        <div class="card-section-title">지출 카테고리</div>
 
         <div
             id="expenseCategoryList"
@@ -723,62 +640,12 @@
         ></div>
 
 
-        <div class="card-section-title">수입</div>
+        <div class="card-section-title">수입 카테고리</div>
 
         <div
             id="incomeCategoryList"
             class="card-grid"
         ></div>
-
-    </section>
-
-
-    <!-- 결제수단 설정 -->
-
-    <section
-        id="paymentSettingsScreen"
-        class="screen"
-    >
-
-        <div class="settings-list">
-
-            <div class="setting-row">
-
-                <span>지출에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="paymentExpenseToggle"
-                        onchange="togglePaymentExpense()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-            <div class="setting-row">
-
-                <span>수입에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="paymentIncomeToggle"
-                        onchange="togglePaymentIncome()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-        </div>
 
 
         <div class="card-section-title">결제수단</div>
@@ -787,56 +654,6 @@
             id="paymentMethodList"
             class="card-grid"
         ></div>
-
-    </section>
-
-
-    <!-- 주체 설정 -->
-
-    <section
-        id="subjectSettingsScreen"
-        class="screen"
-    >
-
-        <div class="settings-list">
-
-            <div class="setting-row">
-
-                <span>지출에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="subjectExpenseToggle"
-                        onchange="toggleSubjectExpense()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-            <div class="setting-row">
-
-                <span>수입에서 사용</span>
-
-                <label class="switch">
-
-                    <input
-                        type="checkbox"
-                        id="subjectIncomeToggle"
-                        onchange="toggleSubjectIncome()"
-                    >
-
-                    <span class="slider"></span>
-
-                </label>
-
-            </div>
-
-        </div>
 
 
         <div class="card-section-title">주체</div>

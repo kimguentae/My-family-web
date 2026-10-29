@@ -71,11 +71,9 @@ function showScreen(screenName) {
         analysis: "분석",
         settings: "설정",
         inputSettings: "입력 설정",
+        usageSettings: "사용 설정",
+        manageSettings: "관리",
         budgetSettings: "예산 설정",
-        memoSettings: "메모 설정",
-        categorySettings: "카테고리 설정",
-        paymentSettings: "결제수단 설정",
-        subjectSettings: "주체 설정",
         historyExport: "엑셀로 저장",
         analysisSettings: "분석 설정"
 
@@ -125,11 +123,9 @@ function showScreen(screenName) {
             const showBackButton =
                 screenName === "settings" ||
                 screenName === "inputSettings" ||
+                screenName === "usageSettings" ||
+                screenName === "manageSettings" ||
                 screenName === "budgetSettings" ||
-                screenName === "memoSettings" ||
-                screenName === "categorySettings" ||
-                screenName === "paymentSettings" ||
-                screenName === "subjectSettings" ||
                 screenName === "historyExport" ||
                 screenName === "analysisSettings" ||
                 screenName === "accountSettings";
@@ -167,10 +163,7 @@ function showScreen(screenName) {
     if (
         screenName === "settings" ||
         screenName === "inputSettings" ||
-        screenName === "memoSettings" ||
-        screenName === "categorySettings" ||
-        screenName === "paymentSettings" ||
-        screenName === "subjectSettings" ||
+        screenName === "usageSettings" ||
         screenName === "analysisSettings"
     ) {
 
@@ -179,23 +172,17 @@ function showScreen(screenName) {
     }
 
 
+    if (screenName === "manageSettings") {
+
+        renderCategoryManagement();
+        renderPaymentManagement();
+        renderSubjectManagement();
+
+    }
+
+
     if (screenName === "budgetSettings") {
         renderBudgetSettings();
-    }
-
-
-    if (screenName === "categorySettings") {
-        renderCategoryManagement();
-    }
-
-
-    if (screenName === "paymentSettings") {
-        renderPaymentManagement();
-    }
-
-
-    if (screenName === "subjectSettings") {
-        renderSubjectManagement();
     }
 
 
@@ -240,10 +227,8 @@ function goBackFromHeader() {
 
 
     if (
-        currentScreen === "memoSettings" ||
-        currentScreen === "categorySettings" ||
-        currentScreen === "paymentSettings" ||
-        currentScreen === "subjectSettings" ||
+        currentScreen === "usageSettings" ||
+        currentScreen === "manageSettings" ||
         currentScreen === "budgetSettings"
     ) {
         showScreen("inputSettings");

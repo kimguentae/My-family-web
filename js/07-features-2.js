@@ -3,60 +3,41 @@
 ========================= */
 
 /* =========================
-   설정 UI
+   설정 UI (사용 설정 카드형)
 ========================= */
+
+const usageSettingMeta = {
+
+    memo: {
+        expenseKey: "memoExpenseEnabled",
+        incomeKey: "memoIncomeEnabled",
+        label: "메모"
+    },
+
+    category: {
+        expenseKey: "categoryExpenseEnabled",
+        incomeKey: "categoryIncomeEnabled",
+        label: "카테고리"
+    },
+
+    payment: {
+        expenseKey: "paymentExpenseEnabled",
+        incomeKey: "paymentIncomeEnabled",
+        label: "결제수단"
+    },
+
+    subject: {
+        expenseKey: "subjectExpenseEnabled",
+        incomeKey: "subjectIncomeEnabled",
+        label: "주체"
+    }
+
+};
+
 
 function updateSettingsUI() {
 
-    const memoExpenseToggle =
-        document.getElementById("memoExpenseToggle");
-
-    const memoIncomeToggle =
-        document.getElementById("memoIncomeToggle");
-
-    const categoryExpenseToggle =
-        document.getElementById("categoryExpenseToggle");
-
-    const categoryIncomeToggle =
-        document.getElementById("categoryIncomeToggle");
-
-    const paymentExpenseToggle =
-        document.getElementById("paymentExpenseToggle");
-
-    const paymentIncomeToggle =
-        document.getElementById("paymentIncomeToggle");
-
-    const subjectExpenseToggle =
-        document.getElementById("subjectExpenseToggle");
-
-    const subjectIncomeToggle =
-        document.getElementById("subjectIncomeToggle");
-
-
-    if (memoExpenseToggle)
-        memoExpenseToggle.checked = settings.memoExpenseEnabled;
-
-    if (memoIncomeToggle)
-        memoIncomeToggle.checked = settings.memoIncomeEnabled;
-
-    if (categoryExpenseToggle)
-        categoryExpenseToggle.checked = settings.categoryExpenseEnabled;
-
-    if (categoryIncomeToggle)
-        categoryIncomeToggle.checked = settings.categoryIncomeEnabled;
-
-    if (paymentExpenseToggle)
-        paymentExpenseToggle.checked = settings.paymentExpenseEnabled;
-
-    if (paymentIncomeToggle)
-        paymentIncomeToggle.checked = settings.paymentIncomeEnabled;
-
-    if (subjectExpenseToggle)
-        subjectExpenseToggle.checked = settings.subjectExpenseEnabled;
-
-    if (subjectIncomeToggle)
-        subjectIncomeToggle.checked = settings.subjectIncomeEnabled;
-
+    renderUsageSettings();
 
     updateInputAreas();
 
@@ -67,154 +48,188 @@ function updateSettingsUI() {
 }
 
 
-function toggleMemoExpense() {
+function renderUsageSettings() {
 
-    settings.memoExpenseEnabled =
-        document.getElementById("memoExpenseToggle").checked;
+    const expenseGrid =
+        document.getElementById("usageExpenseGrid");
 
-
-    if (currentType === "expense" && !settings.memoExpenseEnabled) {
-
-        const input =
-            document.getElementById("memoInput");
-
-        if (input) input.value = "";
-
-    }
+    const incomeGrid =
+        document.getElementById("usageIncomeGrid");
 
 
-    saveSettings();
-    updateInputAreas();
-
-}
+    if (!expenseGrid || !incomeGrid) return;
 
 
-function toggleMemoIncome() {
+    expenseGrid.innerHTML = "";
 
-    settings.memoIncomeEnabled =
-        document.getElementById("memoIncomeToggle").checked;
-
-
-    if (currentType === "income" && !settings.memoIncomeEnabled) {
-
-        const input =
-            document.getElementById("memoInput");
-
-        if (input) input.value = "";
-
-    }
+    incomeGrid.innerHTML = "";
 
 
-    saveSettings();
-    updateInputAreas();
-
-}
+    const order = ["memo", "category", "payment", "subject"];
 
 
-function toggleCategoryExpense() {
+    order.forEach((key) => {
 
-    settings.categoryExpenseEnabled =
-        document.getElementById("categoryExpenseToggle").checked;
+        const meta = usageSettingMeta[key];
 
-
-    if (currentType === "expense" && !settings.categoryExpenseEnabled) {
-        selectedCategory = "";
-    }
+        if (!meta) return;
 
 
-    saveSettings();
-    renderCategoryButtons();
-    updateInputAreas();
+        /* 지출 */
+
+        expenseGrid.appendChild(
+            createUsageSettingCard(
+                meta.label,
+                meta.expenseKey,
+                "expense"
+            )
+        );
+
+
+        /* 수입 */
+
+        incomeGrid.appendChild(
+            createUsageSettingCard(
+                meta.label,
+                meta.incomeKey,
+                "income"
+            )
+        );
+
+    });
 
 }
 
 
-function toggleCategoryIncome() {
+function createUsageSettingCard(
+    label,
+    settingKey,
+    type
+) {
 
-    settings.categoryIncomeEnabled =
-        document.getElementById("categoryIncomeToggle").checked;
+    const card = document.createElement("div");
 
-
-    if (currentType === "income" && !settings.categoryIncomeEnabled) {
-        selectedCategory = "";
-    }
-
-
-    saveSettings();
-    renderCategoryButtons();
-    updateInputAreas();
-
-}
+    card.className = "usage-setting-card";
 
 
-function togglePaymentExpense() {
+    const labelElement = document.createElement("div");
 
-    settings.paymentExpenseEnabled =
-        document.getElementById("paymentExpenseToggle").checked;
+    labelElement.className = "usage-setting-card-label";
 
-
-    if (currentType === "expense" && !settings.paymentExpenseEnabled) {
-        selectedPayment = "";
-    }
+    labelElement.innerText = label;
 
 
-    saveSettings();
-    renderPaymentButtons();
-    updateInputAreas();
+    const switchLabel = document.createElement("label");
 
-}
+    switchLabel.className = "switch";
 
 
-function togglePaymentIncome() {
+    const checkbox = document.createElement("input");
 
-    settings.paymentIncomeEnabled =
-        document.getElementById("paymentIncomeToggle").checked;
+    checkbox.type = "checkbox";
 
-
-    if (currentType === "income" && !settings.paymentIncomeEnabled) {
-        selectedPayment = "";
-    }
+    checkbox.checked = !!settings[settingKey];
 
 
-    saveSettings();
-    renderPaymentButtons();
-    updateInputAreas();
+    checkbox.onchange = function() {
 
-}
+        settings[settingKey] = checkbox.checked;
 
 
-function toggleSubjectExpense() {
+        if (type === "expense" && currentType === "expense") {
 
-    settings.subjectExpenseEnabled =
-        document.getElementById("subjectExpenseToggle").checked;
+            if (
+                settingKey === "memoExpenseEnabled" &&
+                !checkbox.checked
+            ) {
+                const input = document.getElementById("memoInput");
+                if (input) input.value = "";
+            }
+
+            if (
+                settingKey === "categoryExpenseEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedCategory = "";
+            }
+
+            if (
+                settingKey === "paymentExpenseEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedPayment = "";
+            }
+
+            if (
+                settingKey === "subjectExpenseEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedSubject = "";
+            }
+
+        }
+
+        else if (type === "income" && currentType === "income") {
+
+            if (
+                settingKey === "memoIncomeEnabled" &&
+                !checkbox.checked
+            ) {
+                const input = document.getElementById("memoInput");
+                if (input) input.value = "";
+            }
+
+            if (
+                settingKey === "categoryIncomeEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedCategory = "";
+            }
+
+            if (
+                settingKey === "paymentIncomeEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedPayment = "";
+            }
+
+            if (
+                settingKey === "subjectIncomeEnabled" &&
+                !checkbox.checked
+            ) {
+                selectedSubject = "";
+            }
+
+        }
 
 
-    if (currentType === "expense" && !settings.subjectExpenseEnabled) {
-        selectedSubject = "";
-    }
+        saveSettings();
+
+        updateInputAreas();
+
+        renderCategoryButtons();
+        renderSubjectButtons();
+        renderPaymentButtons();
+
+    };
 
 
-    saveSettings();
-    renderSubjectButtons();
-    updateInputAreas();
+    const slider = document.createElement("span");
 
-}
+    slider.className = "slider";
 
 
-function toggleSubjectIncome() {
+    switchLabel.appendChild(checkbox);
 
-    settings.subjectIncomeEnabled =
-        document.getElementById("subjectIncomeToggle").checked;
-
-
-    if (currentType === "income" && !settings.subjectIncomeEnabled) {
-        selectedSubject = "";
-    }
+    switchLabel.appendChild(slider);
 
 
-    saveSettings();
-    renderSubjectButtons();
-    updateInputAreas();
+    card.appendChild(labelElement);
+
+    card.appendChild(switchLabel);
+
+
+    return card;
 
 }
 
@@ -299,8 +314,6 @@ function renderAnalysisGroupOrderList() {
     container.classList.add("analysis-card-grid");
 
 
-    /* 설정에 저장된 순서대로 렌더 */
-
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
         settings.analysisGroupOrder.length === 4
@@ -324,16 +337,12 @@ function renderAnalysisGroupOrderList() {
         card.dataset.key = key;
 
 
-        /* 카드 이름 */
-
         const name = document.createElement("div");
 
         name.className = "analysis-setting-card-name";
 
         name.innerText = meta.label;
 
-
-        /* 토글 */
 
         const switchLabel = document.createElement("label");
 
@@ -388,8 +397,6 @@ function renderAnalysisGroupOrderList() {
 
         container.appendChild(card);
 
-
-        /* 카드 드래그 (순서 변경) */
 
         initializeManageCardDrag(
             card,
@@ -2735,16 +2742,10 @@ function initializeManageCardDrag(
     let CELL_H = 100;
     let COLUMNS = 4;
 
-    /* 드래그 시작 시점의 카드 인덱스 */
-
     let originIndex = 0;
-
-    /* 드래그 시작 시점의 카드 원래 좌상단 위치 */
 
     let originLeft = 0;
     let originTop = 0;
-
-    /* 현재까지 반영된 카드의 인덱스 (이동 중 갱신됨) */
 
     let currentIndex = 0;
 
@@ -2763,8 +2764,6 @@ function initializeManageCardDrag(
         const grid = getGrid();
 
         if (!grid) return;
-
-        /* 그리드 안의 첫 번째 자식 (추가 카드 제외) */
 
         let firstCard = null;
 
@@ -2827,15 +2826,11 @@ function initializeManageCardDrag(
     }
 
 
-    /* 다른 카드들의 위치를 시각적으로 밀어주는 함수 */
-
     function updateOtherCardsVisual(newIndex) {
 
         const grid = getGrid();
 
         if (!grid) return;
-
-        /* 그리드의 모든 자식 중 드래그 카드 제외 */
 
         const cards =
             Array.from(grid.children).filter(el => {
@@ -2892,8 +2887,6 @@ function initializeManageCardDrag(
     }
 
 
-    /* 시작 */
-
     card.addEventListener(
         "touchstart",
         function(event) {
@@ -2948,8 +2941,6 @@ function initializeManageCardDrag(
         { passive: true }
     );
 
-
-    /* 이동 */
 
     card.addEventListener(
         "touchmove",
@@ -3013,13 +3004,9 @@ function initializeManageCardDrag(
             }
 
 
-            /* 드래그 카드 이동 */
-
             card.style.transform =
                 `translate(${diffX}px, ${diffY}px) scale(1.05)`;
 
-
-            /* 목표 인덱스 계산 */
 
             const grid = getGrid();
 
@@ -3064,8 +3051,6 @@ function initializeManageCardDrag(
         { passive: true }
     );
 
-
-    /* 종료 */
 
     function finishDrag() {
 
