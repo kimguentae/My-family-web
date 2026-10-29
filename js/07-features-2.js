@@ -599,8 +599,6 @@ function applyAnalysisDates() {
     ) return;
 
 
-    /* 시작일 텍스트 */
-
     if (startInput.value) {
 
         startText.innerText =
@@ -608,8 +606,6 @@ function applyAnalysisDates() {
 
     }
 
-
-    /* 종료일 텍스트 */
 
     if (endInput.value) {
 
@@ -619,12 +615,8 @@ function applyAnalysisDates() {
     }
 
 
-    /* 날짜 범위 한 줄에 맞추기 */
-
     fitAnalysisDateRow();
 
-
-    /* 분석 다시 그리기 */
 
     analysisSelectedCategory = "";
     analysisSelectedPayment = "";
@@ -1371,8 +1363,6 @@ function renderAnalysisMonthlyChart(
     const monthKeys =
         getAnalysisMonthKeys(startDate, endDate);
 
-
-    /* 12개월 초과면 스크롤 모드 */
 
     if (monthKeys.length > 12) {
         container.classList.add("many-months");
@@ -2598,7 +2588,7 @@ function deleteSubject(index) {
 
 
 /* =========================
-   관리 카드 (카테고리/결제수단/주체/예산 공용)
+   관리 카드 (카테고리/결제수단/주체 공용)
 ========================= */
 
 function createManageCard(
@@ -2705,7 +2695,7 @@ function createManageCard(
 
 
 /* =========================
-   관리 카드 자유 드래그 (그리드 순서 변경)
+   관리 카드 드래그 (스냅 + CSS transform 방식)
 ========================= */
 
 function initializeManageCardDrag(
@@ -2724,26 +2714,152 @@ function initializeManageCardDrag(
 
     let isLongPress = false;
 
-    /* 카드 실제 크기 */
-
     let CELL_W = 100;
     let CELL_H = 100;
+    let COLUMNS = 4;
 
-    const COLUMNS = 4;
+    /* 드래그 시작 시점의 카드 인덱스 */
+
+    let originIndex = 0;
+
+    /* 드래그 시작 시점의 카드 원래 좌상단 위치 */
+
+    let originLeft = 0;
+    let originTop = 0;
+
+    /* 현재까지 반영된 카드의 인덱스 (이동 중 갱신됨) */
+
+    let currentIndex = 0;
 
     const LONG_PRESS_MS = 500;
-
-    /* 확실히 커진 임계값 */
-
     const MOVE_THRESHOLD = 10;
-
-    /* 드래그 시작까지 더 확실히 기다림 */
-
     const DRAG_START_THRESHOLD = 18;
 
-    /* 이동 감지 최소 비율 (카드 크기의 60% 이상 이동해야 칸 변경) */
 
-    const SWAP_RATIO = 0.6;
+    function getGrid() {
+        return card.parentElement;
+    }
+
+
+    function getCellSizeAndColumns() {
+
+        const grid = getGrid();
+
+        if (!grid) return;
+
+        const firstCard =
+            grid.querySelector(".manage-card:not(.add-card)") ||
+            grid.children[0];
+
+        if (!firstCard) return;
+
+        const rect =
+            firstCard.getBoundingClientRect();
+
+        let gap = 8;
+
+        if (grid.children.length > 1) {
+
+            const firstRect =
+                grid.children[0].getBoundingClientRect();
+
+            const secondRect =
+                grid.children[1].getBoundingClientRect();
+
+            if (Math.abs(firstRect.top - secondRect.top) < 5) {
+                gap = secondRect.left - firstRect.right;
+            }
+
+        }
+
+        CELL_W = rect.width + gap;
+        CELL_H = rect.height + gap;
+
+
+        const gridWidth = grid.clientWidth;
+
+        COLUMNS =
+            Math.max(1, Math.round((gridWidth + gap) / CELL_W));
+
+    }
+
+
+    function resetOtherCardsTransform() {
+
+        const grid = getGrid();
+
+        if (!grid) return;
+
+        grid.querySelectorAll(".manage-card").forEach(el => {
+
+            if (el !== card) {
+                el.style.transform = "";
+            }
+
+        });
+
+    }
+
+
+    /* 다른 카드들의 위치를 시각적으로 밀어주는 함수 */
+
+    function updateOtherCardsVisual(newIndex) {
+
+        const grid = getGrid();
+
+        if (!grid) return;
+
+        const cards =
+            Array.from(grid.querySelectorAll(".manage-card"));
+
+        cards.forEach(el => {
+
+            if (el === card) return;
+
+            let dataIndex = Number(el.dataset.index);
+
+            if (isNaN(dataIndex)) return;
+
+
+            let visualIndex = dataIndex;
+
+
+            if (originIndex < newIndex) {
+
+                if (
+                    dataIndex > originIndex &&
+                    dataIndex <= newIndex
+                ) {
+                    visualIndex = dataIndex - 1;
+                }
+
+            }
+            else if (originIndex > newIndex) {
+
+                if (
+                    dataIndex >= newIndex &&
+                    dataIndex < originIndex
+                ) {
+                    visualIndex = dataIndex + 1;
+                }
+
+            }
+
+
+            const offsetX =
+                (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+
+            const offsetY =
+                (Math.floor(visualIndex / COLUMNS) -
+                 Math.floor(dataIndex / COLUMNS)) * CELL_H;
+
+
+            el.style.transform =
+                `translate(${offsetX}px, ${offsetY}px)`;
+
+        });
+
+    }
 
 
     /* 시작 */
@@ -2764,12 +2880,17 @@ function initializeManageCardDrag(
             currentY = startY;
 
 
+            getCellSizeAndColumns();
+
+
+            originIndex = Number(card.dataset.index);
+            currentIndex = originIndex;
+
+
             const rect = card.getBoundingClientRect();
 
-            const gap = 8;
-
-            CELL_W = rect.width + gap;
-            CELL_H = rect.height + gap;
+            originLeft = rect.left;
+            originTop = rect.top;
 
 
             isLongPress = false;
@@ -2845,6 +2966,12 @@ function initializeManageCardDrag(
 
                 card.classList.add("dragging");
 
+                const grid = getGrid();
+
+                if (grid) {
+                    grid.classList.add("dragging-active");
+                }
+
                 if (navigator.vibrate) {
                     navigator.vibrate(10);
                 }
@@ -2852,60 +2979,52 @@ function initializeManageCardDrag(
             }
 
 
+            /* 드래그 카드 이동 */
+
             card.style.transform =
-                `translate(${diffX}px, ${diffY}px) scale(1.08)`;
+                `translate(${diffX}px, ${diffY}px) scale(1.05)`;
 
 
-            const stepX = Math.round(diffX / CELL_W);
-            const stepY = Math.round(diffY / CELL_H);
+            /* 목표 인덱스 계산 */
+
+            const grid = getGrid();
+
+            if (!grid) return;
+
+            const containerRect =
+                grid.getBoundingClientRect();
+
+            const relX =
+                (originLeft + diffX) - containerRect.left;
+
+            const relY =
+                (originTop + diffY) - containerRect.top;
 
 
-            if (stepX === 0 && stepY === 0) return;
+            const col =
+                Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
 
+            const row = Math.max(0, Math.floor(relY / CELL_H));
 
-            const movedDistanceX = Math.abs(diffX) / CELL_W;
-            const movedDistanceY = Math.abs(diffY) / CELL_H;
-
-
-            if (
-                movedDistanceX < SWAP_RATIO &&
-                movedDistanceY < SWAP_RATIO
-            ) {
-                return;
-            }
+            const targetIndex = row * COLUMNS + col;
 
 
             const array = options.getArray();
 
-            const currentIdx = Number(card.dataset.index);
-
-            let newIdx = currentIdx + stepX + stepY * COLUMNS;
+            const maxIndex = array.length - 1;
 
 
-            if (newIdx < 0) newIdx = 0;
-
-            if (newIdx >= array.length) {
-                newIdx = array.length - 1;
-            }
+            let clampedTarget =
+                Math.max(0, Math.min(maxIndex, targetIndex));
 
 
-            if (newIdx === currentIdx) return;
+            if (clampedTarget === currentIndex) return;
 
 
-            moveArrayItem(array, currentIdx, newIdx);
-
-            options.onSave();
+            currentIndex = clampedTarget;
 
 
-            startX += stepX * CELL_W;
-            startY += stepY * CELL_H;
-
-
-            options.onRender();
-
-            if (options.onAfterMove) {
-                options.onAfterMove();
-            }
+            updateOtherCardsVisual(clampedTarget);
 
         },
         { passive: true }
@@ -2914,57 +3033,61 @@ function initializeManageCardDrag(
 
     /* 종료 */
 
-    card.addEventListener(
-        "touchend",
-        function() {
+    function finishDrag() {
 
-            if (longPressTimer) {
+        if (longPressTimer) {
 
-                clearTimeout(longPressTimer);
+            clearTimeout(longPressTimer);
 
-                longPressTimer = null;
+            longPressTimer = null;
 
-            }
+        }
 
 
-            if (dragging) {
+        if (!dragging) return;
 
-                dragging = false;
+        dragging = false;
 
-                card.classList.remove("dragging");
 
-                card.style.transform = "";
+        const array = options.getArray();
 
+
+        if (currentIndex !== originIndex) {
+
+            moveArrayItem(array, originIndex, currentIndex);
+
+            options.onSave();
+
+        }
+
+
+        card.style.transform = "";
+        card.classList.remove("dragging");
+
+        resetOtherCardsTransform();
+
+        const grid = getGrid();
+
+        if (grid) {
+            grid.classList.remove("dragging-active");
+        }
+
+
+        if (currentIndex !== originIndex) {
+
+            options.onRender();
+
+            if (options.onAfterMove) {
+                options.onAfterMove();
             }
 
         }
-    );
+
+    }
 
 
-    card.addEventListener(
-        "touchcancel",
-        function() {
+    card.addEventListener("touchend", finishDrag);
 
-            if (longPressTimer) {
-
-                clearTimeout(longPressTimer);
-
-                longPressTimer = null;
-
-            }
-
-
-            if (dragging) {
-
-                dragging = false;
-
-                card.classList.remove("dragging");
-
-                card.style.transform = "";
-
-            }
-
-        }
-    );
+    card.addEventListener("touchcancel", finishDrag);
 
 }
