@@ -155,11 +155,9 @@ function openAppModal(options) {
                         ? "numeric"
                         : "text";
 
-                /* iOS Safari 키보드 자동 노출 우회:
-                   readOnly 상태에서 focus() 후 해제 */
+                /* readonly 제거 (iOS 동기 focus가 유효하도록) */
 
-                els.input.setAttribute(
-                    "readonly",
+                els.input.removeAttribute(
                     "readonly"
                 );
 
@@ -208,39 +206,25 @@ function openAppModal(options) {
 
             if (options.showInput) {
 
-                /* 1차: 동기 focus */
+                /* ★ iOS/Android 키보드 자동 노출:
+                   setTimout 없이 동기 focus() 호출.
+                   사용자 터치 이벤트 스택 안에서 실행되어야 함. */
 
                 els.input.focus();
 
+                const length =
+                    els.input.value.length;
 
-                /* 2차: readOnly 해제 + 재focus (iOS 키보드 트리거) */
+                try {
 
-                setTimeout(
-                    function() {
+                    els.input.setSelectionRange(
+                        length,
+                        length
+                    );
 
-                        els.input.removeAttribute(
-                            "readonly"
-                        );
+                }
 
-                        els.input.focus();
-
-                        const length =
-                            els.input.value.length;
-
-                        try {
-
-                            els.input.setSelectionRange(
-                                length,
-                                length
-                            );
-
-                        }
-
-                        catch (error) {}
-
-                    },
-                    50
-                );
+                catch (error) {}
 
             }
 
