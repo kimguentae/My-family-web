@@ -9,6 +9,13 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug secret length
+        run: |
+          echo "Secret length: ${#SUPABASE_ANON_KEY}"
+          echo "First 10 chars: ${SUPABASE_ANON_KEY:0:10}"
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Ping Supabase keepalive table
         run: |
           curl -sS -o /dev/null -w "HTTP %{http_code}\n" \
