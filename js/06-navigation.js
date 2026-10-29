@@ -76,7 +76,6 @@ function showScreen(screenName) {
         categorySettings: "카테고리 설정",
         paymentSettings: "결제수단 설정",
         subjectSettings: "주체 설정",
-        historySettings: "내역 설정",
         historyExport: "엑셀로 저장",
         analysisSettings: "분석 설정"
 
@@ -131,7 +130,6 @@ function showScreen(screenName) {
                 screenName === "categorySettings" ||
                 screenName === "paymentSettings" ||
                 screenName === "subjectSettings" ||
-                screenName === "historySettings" ||
                 screenName === "historyExport" ||
                 screenName === "analysisSettings" ||
                 screenName === "accountSettings";
@@ -173,7 +171,6 @@ function showScreen(screenName) {
         screenName === "categorySettings" ||
         screenName === "paymentSettings" ||
         screenName === "subjectSettings" ||
-        screenName === "historySettings" ||
         screenName === "analysisSettings"
     ) {
 
@@ -246,26 +243,25 @@ function goBackFromHeader() {
         currentScreen === "memoSettings" ||
         currentScreen === "categorySettings" ||
         currentScreen === "paymentSettings" ||
-        currentScreen === "subjectSettings"
+        currentScreen === "subjectSettings" ||
+        currentScreen === "budgetSettings"
     ) {
         showScreen("inputSettings");
         return;
     }
 
 
-    if (
-        currentScreen === "budgetSettings" ||
-        currentScreen === "historySettings" ||
-        currentScreen === "analysisSettings" ||
-        currentScreen === "accountSettings"
-    ) {
-        showScreen("settings");
+    if (currentScreen === "historyExport") {
+        showScreen("analysisSettings");
         return;
     }
 
 
-    if (currentScreen === "historyExport") {
-        showScreen("historySettings");
+    if (
+        currentScreen === "analysisSettings" ||
+        currentScreen === "accountSettings"
+    ) {
+        showScreen("settings");
         return;
     }
 
@@ -284,6 +280,15 @@ function goBackFromHeader() {
 
 
     showScreen("settings");
+
+}
+
+
+/* 헤더 우측 프로필 버튼 → 계정 화면 */
+
+function goToAccountFromHeader() {
+
+    showScreen("accountSettings");
 
 }
 

@@ -404,6 +404,11 @@ function updateAccountUI() {
 
     }
 
+
+    /* 헤더 우측 프로필 버튼 갱신 */
+
+    renderHeaderProfileButton();
+
 }
 
 
@@ -453,6 +458,49 @@ function renderProfileAvatar() {
         img.removeAttribute("src");
 
         placeholder.style.display = "flex";
+
+    }
+
+}
+
+
+function renderHeaderProfileButton() {
+
+    const img =
+        document.getElementById("headerProfileAvatarImg");
+
+    const placeholder =
+        document.getElementById("headerProfileAvatarPlaceholder");
+
+
+    if (!img || !placeholder) return;
+
+
+    const dataUrl =
+        currentUser
+            ? localStorage.getItem(
+                  "householdAvatar_" + currentUser.id
+              )
+            : null;
+
+
+    if (dataUrl) {
+
+        img.src = dataUrl;
+
+        img.style.display = "block";
+
+        placeholder.style.display = "none";
+
+    }
+
+    else {
+
+        img.style.display = "none";
+
+        img.removeAttribute("src");
+
+        placeholder.style.display = "block";
 
     }
 
@@ -533,6 +581,8 @@ function handleAvatarFileChange(event) {
                     );
 
                     renderProfileAvatar();
+
+                    renderHeaderProfileButton();
 
                 }
 
@@ -1869,6 +1919,11 @@ document.addEventListener(
             );
 
         }
+
+
+        /* 헤더 프로필 버튼 초기 렌더 */
+
+        renderHeaderProfileButton();
 
     }
 );

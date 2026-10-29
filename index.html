@@ -48,6 +48,37 @@
 
         <h1 id="pageTitle"></h1>
 
+        <button
+            type="button"
+            id="headerProfileButton"
+            class="header-profile-button"
+            onclick="goToAccountFromHeader()"
+            aria-label="계정"
+        >
+            <img
+                id="headerProfileAvatarImg"
+                class="header-profile-avatar-img"
+                alt=""
+                style="display: none;"
+            >
+            <svg
+                id="headerProfileAvatarPlaceholder"
+                class="header-profile-avatar-placeholder"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </button>
+
     </header>
 
 
@@ -507,46 +538,60 @@
         class="screen"
     >
 
-        <div class="settings-list">
+        <div class="settings-groups">
 
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('inputSettings')"
-            >
-                <span>입력 설정</span>
-                <span class="arrow">›</span>
+            <!-- 입력 -->
+
+            <div class="settings-section">
+
+                <div class="settings-section-title">입력</div>
+
+                <div class="settings-card">
+
+                    <div
+                        class="settings-item"
+                        onclick="showScreen('inputSettings')"
+                    >
+                        <span class="settings-item-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            </svg>
+                        </span>
+                        <span class="settings-item-label">입력 설정</span>
+                        <span class="settings-item-arrow">›</span>
+                    </div>
+
+                </div>
+
             </div>
 
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('budgetSettings')"
-            >
-                <span>예산 설정</span>
-                <span class="arrow">›</span>
-            </div>
 
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('historySettings')"
-            >
-                <span>내역 설정</span>
-                <span class="arrow">›</span>
-            </div>
+            <!-- 분석 -->
 
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('analysisSettings')"
-            >
-                <span>분석 설정</span>
-                <span class="arrow">›</span>
-            </div>
+            <div class="settings-section">
 
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('accountSettings')"
-            >
-                <span>계정 설정</span>
-                <span class="arrow">›</span>
+                <div class="settings-section-title">분석</div>
+
+                <div class="settings-card">
+
+                    <div
+                        class="settings-item"
+                        onclick="showScreen('analysisSettings')"
+                    >
+                        <span class="settings-item-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                        </span>
+                        <span class="settings-item-label">분석 설정</span>
+                        <span class="settings-item-arrow">›</span>
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
@@ -592,6 +637,14 @@
                 onclick="showScreen('subjectSettings')"
             >
                 <span>주체 설정</span>
+                <span class="arrow">›</span>
+            </div>
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('budgetSettings')"
+            >
+                <span>예산 설정</span>
                 <span class="arrow">›</span>
             </div>
 
@@ -855,29 +908,7 @@
     </section>
 
 
-    <!-- 내역 설정 -->
-
-    <section
-        id="historySettingsScreen"
-        class="screen"
-    >
-
-        <div class="settings-list">
-
-            <div
-                class="setting-row setting-link"
-                onclick="showScreen('historyExport')"
-            >
-                <span>거래내역 엑셀로 저장</span>
-                <span class="arrow">›</span>
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- 거래내역 엑셀 저장 -->
+    <!-- 엑셀 저장 -->
 
     <section
         id="historyExportScreen"
@@ -963,6 +994,18 @@
         id="analysisSettingsScreen"
         class="screen"
     >
+
+        <div class="settings-list">
+
+            <div
+                class="setting-row setting-link"
+                onclick="showScreen('historyExport')"
+            >
+                <span>엑셀로 저장</span>
+                <span class="arrow">›</span>
+            </div>
+
+        </div>
 
         <div class="settings-group">
 
