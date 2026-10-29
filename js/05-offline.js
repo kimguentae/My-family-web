@@ -62,6 +62,41 @@ function hideOfflineBanner() {
 }
 
 
+async function flushPendingSync() {
+
+    if (!currentUser || !supabaseClient) return;
+
+
+    setSyncStatus("동기화 중...");
+
+
+    try {
+
+        /* 로컬 데이터를 서버로 push (서버에서 load하지 않음!) */
+
+        await pushLocalDataToSupabase();
+
+        await pushAllTransactionsToSupabase();
+
+
+        setSyncStatus("동기화 완료");
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "오프라인 복귀 동기화 실패:",
+            error
+        );
+
+        setSyncStatus("동기화 실패");
+
+    }
+
+}
+
+
 function updateOnlineStatus() {
 
     if (navigator.onLine) {
@@ -77,7 +112,7 @@ function updateOnlineStatus() {
 
             pendingSyncWhenOnline = false;
 
-            loadUserDataFromSupabase();
+            flushPendingSync();
 
         }
 

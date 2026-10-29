@@ -508,6 +508,60 @@ async function handleSignOut() {
     }
 
 
+    /* =========================
+       로컬 상태 초기화
+       (계정 전환 시 이전 계정 데이터 유출 방지)
+    ========================= */
+
+    transactions = [];
+
+    settings = getDefaultSettings();
+
+    categories = getDefaultCategories();
+
+    paymentMethods = getDefaultPaymentMethods();
+
+    subjects = getDefaultSubjects();
+
+
+    localStorage.removeItem("householdTransactions");
+    localStorage.removeItem("householdSettings");
+    localStorage.removeItem("householdCategories");
+    localStorage.removeItem("householdPaymentMethods");
+    localStorage.removeItem("householdSubjects");
+
+
+    /* 선택 상태 초기화 */
+
+    selectedCategory = "";
+    selectedPayment = "";
+    selectedSubject = "";
+
+    analysisSelectedCategory = "";
+    analysisSelectedPayment = "";
+    analysisSelectedSubject = "";
+
+    historySearchKeyword = "";
+
+    monthlyChartSelectedCategory = "";
+
+
+    /* UI 재렌더 */
+
+    updateSettingsUI();
+
+    renderCategoryButtons();
+    renderSubjectButtons();
+    renderPaymentButtons();
+
+    renderCategoryManagement();
+    renderPaymentManagement();
+    renderSubjectManagement();
+
+    renderCalendar();
+    renderSelectedDate();
+
+
     setAuthMessage("");
 
     setSyncStatus("");

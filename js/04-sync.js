@@ -480,3 +480,57 @@ function syncRenameTransactionsField(
         );
 
 }
+
+/* =========================
+   오프라인 복귀 시 로컬 전체 push
+========================= */
+
+async function pushAllTransactionsToSupabase() {
+
+    if (!supabaseClient || !currentUser) return;
+
+    if (!transactions.length) return;
+
+
+    const rows =
+        transactions.map(
+            transaction => ({
+
+                id: String(transaction.id),
+
+                user_id: currentUser.id,
+
+                date: transaction.date,
+
+                type: transaction.type,
+
+                amount: transaction.amount,
+
+                category: transaction.category || null,
+
+                memo: transaction.memo || null,
+
+                payment: transaction.payment || null,
+
+                subject: transaction.subject || null
+
+            })
+        );
+
+
+    const { error } =
+        await supabaseClient
+            .from("transactions")
+            .upsert(rows);
+
+
+    if (error) {
+
+        console.error(
+            "오프라인 복귀 push 실패:",
+            error
+        );
+
+    }
+
+}

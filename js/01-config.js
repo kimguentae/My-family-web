@@ -414,3 +414,99 @@ function saveSubjects() {
     scheduleSyncUserData();
 
 }
+
+/* =========================
+   기본 데이터 (로그아웃 초기화용)
+========================= */
+
+function getDefaultSettings() {
+
+    return {
+
+        memoEnabled: true,
+        paymentEnabled: true,
+        categoryEnabled: true,
+        subjectEnabled: true,
+
+        memoExpenseEnabled: true,
+        memoIncomeEnabled: true,
+
+        paymentExpenseEnabled: true,
+        paymentIncomeEnabled: true,
+
+        categoryExpenseEnabled: true,
+        categoryIncomeEnabled: true,
+
+        subjectExpenseEnabled: true,
+        subjectIncomeEnabled: true,
+
+        analysisCategoryEnabled: true,
+        analysisPaymentEnabled: true,
+        analysisSubjectEnabled: true,
+
+        analysisGroupOrder: [
+            "monthlyChart",
+            "category",
+            "payment",
+            "subject"
+        ],
+
+        monthlyChartEnabled: true,
+
+        budgets: {}
+
+    };
+
+}
+
+
+function getDefaultCategories() {
+
+    return {
+
+        expense: [
+            "식비",
+            "교통",
+            "쇼핑",
+            "생활",
+            "의료",
+            "교육",
+            "여가",
+            "기타"
+        ],
+
+        income: [
+            "급여",
+            "용돈",
+            "이자",
+            "투자수익",
+            "기타"
+        ]
+
+    };
+
+}
+
+
+function getDefaultPaymentMethods() {
+
+    return [
+        "카드1",
+        "카드2",
+        "현금",
+        "상품권"
+    ];
+
+}
+
+
+function getDefaultSubjects() {
+
+    return [
+        "남편",
+        "아내",
+        "아기",
+        "기타"
+    ];
+
+}

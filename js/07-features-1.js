@@ -2154,6 +2154,19 @@ function editTransaction(id) {
         renderCalendar();
         renderSelectedDate();
 
+
+        /* 분석 화면이 열려 있으면 갱신 */
+
+        const analysisScreen =
+            document.getElementById("analysisScreen");
+
+        if (
+            analysisScreen &&
+            analysisScreen.classList.contains("active")
+        ) {
+            renderAnalysis();
+        }
+
     });
 
 }
@@ -2194,6 +2207,19 @@ function deleteTransaction(id) {
 
         renderCalendar();
         renderSelectedDate();
+
+
+        /* 분석 화면이 열려 있으면 갱신 */
+
+        const analysisScreen =
+            document.getElementById("analysisScreen");
+
+        if (
+            analysisScreen &&
+            analysisScreen.classList.contains("active")
+        ) {
+            renderAnalysis();
+        }
 
     });
 
