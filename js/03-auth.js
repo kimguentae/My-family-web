@@ -334,6 +334,7 @@ function openRecentPasswordModal(account) {
         {
             title: "비밀번호 입력",
             placeholder: "비밀번호",
+            password: true,
             confirmText: "로그인",
             cancelText: "취소"
         }
@@ -358,21 +359,6 @@ function openRecentPasswordModal(account) {
         handleSignIn();
 
     });
-
-
-    /* ★ iOS 키보드 자동 노출: appPrompt() 호출 직후,
-       같은 터치 이벤트 스택 안에서 모달 input에 동기 focus */
-
-    const modalInput =
-        document.getElementById("modalInput");
-
-    if (modalInput) {
-
-        modalInput.removeAttribute("readonly");
-
-        modalInput.focus();
-
-    }
 
 }
 

@@ -1341,3 +1341,48 @@ input {
     font-size: 15px;
     font-weight: 600;
 }
+
+/* =========================
+   모달 비밀번호 표시 토글
+========================= */
+
+.modal-input-wrap {
+    position: relative;
+}
+
+.modal-input-wrap.active {
+    display: block;
+}
+
+.modal-password-toggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.modal-password-toggle:active {
+    background: #f0f0f0;
+}
+
+.modal-password-toggle.visible {
+    color: #222;
+}
+
+/* 비밀번호 input일 때 오른쪽 여백 */
+
+.modal-input-wrap.password-mode .modal-input {
+    padding-right: 44px;
+}

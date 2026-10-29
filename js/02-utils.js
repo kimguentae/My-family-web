@@ -38,6 +38,11 @@ function getModalElements() {
                 "modalInput"
             ),
 
+        passwordToggle:
+            document.getElementById(
+                "modalPasswordToggle"
+            ),
+
         cancelBtn:
             document.getElementById(
                 "modalCancelBtn"
@@ -74,6 +79,37 @@ function closeAppModal(result) {
         modalResolver = null;
 
         resolve(result);
+
+    }
+
+}
+
+
+function toggleModalPasswordVisibility() {
+
+    const els =
+        getModalElements();
+
+    if (!els.input) return;
+
+
+    if (els.input.type === "password") {
+
+        els.input.type = "text";
+
+        if (els.passwordToggle) {
+            els.passwordToggle.classList.add("visible");
+        }
+
+    }
+
+    else {
+
+        els.input.type = "password";
+
+        if (els.passwordToggle) {
+            els.passwordToggle.classList.remove("visible");
+        }
 
     }
 
@@ -155,7 +191,61 @@ function openAppModal(options) {
                         ? "numeric"
                         : "text";
 
-                /* readonly 제거 (iOS 동기 focus가 유효하도록) */
+
+                /* 비밀번호 모드 */
+
+                if (options.password) {
+
+                    els.input.type = "password";
+
+                    els.input.autocomplete =
+                        "current-password";
+
+                    els.input.inputMode = "text";
+
+
+                    if (els.inputWrap) {
+                        els.inputWrap.classList.add(
+                            "password-mode"
+                        );
+                    }
+
+
+                    if (els.passwordToggle) {
+
+                        els.passwordToggle.style.display =
+                            "flex";
+
+                        els.passwordToggle.classList.remove(
+                            "visible"
+                        );
+
+                    }
+
+                }
+
+                else {
+
+                    els.input.type = "text";
+
+                    els.input.autocomplete =
+                        "off";
+
+
+                    if (els.inputWrap) {
+                        els.inputWrap.classList.remove(
+                            "password-mode"
+                        );
+                    }
+
+
+                    if (els.passwordToggle) {
+                        els.passwordToggle.style.display =
+                            "none";
+                    }
+
+                }
+
 
                 els.input.removeAttribute(
                     "readonly"
@@ -166,7 +256,8 @@ function openAppModal(options) {
             else {
 
                 els.inputWrap.classList.remove(
-                    "active"
+                    "active",
+                    "password-mode"
                 );
 
                 els.input.dataset.formatAmount =
@@ -175,6 +266,12 @@ function openAppModal(options) {
                 els.input.removeAttribute(
                     "readonly"
                 );
+
+
+                if (els.passwordToggle) {
+                    els.passwordToggle.style.display =
+                        "none";
+                }
 
             }
 
@@ -206,9 +303,7 @@ function openAppModal(options) {
 
             if (options.showInput) {
 
-                /* ★ iOS/Android 키보드 자동 노출:
-                   setTimout 없이 동기 focus() 호출.
-                   사용자 터치 이벤트 스택 안에서 실행되어야 함. */
+                /* 동기 focus (iOS 키보드 자동 노출 시도) */
 
                 els.input.focus();
 
@@ -313,6 +408,9 @@ function appPrompt(
 
         formatAmount:
             options.formatAmount,
+
+        password:
+            options.password,
 
         confirmText:
             options.confirmText ||
