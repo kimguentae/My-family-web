@@ -6,6 +6,305 @@ var currentAuthMode = "login";
 
 
 /* =========================
+   최근 로그인 계정 (localStorage)
+========================= */
+
+function getRecentAccountsStorageKey() {
+    return "householdRecentAccounts";
+}
+
+
+function getRecentAccounts() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(getRecentAccountsStorageKey());
+
+        if (!raw) return [];
+
+        const parsed = JSON.parse(raw);
+
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed.filter(function(item) {
+            return item &&
+                typeof item.email === "string" &&
+                typeof item.userId === "string";
+        });
+
+    }
+
+    catch (error) {
+        return [];
+    }
+
+}
+
+
+function saveRecentAccounts(list) {
+
+    try {
+
+        localStorage.setItem(
+            getRecentAccountsStorageKey(),
+            JSON.stringify(list)
+        );
+
+    }
+
+    catch (error) {
+        console.error(error);
+    }
+
+}
+
+
+function addRecentAccount(user) {
+
+    if (!user || !user.email || !user.id) return;
+
+
+    let list = getRecentAccounts();
+
+
+    /* 중복 제거 */
+
+    list = list.filter(function(item) {
+        return item.userId !== user.id;
+    });
+
+
+    /* 맨 앞에 추가 */
+
+    list.unshift({
+        userId: user.id,
+        email: user.email,
+        lastUsed: Date.now()
+    });
+
+
+    /* 최대 5개 */
+
+    list = list.slice(0, 5);
+
+
+    saveRecentAccounts(list);
+
+    renderRecentAccounts();
+
+}
+
+
+function removeRecentAccount(userId) {
+
+    let list = getRecentAccounts();
+
+    list = list.filter(function(item) {
+        return item.userId !== userId;
+    });
+
+    saveRecentAccounts(list);
+
+    renderRecentAccounts();
+
+}
+
+
+function renderRecentAccounts() {
+
+    const wrap =
+        document.getElementById("authRecentAccounts");
+
+    const listElement =
+        document.getElementById("authRecentAccountsList");
+
+
+    if (!wrap || !listElement) return;
+
+
+    const list = getRecentAccounts();
+
+
+    if (!list.length) {
+
+        wrap.style.display = "none";
+
+        listElement.innerHTML = "";
+
+        return;
+
+    }
+
+
+    wrap.style.display = "block";
+
+    listElement.innerHTML = "";
+
+
+    list.forEach(function(account) {
+
+        const item = document.createElement("div");
+
+        item.className = "auth-recent-item";
+
+
+        const button = document.createElement("button");
+
+        button.type = "button";
+
+        button.className = "auth-recent-avatar-btn";
+
+
+        /* 아바타 이미지 or 이니셜 */
+
+        const avatarDataUrl =
+            localStorage.getItem(
+                "householdAvatar_" + account.userId
+            );
+
+
+        if (avatarDataUrl) {
+
+            const img = document.createElement("img");
+
+            img.className = "auth-recent-avatar-img";
+
+            img.src = avatarDataUrl;
+
+            img.alt = account.email;
+
+            button.appendChild(img);
+
+        }
+
+        else {
+
+            const initial = document.createElement("span");
+
+            initial.className = "auth-recent-avatar-initial";
+
+            initial.innerText =
+                (account.email[0] || "?").toUpperCase();
+
+            button.appendChild(initial);
+
+        }
+
+
+        button.onclick = function() {
+
+            selectRecentAccount(account);
+
+        };
+
+
+        const label = document.createElement("div");
+
+        label.className = "auth-recent-email";
+
+        label.innerText = account.email;
+
+
+        /* 삭제 (길게 누르기) */
+
+        let pressTimer = null;
+
+        item.addEventListener(
+            "touchstart",
+            function() {
+
+                pressTimer = setTimeout(function() {
+
+                    removeRecentAccount(account.userId);
+
+                    pressTimer = null;
+
+                }, 700);
+
+            },
+            { passive: true }
+        );
+
+
+        item.addEventListener(
+            "touchend",
+            function() {
+
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = null;
+                }
+
+            }
+        );
+
+
+        item.addEventListener(
+            "touchmove",
+            function() {
+
+                if (pressTimer) {
+                    clearTimeout(pressTimer);
+                    pressTimer = null;
+                }
+
+            },
+            { passive: true }
+        );
+
+
+        item.appendChild(button);
+
+        item.appendChild(label);
+
+        listElement.appendChild(item);
+
+    });
+
+}
+
+
+function selectRecentAccount(account) {
+
+    if (!account) return;
+
+
+    const emailInput =
+        document.getElementById("authEmailInput");
+
+    const passwordInput =
+        document.getElementById("authPasswordInput");
+
+
+    if (emailInput) {
+
+        emailInput.value = account.email;
+
+        setAuthFieldError("authEmailError", "");
+
+    }
+
+
+    if (passwordInput) {
+
+        passwordInput.value = "";
+
+        setAuthFieldError("authPasswordError", "");
+
+        setTimeout(function() {
+            passwordInput.focus();
+        }, 100);
+
+    }
+
+
+    setAuthMessage("", "");
+
+}
+
+
+/* =========================
    UI 업데이트
 ========================= */
 
@@ -174,6 +473,8 @@ function handleAvatarFileChange(event) {
                     );
 
                     renderProfileAvatar();
+
+                    renderRecentAccounts();
 
                 }
 
@@ -390,7 +691,7 @@ function renderAccountMonthSummary() {
     }
 
 
-    /* 예산 사용률 (예산이 하나라도 설정돼 있으면 표시) */
+    /* 예산 사용률 */
 
     const budgets =
         (settings && settings.budgets) || {};
@@ -587,8 +888,6 @@ function switchAuthMode(mode) {
     }
 
 
-    /* 에러/메시지 초기화 */
-
     setAuthMessage("", "");
     setSignupMessage("", "");
 
@@ -599,7 +898,10 @@ function switchAuthMode(mode) {
     setAuthFieldError("authSignupPasswordConfirmError", "");
 
 
-    /* 스크롤 맨 위로 */
+    if (mode === "login") {
+        renderRecentAccounts();
+    }
+
 
     resetPageScrollPosition();
 
@@ -990,6 +1292,8 @@ async function handleSignUp() {
                 email: data.user.email
             };
 
+            addRecentAccount(currentUser);
+
             setSignupMessage("", "");
 
             updateAccountUI();
@@ -1100,6 +1404,7 @@ async function handleSignIn() {
             email: data.user.email
         };
 
+        addRecentAccount(currentUser);
 
         setAuthMessage("", "");
 
@@ -1196,7 +1501,7 @@ async function handleSignOut() {
     localStorage.removeItem("householdLastSync");
 
 
-    /* 프로필 사진은 계정별이므로 지우지 않음 */
+    /* 최근 로그인 계정과 프로필 사진은 유지 */
 
 
     selectedCategory = "";
@@ -1235,8 +1540,6 @@ async function handleSignOut() {
 
     updateAccountUI();
 
-
-    /* 로그인 화면으로 */
 
     switchAuthMode("login");
 
@@ -1410,6 +1713,11 @@ document.addEventListener(
             );
 
         }
+
+
+        /* 최근 로그인 계정 초기 렌더 */
+
+        renderRecentAccounts();
 
     }
 );
