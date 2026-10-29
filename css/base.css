@@ -352,38 +352,30 @@ input {
     margin-left: 8px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    z-index: 10;              /* ★ 추가 */
-    position: relative;       /* ★ 추가 (z-index 작동 조건) */
-    pointer-events: auto;     /* ★ 추가 */
+    z-index: 10;
+    position: relative;
+    pointer-events: auto;
 }
 
 .sync-status svg {
     width: 100%;
     height: 100%;
     display: block;
-    pointer-events: none;   /* ★ SVG가 클릭을 안 받도록 */
+    pointer-events: none;
 }
-
-/* 원 */
 
 .sync-status-circle {
     fill: #cfcfcf;
     transition: fill 0.25s ease;
 }
 
-/* 체크 아이콘 */
-
 .sync-status-icon-check {
     display: none;
 }
 
-/* X 아이콘 */
-
 .sync-status-icon-x {
     display: none;
 }
-
-/* 진행 중 점 3개 */
 
 .sync-status-icon-loading {
     display: none;
@@ -416,10 +408,6 @@ input {
     }
 }
 
-/* 상태별 표시 */
-
-/* 완료 - 초록 원 + 체크 */
-
 .sync-status.success .sync-status-circle {
     fill: #4caf68;
 }
@@ -427,8 +415,6 @@ input {
 .sync-status.success .sync-status-icon-check {
     display: block;
 }
-
-/* 진행 중 - 노랑 원 + 점 3개 */
 
 .sync-status.warning .sync-status-circle {
     fill: #e5aa24;
@@ -438,8 +424,6 @@ input {
     display: block;
 }
 
-/* 오류/로그아웃 - 빨강 원 + X */
-
 .sync-status.error .sync-status-circle {
     fill: #df5b5b;
 }
@@ -448,82 +432,13 @@ input {
     display: block;
 }
 
-/* 기본(로그인 안 됨) - 회색 원, 아이콘 없음 */
-
 .sync-status:not(.success):not(.warning):not(.error) .sync-status-circle {
     fill: #cfcfcf;
 }
 
-/* 살짝 눌리는 느낌 */
-
 .sync-status:active {
     transform: scale(0.9);
     transition: transform 0.1s ease;
-}
-/* 계정 */
-
-.account-section {
-    padding-top: 18px;
-}
-
-.account-label {
-    font-size: 13px;
-    color: #777;
-    margin-bottom: 6px;
-    margin-top: 18px;
-}
-
-.account-label:first-child {
-    margin-top: 0;
-}
-
-.account-input {
-    width: 100%;
-    height: 46px;
-    border: 1px solid #e5e5e5;
-    border-radius: 10px;
-    padding: 0 12px;
-    font-size: 15px;
-    outline: none;
-    background: white;
-}
-
-.account-input:focus {
-    border-color: #222;
-}
-
-.account-message {
-    min-height: 18px;
-    margin: 14px 0 10px;
-    font-size: 12px;
-    color: #e05252;
-    text-align: center;
-}
-
-.account-message-info {
-    color: #777;
-}
-
-.account-secondary-button {
-    width: 100%;
-    border: 1px solid #222;
-    background: white;
-    color: #222;
-    border-radius: 12px;
-    padding: 14px 0;
-    font-size: 15px;
-    font-weight: 700;
-    margin-top: 10px;
-}
-
-.account-secondary-button:active {
-    background: #f5f5f5;
-}
-
-.account-email {
-    font-size: 17px;
-    font-weight: 700;
-    margin-bottom: 4px;
 }
 
 /* =========================
@@ -544,8 +459,6 @@ input {
     gap: 8px;
     padding: 2px 0 8px;
 }
-
-/* 관리 카드 */
 
 .manage-card {
     aspect-ratio: 1 / 1;
@@ -594,8 +507,6 @@ input {
     -webkit-box-orient: vertical;
 }
 
-/* + 추가 카드 */
-
 .manage-card.add-card {
     border: 1.5px dashed #cfcfcf;
     background: #fafafa;
@@ -614,8 +525,6 @@ input {
     color: #999;
     font-weight: 500;
 }
-
-/* 길게 눌러 나타나는 액션 오버레이 */
 
 .manage-card .card-actions-overlay {
     position: absolute;
@@ -654,8 +563,6 @@ input {
     color: #e05252;
     background: #fdeeee !important;
 }
-
-/* 작은 화면에서 카드 비율 조정 */
 
 @media (max-width: 360px) {
     .card-grid {
@@ -703,41 +610,52 @@ input {
 }
 
 /* =========================
-   계정 설정 (로그인/회원가입 개선)
+   로그인 / 회원가입
 ========================= */
 
 .auth-section {
     padding-top: 8px;
 }
 
-/* 탭 */
+.auth-view {
+    display: block;
+}
 
-.auth-tabs {
-    display: flex;
+/* 웰컴 헤더 */
+
+.auth-welcome {
+    text-align: center;
+    padding: 20px 16px 28px;
+}
+
+.auth-welcome-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
     background: #f3f3f3;
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 24px;
+    color: #555;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
 }
 
-.auth-tab {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 11px 0;
-    border-radius: 9px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #777;
-    transition: all 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-    cursor: pointer;
+.auth-welcome-icon-signup {
+    background: #eef4fd;
+    color: #3d78d8;
 }
 
-.auth-tab.active {
-    background: white;
+.auth-welcome-title {
+    font-size: 22px;
+    font-weight: 700;
     color: #222;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    margin-bottom: 8px;
+}
+
+.auth-welcome-subtitle {
+    font-size: 13px;
+    line-height: 1.55;
+    color: #888;
 }
 
 /* 입력 필드 */
@@ -826,7 +744,7 @@ input {
 
 .auth-message {
     min-height: 20px;
-    margin: 16px 0 12px;
+    margin: 12px 0 12px;
     font-size: 13px;
     text-align: center;
     line-height: 1.5;
@@ -834,17 +752,9 @@ input {
     padding: 0 8px;
 }
 
-.auth-message.error {
-    color: #e05252;
-}
-
-.auth-message.success {
-    color: #4caf68;
-}
-
-.auth-message.info {
-    color: #777;
-}
+.auth-message.error { color: #e05252; }
+.auth-message.success { color: #4caf68; }
+.auth-message.info { color: #777; }
 
 /* 제출 버튼 */
 
@@ -894,36 +804,81 @@ input {
     text-underline-offset: 3px;
 }
 
-/* 로그인 상태 프로필 카드 */
+/* =========================
+   로그인 상태 — 프로필 카드
+========================= */
+
+.account-section {
+    padding-top: 8px;
+}
 
 .auth-profile-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px 20px 24px;
+    padding: 28px 20px 22px;
     background: white;
     border: 1px solid #eee;
     border-radius: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
-.auth-profile-avatar {
-    width: 64px;
-    height: 64px;
+.auth-profile-avatar-btn {
+    position: relative;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
+    border: none;
+    padding: 0;
     background: #f3f3f3;
+    color: #666;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: transform 0.15s ease;
+}
+
+.auth-profile-avatar-btn:active {
+    transform: scale(0.96);
+}
+
+.auth-profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.auth-profile-avatar-placeholder {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
-    margin-bottom: 14px;
+}
+
+.auth-profile-avatar-edit {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #222;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    pointer-events: none;
 }
 
 .auth-profile-email {
     font-size: 16px;
     font-weight: 700;
     color: #222;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     word-break: break-all;
     text-align: center;
 }
@@ -942,38 +897,113 @@ input {
     display: none;
 }
 
-/* 프로필 상세 정보 */
+/* =========================
+   로그인 상태 — 이번 달 요약
+========================= */
 
-.auth-profile-info {
+.auth-month-summary {
     background: #fafafa;
     border: 1px solid #eee;
-    border-radius: 12px;
-    padding: 4px 16px;
+    border-radius: 14px;
+    padding: 16px;
     margin-bottom: 20px;
 }
 
-.auth-profile-info-row {
+.auth-month-summary-title {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #222;
+}
+
+.auth-month-summary-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+}
+
+.auth-month-summary-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-month-summary-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 0;
-    border-bottom: 1px solid #eee;
+    padding: 10px 0;
     font-size: 14px;
 }
 
-.auth-profile-info-row:last-child {
-    border-bottom: none;
+.auth-month-summary-row + .auth-month-summary-row {
+    border-top: 1px solid #eee;
 }
 
-.auth-profile-info-label {
+.auth-month-summary-row-label {
     color: #777;
     font-size: 13px;
 }
 
-.auth-profile-info-value {
+.auth-month-summary-row-value {
+    font-weight: 700;
+    font-size: 15px;
     color: #222;
-    font-weight: 600;
-    font-size: 14px;
+}
+
+.auth-month-summary-row-value.expense {
+    color: #e05252;
+}
+
+.auth-month-summary-row-value.income {
+    color: #3d78d8;
+}
+
+.auth-month-summary-row-balance .auth-month-summary-row-value {
+    font-size: 17px;
+}
+
+/* 예산 사용률 */
+
+.auth-month-budget {
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1px solid #eee;
+}
+
+.auth-month-budget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.auth-month-budget-header span:last-child {
+    font-weight: 700;
+    color: #222;
+}
+
+.auth-month-budget-bar {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.auth-month-budget-fill {
+    height: 100%;
+    background: #3d78d8;
+    border-radius: 4px;
+    transition: width 0.35s ease, background 0.2s ease;
+}
+
+.auth-month-budget-fill.over {
+    background: #e05252;
 }
 
 /* 로그아웃 버튼 */

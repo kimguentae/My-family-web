@@ -982,7 +982,7 @@
     </section>
 
 
-    <!-- 계정 설정 -->
+    <!-- 로그인 / 계정 -->
 
     <section
         id="accountSettingsScreen"
@@ -996,40 +996,44 @@
             class="auth-section"
         >
 
-            <!-- 로그인/회원가입 탭 -->
+            <!-- 로그인 모드 -->
 
-            <div class="auth-tabs">
+            <div id="authLoginView" class="auth-view">
 
-                <button
-                    type="button"
-                    id="authTabLogin"
-                    class="auth-tab active"
-                    onclick="switchAuthMode('login')"
-                >
-                    로그인
-                </button>
+                <div class="auth-welcome">
 
-                <button
-                    type="button"
-                    id="authTabSignup"
-                    class="auth-tab"
-                    onclick="switchAuthMode('signup')"
-                >
-                    회원가입
-                </button>
+                    <div class="auth-welcome-icon">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
 
-            </div>
+                    <div class="auth-welcome-title">로그인</div>
+
+                    <div class="auth-welcome-subtitle">
+                        로그인하면 데이터가 안전하게 저장되고<br>
+                        여러 기기에서 이어서 사용할 수 있어요
+                    </div>
+
+                </div>
 
 
-            <!-- 이메일 -->
+                <div class="auth-field">
 
-            <div class="auth-field">
-
-                <label class="auth-field-label">
-                    이메일
-                </label>
-
-                <div class="auth-input-wrap">
+                    <label class="auth-field-label">
+                        이메일
+                    </label>
 
                     <input
                         type="email"
@@ -1041,45 +1045,104 @@
                         spellcheck="false"
                     >
 
+                    <div
+                        id="authEmailError"
+                        class="auth-field-error"
+                    ></div>
+
                 </div>
 
+
+                <div class="auth-field">
+
+                    <label class="auth-field-label">
+                        비밀번호
+                    </label>
+
+                    <div class="auth-input-wrap">
+
+                        <input
+                            type="password"
+                            id="authPasswordInput"
+                            class="auth-input"
+                            placeholder="6자 이상"
+                            autocomplete="current-password"
+                        >
+
+                        <button
+                            type="button"
+                            id="authPasswordToggle"
+                            class="auth-password-toggle"
+                            onclick="togglePasswordVisibility()"
+                            aria-label="비밀번호 표시"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="authPasswordError"
+                        class="auth-field-error"
+                    ></div>
+
+                </div>
+
+
                 <div
-                    id="authEmailError"
-                    class="auth-field-error"
+                    id="authMessage"
+                    class="auth-message"
                 ></div>
+
+
+                <button
+                    type="button"
+                    id="authSubmitBtn"
+                    class="auth-submit-btn"
+                    onclick="handleSignIn()"
+                >
+                    로그인
+                </button>
+
+
+                <div class="auth-mode-hint">
+                    계정이 없으신가요?
+                    <button
+                        type="button"
+                        class="auth-mode-hint-btn"
+                        onclick="switchAuthMode('signup')"
+                    >
+                        회원가입
+                    </button>
+                </div>
 
             </div>
 
 
-            <!-- 비밀번호 -->
+            <!-- 회원가입 모드 -->
 
-            <div class="auth-field">
+            <div id="authSignupView" class="auth-view" style="display: none;">
 
-                <label class="auth-field-label">
-                    비밀번호
-                </label>
+                <div class="auth-welcome">
 
-                <div class="auth-input-wrap">
-
-                    <input
-                        type="password"
-                        id="authPasswordInput"
-                        class="auth-input"
-                        placeholder="6자 이상"
-                        autocomplete="current-password"
-                    >
-
-                    <button
-                        type="button"
-                        id="authPasswordToggle"
-                        class="auth-password-toggle"
-                        onclick="togglePasswordVisibility()"
-                        aria-label="비밀번호 표시"
-                    >
+                    <div class="auth-welcome-icon auth-welcome-icon-signup">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
+                            width="32"
+                            height="32"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -1087,55 +1150,144 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         >
-                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
-                    </button>
+                    </div>
+
+                    <div class="auth-welcome-title">회원가입</div>
+
+                    <div class="auth-welcome-subtitle">
+                        계정을 만들고 가계부를 시작해보세요
+                    </div>
 
                 </div>
 
+
+                <div class="auth-field">
+
+                    <label class="auth-field-label">
+                        이메일
+                    </label>
+
+                    <input
+                        type="email"
+                        id="authSignupEmailInput"
+                        class="auth-input"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        autocapitalize="off"
+                        spellcheck="false"
+                    >
+
+                    <div
+                        id="authSignupEmailError"
+                        class="auth-field-error"
+                    ></div>
+
+                </div>
+
+
+                <div class="auth-field">
+
+                    <label class="auth-field-label">
+                        비밀번호
+                    </label>
+
+                    <div class="auth-input-wrap">
+
+                        <input
+                            type="password"
+                            id="authSignupPasswordInput"
+                            class="auth-input"
+                            placeholder="6자 이상"
+                            autocomplete="new-password"
+                        >
+
+                        <button
+                            type="button"
+                            id="authSignupPasswordToggle"
+                            class="auth-password-toggle"
+                            onclick="toggleSignupPasswordVisibility()"
+                            aria-label="비밀번호 표시"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+
+                    </div>
+
+                    <div
+                        id="authSignupPasswordError"
+                        class="auth-field-error"
+                    ></div>
+
+                </div>
+
+
+                <div class="auth-field">
+
+                    <label class="auth-field-label">
+                        비밀번호 확인
+                    </label>
+
+                    <input
+                        type="password"
+                        id="authSignupPasswordConfirmInput"
+                        class="auth-input"
+                        placeholder="비밀번호 재입력"
+                        autocomplete="new-password"
+                    >
+
+                    <div
+                        id="authSignupPasswordConfirmError"
+                        class="auth-field-error"
+                    ></div>
+
+                </div>
+
+
                 <div
-                    id="authPasswordError"
-                    class="auth-field-error"
+                    id="authSignupMessage"
+                    class="auth-message"
                 ></div>
 
-            </div>
 
-
-            <!-- 전체 메시지 -->
-
-            <div
-                id="authMessage"
-                class="auth-message"
-            ></div>
-
-
-            <!-- 제출 버튼 -->
-
-            <button
-                type="button"
-                id="authSubmitBtn"
-                class="auth-submit-btn"
-                onclick="handleAuthSubmit()"
-            >
-                로그인
-            </button>
-
-
-            <!-- 모드 전환 힌트 -->
-
-            <div
-                id="authModeHint"
-                class="auth-mode-hint"
-            >
-                계정이 없으신가요?
                 <button
                     type="button"
-                    class="auth-mode-hint-btn"
-                    onclick="switchAuthMode('signup')"
+                    id="authSignupSubmitBtn"
+                    class="auth-submit-btn"
+                    onclick="handleSignUp()"
                 >
                     회원가입
                 </button>
+
+
+                <div class="auth-mode-hint">
+                    이미 계정이 있으신가요?
+                    <button
+                        type="button"
+                        class="auth-mode-hint-btn"
+                        onclick="switchAuthMode('login')"
+                    >
+                        로그인
+                    </button>
+                </div>
+
             </div>
 
         </div>
@@ -1151,22 +1303,66 @@
 
             <div class="auth-profile-card">
 
-                <div class="auth-profile-avatar">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="28"
-                        height="28"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                <button
+                    type="button"
+                    class="auth-profile-avatar-btn"
+                    onclick="openAvatarPicker()"
+                    aria-label="프로필 사진 변경"
+                >
+
+                    <img
+                        id="authProfileAvatarImg"
+                        class="auth-profile-avatar-img"
+                        alt="프로필 사진"
+                        style="display: none;"
                     >
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                </div>
+
+                    <div
+                        id="authProfileAvatarPlaceholder"
+                        class="auth-profile-avatar-placeholder"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+
+                    <div class="auth-profile-avatar-edit">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                    </div>
+
+                </button>
+
+                <input
+                    type="file"
+                    id="authAvatarFileInput"
+                    accept="image/*"
+                    style="display: none;"
+                    onchange="handleAvatarFileChange(event)"
+                >
 
                 <div class="auth-profile-email" id="accountEmailDisplay"></div>
 
@@ -1175,35 +1371,61 @@
             </div>
 
 
-            <div class="auth-profile-info">
+            <!-- 이번 달 요약 -->
 
-                <div class="auth-profile-info-row">
+            <div class="auth-month-summary">
 
-                    <span class="auth-profile-info-label">
-                        마지막 동기화
-                    </span>
+                <div class="auth-month-summary-title">
+                    <span id="authMonthSummaryLabel">이번 달</span>
+                    <span class="auth-month-summary-sub" id="authMonthSummaryMonth"></span>
+                </div>
 
-                    <span
-                        class="auth-profile-info-value"
-                        id="accountLastSync"
-                    >
-                        -
-                    </span>
+                <div class="auth-month-summary-rows">
+
+                    <div class="auth-month-summary-row">
+                        <span class="auth-month-summary-row-label">지출</span>
+                        <span
+                            class="auth-month-summary-row-value expense"
+                            id="authMonthExpense"
+                        >0원</span>
+                    </div>
+
+                    <div class="auth-month-summary-row">
+                        <span class="auth-month-summary-row-label">수입</span>
+                        <span
+                            class="auth-month-summary-row-value income"
+                            id="authMonthIncome"
+                        >0원</span>
+                    </div>
+
+                    <div class="auth-month-summary-row auth-month-summary-row-balance">
+                        <span class="auth-month-summary-row-label">잔액</span>
+                        <span
+                            class="auth-month-summary-row-value"
+                            id="authMonthBalance"
+                        >0원</span>
+                    </div>
 
                 </div>
 
-                <div class="auth-profile-info-row">
+                <div
+                    id="authMonthBudgetWrap"
+                    class="auth-month-budget"
+                    style="display: none;"
+                >
 
-                    <span class="auth-profile-info-label">
-                        저장된 거래
-                    </span>
+                    <div class="auth-month-budget-header">
+                        <span>예산 사용률</span>
+                        <span id="authMonthBudgetPercent">0%</span>
+                    </div>
 
-                    <span
-                        class="auth-profile-info-value"
-                        id="accountTransactionCount"
-                    >
-                        0건
-                    </span>
+                    <div class="auth-month-budget-bar">
+                        <div
+                            id="authMonthBudgetFill"
+                            class="auth-month-budget-fill"
+                            style="width: 0%;"
+                        ></div>
+                    </div>
 
                 </div>
 

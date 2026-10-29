@@ -80,6 +80,8 @@ document.addEventListener(
                 }
                 else {
 
+                    switchAuthMode("login");
+
                     showScreen("accountSettings");
 
                 }
@@ -92,9 +94,9 @@ document.addEventListener(
                     error
                 );
 
-                /* 오류가 나도 로그인 화면으로 */
-
                 if (!currentUser) {
+
+                    switchAuthMode("login");
 
                     showScreen("accountSettings");
 

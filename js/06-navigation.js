@@ -78,15 +78,31 @@ function showScreen(screenName) {
         subjectSettings: "주체 설정",
         historySettings: "내역 설정",
         historyExport: "엑셀로 저장",
-        analysisSettings: "분석 설정",
-        accountSettings: "계정 설정"
+        analysisSettings: "분석 설정"
 
     };
 
 
     if (pageTitle) {
-        pageTitle.innerText =
-            titleMap[screenName] || "";
+
+        if (screenName === "accountSettings") {
+
+            if (currentUser) {
+                pageTitle.innerText = "계정";
+            }
+            else {
+                pageTitle.innerText =
+                    currentAuthMode === "signup"
+                        ? "회원가입"
+                        : "로그인";
+            }
+
+        }
+        else {
+            pageTitle.innerText =
+                titleMap[screenName] || "";
+        }
+
     }
 
 
@@ -158,8 +174,7 @@ function showScreen(screenName) {
         screenName === "paymentSettings" ||
         screenName === "subjectSettings" ||
         screenName === "historySettings" ||
-        screenName === "analysisSettings" ||
-        screenName === "accountSettings"
+        screenName === "analysisSettings"
     ) {
 
         updateSettingsUI();
@@ -194,6 +209,17 @@ function showScreen(screenName) {
 
     if (screenName === "historyExport") {
         initializeExportDates();
+    }
+
+
+    if (screenName === "accountSettings") {
+
+        updateAccountUI();
+
+        if (currentUser) {
+            renderAccountMonthSummary();
+        }
+
     }
 
 
@@ -291,6 +317,8 @@ function toggleSettingsCollapse(bodyId, button) {
     }
 
 }
+
+
 /* =========================
    탭 간 좌우 스와이프
    입력 ↔ 내역 ↔ 분석 ↔ 설정
@@ -303,8 +331,8 @@ const TAB_ORDER = [
     "settings"
 ];
 
-const TAB_SWIPE_THRESHOLD = 60;   /* 스와이프 인식 최소 거리(px) */
-const TAB_SWIPE_MAX_Y = 80;       /* 세로로 너무 많이 움직이면 무시 */
+const TAB_SWIPE_THRESHOLD = 60;
+const TAB_SWIPE_MAX_Y = 80;
 
 let tabSwipeStartX = 0;
 let tabSwipeStartY = 0;
@@ -314,8 +342,6 @@ let tabSwipeTracking = false;
 document.addEventListener(
     "touchstart",
     function(event) {
-
-        /* 1. 모달 열려 있으면 무시 */
 
         const modal = document.getElementById("appModalOverlay");
 
@@ -328,8 +354,6 @@ document.addEventListener(
         }
 
 
-        /* 2. 관리 카드 위에서 시작하면 무시 */
-
         if (
             event.target.closest &&
             event.target.closest(".manage-card")
@@ -338,8 +362,6 @@ document.addEventListener(
             return;
         }
 
-
-        /* 3. 거래 카드 위에서 시작하면 무시 (NEW!) */
 
         if (
             event.target.closest &&
@@ -350,8 +372,6 @@ document.addEventListener(
         }
 
 
-        /* 4. 거래 내역 컨테이너 내부면 무시 (NEW!) */
-
         if (
             event.target.closest &&
             event.target.closest("#selectedDateTransactions")
@@ -360,8 +380,6 @@ document.addEventListener(
             return;
         }
 
-
-        /* 5. 분석 상세 리스트 무시 (NEW!) */
 
         if (
             event.target.closest &&
@@ -372,8 +390,6 @@ document.addEventListener(
         }
 
 
-        /* 6. 가로 스크롤 영역 무시 */
-
         if (
             event.target.closest &&
             event.target.closest(".card-horizontal-list")
@@ -382,8 +398,6 @@ document.addEventListener(
             return;
         }
 
-
-        /* 7. 차트/캘린더 무시 */
 
         if (
             event.target.closest &&
@@ -397,8 +411,6 @@ document.addEventListener(
         }
 
 
-        /* 8. 설정 하위 화면이면 무시 */
-
         if (
             currentScreen !== "input" &&
             currentScreen !== "history" &&
@@ -409,8 +421,6 @@ document.addEventListener(
             return;
         }
 
-
-        /* 9. input/textarea 위에서 시작하면 무시 */
 
         const tag = (event.target.tagName || "").toLowerCase();
 
@@ -438,7 +448,6 @@ document.addEventListener(
 );
 
 
-
 document.addEventListener(
     "touchend",
     function(event) {
@@ -457,17 +466,9 @@ document.addEventListener(
         const diffY = touch.clientY - tabSwipeStartY;
 
 
-        /* 세로로 많이 움직였으면 무시 */
-
         if (Math.abs(diffY) > TAB_SWIPE_MAX_Y) return;
 
-
-        /* 가로 스와이프 거리 부족하면 무시 */
-
         if (Math.abs(diffX) < TAB_SWIPE_THRESHOLD) return;
-
-
-        /* 세로가 가로보다 크면 무시 */
 
         if (Math.abs(diffY) > Math.abs(diffX)) return;
 
@@ -481,18 +482,10 @@ document.addEventListener(
 
 
         if (diffX < 0) {
-
-            /* 왼쪽으로 스와이프 → 다음 탭 */
-
             targetIdx = currentIdx + 1;
-
         }
         else {
-
-            /* 오른쪽으로 스와이프 → 이전 탭 */
-
             targetIdx = currentIdx - 1;
-
         }
 
 
@@ -506,7 +499,6 @@ document.addEventListener(
     },
     { passive: true }
 );
-
 
 
 document.addEventListener(

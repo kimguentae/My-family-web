@@ -2,7 +2,7 @@
    Service Worker
 ========================= */
 
-const CACHE_VERSION = "household-v8";
+const CACHE_VERSION = "household-v9";
 
 const CACHE_FILES = [
     "./",
