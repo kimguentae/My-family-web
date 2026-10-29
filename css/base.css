@@ -1124,116 +1124,74 @@ input {
 }
 
 /* =========================
-   분석 설정 카드 (순서 변경 + 토글)
+   분석 설정 카드 (순서 변경 없음)
 ========================= */
 
 .analysis-card-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 4px 0 8px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 2px 0 8px;
 }
 
 .analysis-setting-card {
+    aspect-ratio: 1 / 1;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 12px;
-    padding: 14px 12px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
+    padding: 8px 6px;
     position: relative;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: pan-y;
-    transition:
-        transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
-        box-shadow 0.22s ease,
-        opacity 0.22s ease;
-    will-change: transform;
-}
-
-/* 드래그 중인 카드 */
-
-.analysis-setting-card.dragging {
-    z-index: 50;
-    opacity: 0.98;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
-    cursor: grabbing;
-    transition: box-shadow 0.15s ease;
-}
-
-/* 다른 카드들이 부드럽게 이동 */
-
-.analysis-card-grid.dragging-active
-    .analysis-setting-card:not(.dragging) {
-    transition:
-        transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
-        opacity 0.22s ease;
-}
-
-/* 원본 자리 표시 */
-
-.analysis-setting-card.dragging::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: #f3f3f3;
-    border: 1.5px dashed #d0d0d0;
-    border-radius: 12px;
-    z-index: -1;
-}
-
-.analysis-setting-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    gap: 8px;
 }
 
 .analysis-setting-card-name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #222;
-    line-height: 1.3;
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
+    text-align: center;
+    line-height: 1.25;
+    word-break: keep-all;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-.analysis-setting-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+/* 스위치 크기를 카드에 맞게 살짝 축소 */
+
+.analysis-setting-card .switch {
+    width: 40px;
+    height: 24px;
 }
 
-.analysis-setting-card-status {
-    font-size: 11px;
-    color: #999;
-    font-weight: 500;
+.analysis-setting-card .slider::before {
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
 }
 
-.analysis-setting-card-status.on {
-    color: #4caf68;
+.analysis-setting-card .switch input:checked + .slider::before {
+    transform: translateX(16px);
 }
 
-.analysis-setting-card-drag {
-    color: #ccc;
-    font-size: 16px;
-    letter-spacing: -2px;
-    line-height: 1;
-    padding: 4px;
-}
+/* 작은 화면 대응 */
 
-/* 분석 설정 안내 문구 */
+@media (max-width: 360px) {
+    .analysis-card-grid {
+        gap: 6px;
+    }
 
-.analysis-settings-hint {
-    font-size: 12px;
-    color: #999;
-    padding: 0 4px 10px;
-    line-height: 1.5;
+    .analysis-setting-card-name {
+        font-size: 11px;
+    }
 }

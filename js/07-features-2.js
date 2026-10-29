@@ -255,28 +255,28 @@ function updateAnalysisGroupVisibility() {
 
 
 /* =========================
-   분석 항목 순서 관리 (카드형)
+   분석 항목 표시 (카드형, 순서 변경 없음)
 ========================= */
 
 const analysisGroupMeta = {
 
     monthlyChart: {
-        label: "월별 그래프 표시",
+        label: "월별 그래프",
         settingKey: "monthlyChartEnabled"
     },
 
     category: {
-        label: "카테고리 표시",
+        label: "카테고리",
         settingKey: "analysisCategoryEnabled"
     },
 
     payment: {
-        label: "결제수단 표시",
+        label: "결제수단",
         settingKey: "analysisPaymentEnabled"
     },
 
     subject: {
-        label: "주체 분석 표시",
+        label: "주체",
         settingKey: "analysisSubjectEnabled"
     }
 
@@ -294,14 +294,21 @@ function renderAnalysisGroupOrderList() {
     container.innerHTML = "";
 
 
-    /* 기존 리스트 컨테이너 클래스를 카드 그리드로 변경 */
-
     container.classList.remove("category-manage-list");
 
     container.classList.add("analysis-card-grid");
 
 
-    settings.analysisGroupOrder.forEach((key, index) => {
+    /* 설정에 저장된 순서대로 렌더 */
+
+    const order =
+        Array.isArray(settings.analysisGroupOrder) &&
+        settings.analysisGroupOrder.length === 4
+            ? settings.analysisGroupOrder
+            : ["monthlyChart", "category", "payment", "subject"];
+
+
+    order.forEach((key) => {
 
         const meta = analysisGroupMeta[key];
 
@@ -312,16 +319,10 @@ function renderAnalysisGroupOrderList() {
 
         card.className = "analysis-setting-card";
 
-        card.dataset.index = index;
         card.dataset.key = key;
 
 
-        /* 헤더 (이름 + 토글) */
-
-        const header = document.createElement("div");
-
-        header.className = "analysis-setting-card-header";
-
+        /* 카드 이름 */
 
         const name = document.createElement("div");
 
@@ -329,6 +330,8 @@ function renderAnalysisGroupOrderList() {
 
         name.innerText = meta.label;
 
+
+        /* 토글 */
 
         const switchLabel = document.createElement("label");
 
@@ -342,16 +345,6 @@ function renderAnalysisGroupOrderList() {
         checkbox.checked = settings[meta.settingKey];
 
 
-        /* 토글 클릭 시 카드 드래그 방지 */
-
-        checkbox.addEventListener(
-            "click",
-            function(event) {
-                event.stopPropagation();
-            }
-        );
-
-
         checkbox.onchange = function(event) {
 
             event.stopPropagation();
@@ -361,8 +354,6 @@ function renderAnalysisGroupOrderList() {
             saveSettings();
 
             updateAnalysisGroupVisibility();
-
-            renderAnalysisGroupOrderList();
 
 
             const analysisScreen =
@@ -388,71 +379,12 @@ function renderAnalysisGroupOrderList() {
         switchLabel.appendChild(slider);
 
 
-        header.appendChild(name);
+        card.appendChild(name);
 
-        header.appendChild(switchLabel);
-
-
-        /* 푸터 (상태 + 드래그 핸들) */
-
-        const footer = document.createElement("div");
-
-        footer.className = "analysis-setting-card-footer";
-
-
-        const status = document.createElement("span");
-
-        status.className =
-            "analysis-setting-card-status" +
-            (settings[meta.settingKey] ? " on" : "");
-
-        status.innerText =
-            settings[meta.settingKey] ? "표시 중" : "숨김";
-
-
-        const dragHandle = document.createElement("span");
-
-        dragHandle.className = "analysis-setting-card-drag";
-
-        dragHandle.innerText = "⋮⋮";
-
-
-        footer.appendChild(status);
-
-        footer.appendChild(dragHandle);
-
-
-        card.appendChild(header);
-
-        card.appendChild(footer);
+        card.appendChild(switchLabel);
 
 
         container.appendChild(card);
-
-
-        /* 카드 드래그 (기존 initializeManageCardDrag 재사용) */
-
-        initializeManageCardDrag(
-            card,
-            {
-                getArray: () => settings.analysisGroupOrder,
-                onSave: saveSettings,
-                onRender: renderAnalysisGroupOrderList,
-                onAfterMove: function() {
-
-                    const analysisScreen =
-                        document.getElementById("analysisScreen");
-
-                    if (
-                        analysisScreen &&
-                        analysisScreen.classList.contains("active")
-                    ) {
-                        renderAnalysis();
-                    }
-
-                }
-            }
-        );
 
     });
 
