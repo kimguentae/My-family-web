@@ -53,7 +53,9 @@
 
     <!-- 입력 -->
 
-    <section id="inputScreen" class="screen active">
+    <!-- 입력 -->
+
+    <section id="inputScreen" class="screen">
 
 <div class="input-date-row">
 
@@ -1220,6 +1222,7 @@
 
 
 <!-- 서비스 워커 등록 -->
+<!-- 서비스 워커 등록 -->
 <script>
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function() {
@@ -1227,6 +1230,7 @@ if ("serviceWorker" in navigator) {
             .register("./sw.js")
             .then(function(registration) {
                 console.log("SW 등록 완료:", registration.scope);
+                registration.update();
             })
             .catch(function(error) {
                 console.error("SW 등록 실패:", error);

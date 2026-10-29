@@ -200,6 +200,15 @@ async function attemptAutoRecoverSession() {
 
         setSyncStatus("로그아웃됨");
 
+
+        /* 로그인 안 되어 있으면 로그인 화면으로 이동 */
+
+        if (currentScreen !== "accountSettings") {
+
+            showScreen("accountSettings");
+
+        }
+
         return;
 
     }
@@ -226,56 +235,69 @@ async function checkExistingSession() {
     if (!supabaseClient) return;
 
 
-    /* 1차: 현재 저장된 세션 확인 */
+    try {
 
-    const { data, error } =
-        await supabaseClient.auth.getSession();
+        /* 1차: 현재 저장된 세션 확인 */
+
+        const { data, error } =
+            await supabaseClient.auth.getSession();
 
 
-    if (
-        !error &&
-        data &&
-        data.session &&
-        data.session.user
-    ) {
+        if (
+            !error &&
+            data &&
+            data.session &&
+            data.session.user
+        ) {
 
-        currentUser = {
-            id: data.session.user.id,
-            email: data.session.user.email
-        };
+            currentUser = {
+                id: data.session.user.id,
+                email: data.session.user.email
+            };
 
-        updateAccountUI();
+            updateAccountUI();
 
-        await loadUserDataFromSupabase();
+            await loadUserDataFromSupabase();
 
-        return;
+            return;
+
+        }
+
+
+        /* 2차: refresh token으로 재시도 */
+
+        const { data: refreshData, error: refreshError } =
+            await supabaseClient.auth.refreshSession();
+
+
+        if (
+            !refreshError &&
+            refreshData &&
+            refreshData.session &&
+            refreshData.session.user
+        ) {
+
+            currentUser = {
+                id: refreshData.session.user.id,
+                email: refreshData.session.user.email
+            };
+
+            updateAccountUI();
+
+            await loadUserDataFromSupabase();
+
+            return;
+
+        }
 
     }
 
+    catch (error) {
 
-    /* 2차: refresh token으로 재시도 */
-
-    const { data: refreshData, error: refreshError } =
-        await supabaseClient.auth.refreshSession();
-
-
-    if (
-        !refreshError &&
-        refreshData &&
-        refreshData.session &&
-        refreshData.session.user
-    ) {
-
-        currentUser = {
-            id: refreshData.session.user.id,
-            email: refreshData.session.user.email
-        };
-
-        updateAccountUI();
-
-        await loadUserDataFromSupabase();
-
-        return;
+        console.error(
+            "세션 확인 중 오류:",
+            error
+        );
 
     }
 
@@ -366,6 +388,11 @@ async function handleSignUp() {
 
         await loadUserDataFromSupabase();
 
+
+        /* 세션이 바로 생긴 경우 → 입력 화면으로 이동 */
+
+        showScreen("input");
+
     }
 
     else {
@@ -449,6 +476,11 @@ async function handleSignIn() {
 
     await loadUserDataFromSupabase();
 
+
+    /* 로그인 성공 → 입력 화면으로 이동 */
+
+    showScreen("input");
+
 }
 
 
@@ -482,6 +514,11 @@ async function handleSignOut() {
 
 
     updateAccountUI();
+
+
+    /* 로그아웃 → 로그인 화면으로 이동 */
+
+    showScreen("accountSettings");
 
 
     setTimeout(

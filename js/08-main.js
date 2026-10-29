@@ -67,9 +67,40 @@ document.addEventListener(
         registerAuthListener();
 
 
-        /* 2. 기존 세션 확인 및 데이터 로드 */
+        /* 2. 기존 세션 확인 및 데이터 로드
+              → 세션 확인 후 로그인 안 되어 있으면 로그인 화면으로 이동 */
 
-        checkExistingSession();
+        checkExistingSession()
+            .then(function() {
+
+                if (currentUser) {
+
+                    showScreen("input");
+
+                }
+                else {
+
+                    showScreen("accountSettings");
+
+                }
+
+            })
+            .catch(function(error) {
+
+                console.error(
+                    "세션 확인 실패:",
+                    error
+                );
+
+                /* 오류가 나도 로그인 화면으로 */
+
+                if (!currentUser) {
+
+                    showScreen("accountSettings");
+
+                }
+
+            });
 
 
         /* 3. 오프라인 상태 체크 */
