@@ -989,58 +989,159 @@
         class="screen"
     >
 
+        <!-- 로그인 안 된 상태 -->
+
         <div
             id="accountLoggedOut"
-            class="account-section"
+            class="auth-section"
         >
 
-            <div class="account-label">
-                이메일
+            <!-- 로그인/회원가입 탭 -->
+
+            <div class="auth-tabs">
+
+                <button
+                    type="button"
+                    id="authTabLogin"
+                    class="auth-tab active"
+                    onclick="switchAuthMode('login')"
+                >
+                    로그인
+                </button>
+
+                <button
+                    type="button"
+                    id="authTabSignup"
+                    class="auth-tab"
+                    onclick="switchAuthMode('signup')"
+                >
+                    회원가입
+                </button>
+
             </div>
 
-            <input
-                type="email"
-                id="authEmailInput"
-                class="account-input"
-                placeholder="you@example.com"
-                autocomplete="email"
-            >
 
-            <div class="account-label">
-                비밀번호
+            <!-- 이메일 -->
+
+            <div class="auth-field">
+
+                <label class="auth-field-label">
+                    이메일
+                </label>
+
+                <div class="auth-input-wrap">
+
+                    <input
+                        type="email"
+                        id="authEmailInput"
+                        class="auth-input"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        autocapitalize="off"
+                        spellcheck="false"
+                    >
+
+                </div>
+
+                <div
+                    id="authEmailError"
+                    class="auth-field-error"
+                ></div>
+
             </div>
 
-            <input
-                type="password"
-                id="authPasswordInput"
-                class="account-input"
-                placeholder="6자 이상"
-                autocomplete="current-password"
-            >
+
+            <!-- 비밀번호 -->
+
+            <div class="auth-field">
+
+                <label class="auth-field-label">
+                    비밀번호
+                </label>
+
+                <div class="auth-input-wrap">
+
+                    <input
+                        type="password"
+                        id="authPasswordInput"
+                        class="auth-input"
+                        placeholder="6자 이상"
+                        autocomplete="current-password"
+                    >
+
+                    <button
+                        type="button"
+                        id="authPasswordToggle"
+                        class="auth-password-toggle"
+                        onclick="togglePasswordVisibility()"
+                        aria-label="비밀번호 표시"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+
+                </div>
+
+                <div
+                    id="authPasswordError"
+                    class="auth-field-error"
+                ></div>
+
+            </div>
+
+
+            <!-- 전체 메시지 -->
 
             <div
                 id="authMessage"
-                class="account-message"
+                class="auth-message"
             ></div>
+
+
+            <!-- 제출 버튼 -->
 
             <button
                 type="button"
-                class="save-button"
-                onclick="handleSignIn()"
+                id="authSubmitBtn"
+                class="auth-submit-btn"
+                onclick="handleAuthSubmit()"
             >
                 로그인
             </button>
 
-            <button
-                type="button"
-                class="account-secondary-button"
-                onclick="handleSignUp()"
+
+            <!-- 모드 전환 힌트 -->
+
+            <div
+                id="authModeHint"
+                class="auth-mode-hint"
             >
-                회원가입
-            </button>
+                계정이 없으신가요?
+                <button
+                    type="button"
+                    class="auth-mode-hint-btn"
+                    onclick="switchAuthMode('signup')"
+                >
+                    회원가입
+                </button>
+            </div>
 
         </div>
 
+
+        <!-- 로그인 된 상태 -->
 
         <div
             id="accountLoggedIn"
@@ -1048,24 +1149,71 @@
             style="display: none;"
         >
 
-            <div class="account-label">
-                로그인 계정
+            <div class="auth-profile-card">
+
+                <div class="auth-profile-avatar">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+
+                <div class="auth-profile-email" id="accountEmailDisplay"></div>
+
+                <div class="auth-profile-status" id="accountSyncStatus"></div>
+
             </div>
 
-            <div
-                id="accountEmailDisplay"
-                class="account-email"
-            ></div>
 
-            <div
-                id="accountSyncStatus"
-                class="account-message account-message-info"
-            ></div>
+            <div class="auth-profile-info">
+
+                <div class="auth-profile-info-row">
+
+                    <span class="auth-profile-info-label">
+                        마지막 동기화
+                    </span>
+
+                    <span
+                        class="auth-profile-info-value"
+                        id="accountLastSync"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+                <div class="auth-profile-info-row">
+
+                    <span class="auth-profile-info-label">
+                        저장된 거래
+                    </span>
+
+                    <span
+                        class="auth-profile-info-value"
+                        id="accountTransactionCount"
+                    >
+                        0건
+                    </span>
+
+                </div>
+
+            </div>
+
 
             <button
                 type="button"
-                class="save-button"
-                onclick="handleSignOut()"
+                class="auth-logout-btn"
+                onclick="confirmSignOut()"
             >
                 로그아웃
             </button>

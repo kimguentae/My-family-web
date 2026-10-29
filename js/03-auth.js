@@ -2,6 +2,15 @@
    03. 인증 (로그인/회원가입/세션)
 ========================= */
 
+/* 현재 로그인/회원가입 모드 */
+
+var currentAuthMode = "login";
+
+
+/* =========================
+   UI 업데이트
+========================= */
+
 function updateAccountUI() {
 
     const loggedOut =
@@ -26,6 +35,8 @@ function updateAccountUI() {
             emailDisplay.innerText = currentUser.email;
         }
 
+        updateAccountProfileInfo();
+
     }
 
     else {
@@ -38,21 +49,109 @@ function updateAccountUI() {
 }
 
 
-function setAuthMessage(text) {
+function updateAccountProfileInfo() {
 
-    const message =
-        document.getElementById("authMessage");
+    const lastSyncElement =
+        document.getElementById("accountLastSync");
 
-    if (message) {
-        message.innerText = text || "";
+    const countElement =
+        document.getElementById("accountTransactionCount");
+
+
+    if (lastSyncElement) {
+
+        const lastSync =
+            localStorage.getItem(
+                "householdLastSync"
+            );
+
+        if (lastSync) {
+
+            const diff =
+                Math.floor(
+                    (Date.now() - Number(lastSync)) / 1000
+                );
+
+            if (diff < 60) {
+                lastSyncElement.innerText = "방금 전";
+            }
+            else if (diff < 3600) {
+                lastSyncElement.innerText =
+                    Math.floor(diff / 60) + "분 전";
+            }
+            else if (diff < 86400) {
+                lastSyncElement.innerText =
+                    Math.floor(diff / 3600) + "시간 전";
+            }
+            else {
+                lastSyncElement.innerText =
+                    Math.floor(diff / 86400) + "일 전";
+            }
+
+        }
+        else {
+            lastSyncElement.innerText = "-";
+        }
+
+    }
+
+
+    if (countElement) {
+
+        countElement.innerText =
+            (transactions ? transactions.length : 0) + "건";
+
     }
 
 }
 
 
-function setSyncStatus(text) {
+function setAuthMessage(text, type) {
 
-    /* 계정 설정 화면의 텍스트 상태 */
+    const message =
+        document.getElementById("authMessage");
+
+    if (!message) return;
+
+
+    message.innerText = text || "";
+
+    message.classList.remove(
+        "error",
+        "success",
+        "info"
+    );
+
+
+    if (!text) return;
+
+
+    if (type === "error") {
+        message.classList.add("error");
+    }
+    else if (type === "success") {
+        message.classList.add("success");
+    }
+    else {
+        message.classList.add("info");
+    }
+
+}
+
+
+function setAuthFieldError(fieldId, text) {
+
+    const element =
+        document.getElementById(fieldId);
+
+    if (!element) return;
+
+    element.innerText = text || "";
+
+}
+
+
+function setSyncStatus(text) {
 
     const accountStatus =
         document.getElementById("accountSyncStatus");
@@ -61,8 +160,6 @@ function setSyncStatus(text) {
         accountStatus.innerText = text || "";
     }
 
-
-    /* 입력 화면의 아이콘 상태 */
 
     const inputStatus =
         document.getElementById("syncStatus");
@@ -77,20 +174,19 @@ function setSyncStatus(text) {
     );
 
 
-    /* 텍스트 → 상태 매핑 */
-
-    if (!text) {
-
-        /* 아무 상태도 없음 → 기본 회색 */
-
-        return;
-
-    }
+    if (!text) return;
 
 
     if (text === "동기화 완료") {
 
         inputStatus.classList.add("success");
+
+        localStorage.setItem(
+            "householdLastSync",
+            String(Date.now())
+        );
+
+        updateAccountProfileInfo();
 
         return;
 
@@ -101,11 +197,8 @@ function setSyncStatus(text) {
         text === "동기화 중..." ||
         text.includes("동기화 중")
     ) {
-
         inputStatus.classList.add("warning");
-
         return;
-
     }
 
 
@@ -113,11 +206,201 @@ function setSyncStatus(text) {
         text.includes("실패") ||
         text.includes("로그아웃")
     ) {
-
         inputStatus.classList.add("error");
-
         return;
+    }
 
+}
+
+
+/* =========================
+   로그인/회원가입 탭 전환
+========================= */
+
+function switchAuthMode(mode) {
+
+    if (mode !== "login" && mode !== "signup") return;
+
+
+    currentAuthMode = mode;
+
+
+    const loginTab =
+        document.getElementById("authTabLogin");
+
+    const signupTab =
+        document.getElementById("authTabSignup");
+
+    const submitBtn =
+        document.getElementById("authSubmitBtn");
+
+    const passwordInput =
+        document.getElementById("authPasswordInput");
+
+    const hint =
+        document.getElementById("authModeHint");
+
+
+    if (loginTab) {
+        loginTab.classList.toggle(
+            "active",
+            mode === "login"
+        );
+    }
+
+    if (signupTab) {
+        signupTab.classList.toggle(
+            "active",
+            mode === "signup"
+        );
+    }
+
+    if (submitBtn) {
+        submitBtn.innerText =
+            mode === "login" ? "로그인" : "회원가입";
+    }
+
+    if (passwordInput) {
+        passwordInput.autocomplete =
+            mode === "login"
+                ? "current-password"
+                : "new-password";
+    }
+
+    if (hint) {
+        hint.innerHTML =
+            mode === "login"
+                ? `계정이 없으신가요? <button type="button" class="auth-mode-hint-btn" onclick="switchAuthMode('signup')">회원가입</button>`
+                : `이미 계정이 있으신가요? <button type="button" class="auth-mode-hint-btn" onclick="switchAuthMode('login')">로그인</button>`;
+    }
+
+
+    setAuthMessage("");
+
+    setAuthFieldError("authEmailError", "");
+    setAuthFieldError("authPasswordError", "");
+
+}
+
+
+/* =========================
+   비밀번호 표시/숨김
+========================= */
+
+function togglePasswordVisibility() {
+
+    const input =
+        document.getElementById("authPasswordInput");
+
+    const btn =
+        document.getElementById("authPasswordToggle");
+
+
+    if (!input || !btn) return;
+
+
+    const isPassword =
+        input.type === "password";
+
+
+    input.type =
+        isPassword ? "text" : "password";
+
+
+    btn.setAttribute(
+        "aria-label",
+        isPassword ? "비밀번호 숨김" : "비밀번호 표시"
+    );
+
+
+    btn.classList.toggle(
+        "visible",
+        isPassword
+    );
+
+}
+
+
+/* =========================
+   입력 검증
+========================= */
+
+function isValidEmail(email) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+}
+
+
+function validateAuthInputs(email, password) {
+
+    let valid = true;
+
+
+    setAuthFieldError("authEmailError", "");
+    setAuthFieldError("authPasswordError", "");
+
+
+    if (!email) {
+
+        setAuthFieldError(
+            "authEmailError",
+            "이메일을 입력해주세요."
+        );
+
+        valid = false;
+
+    }
+    else if (!isValidEmail(email)) {
+
+        setAuthFieldError(
+            "authEmailError",
+            "올바른 이메일 형식이 아닙니다."
+        );
+
+        valid = false;
+
+    }
+
+
+    if (!password) {
+
+        setAuthFieldError(
+            "authPasswordError",
+            "비밀번호를 입력해주세요."
+        );
+
+        valid = false;
+
+    }
+    else if (password.length < 6) {
+
+        setAuthFieldError(
+            "authPasswordError",
+            "비밀번호는 6자 이상이어야 해요."
+        );
+
+        valid = false;
+
+    }
+
+
+    return valid;
+
+}
+
+
+/* =========================
+   제출 (로그인 or 회원가입)
+========================= */
+
+async function handleAuthSubmit() {
+
+    if (currentAuthMode === "login") {
+        await handleSignIn();
+    }
+    else {
+        await handleSignUp();
     }
 
 }
@@ -201,8 +484,6 @@ async function attemptAutoRecoverSession() {
         setSyncStatus("로그아웃됨");
 
 
-        /* 로그인 안 되어 있으면 로그인 화면으로 이동 */
-
         if (currentScreen !== "accountSettings") {
 
             showScreen("accountSettings");
@@ -237,8 +518,6 @@ async function checkExistingSession() {
 
     try {
 
-        /* 1차: 현재 저장된 세션 확인 */
-
         const { data, error } =
             await supabaseClient.auth.getSession();
 
@@ -263,8 +542,6 @@ async function checkExistingSession() {
 
         }
 
-
-        /* 2차: refresh token으로 재시도 */
 
         const { data: refreshData, error: refreshError } =
             await supabaseClient.auth.refreshSession();
@@ -304,12 +581,17 @@ async function checkExistingSession() {
 }
 
 
+/* =========================
+   회원가입
+========================= */
+
 async function handleSignUp() {
 
     if (!supabaseClient) {
 
         setAuthMessage(
-            "Supabase 연결 정보가 설정되지 않았습니다."
+            "Supabase 연결 정보가 설정되지 않았습니다.",
+            "error"
         );
 
         return;
@@ -331,87 +613,97 @@ async function handleSignUp() {
         passwordInput ? passwordInput.value : "";
 
 
-    if (!email || !password) {
+    if (!validateAuthInputs(email, password)) return;
+
+
+    setAuthMessage("처리 중...", "info");
+
+
+    const submitBtn =
+        document.getElementById("authSubmitBtn");
+
+    if (submitBtn) submitBtn.disabled = true;
+
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+                email,
+                password
+            });
+
+
+        if (error) {
+
+            setAuthMessage(error.message, "error");
+
+            return;
+
+        }
+
+
+        if (data && data.session && data.user) {
+
+            currentUser = {
+                id: data.user.id,
+                email: data.user.email
+            };
+
+            setAuthMessage("", "");
+
+            updateAccountUI();
+
+
+            await pushLocalDataToSupabase();
+
+            await loadUserDataFromSupabase();
+
+
+            showScreen("input");
+
+        }
+
+        else {
+
+            setAuthMessage(
+                "가입 확인 메일을 확인해주세요.",
+                "success"
+            );
+
+        }
+
+    }
+
+    catch (error) {
 
         setAuthMessage(
-            "이메일과 비밀번호를 입력해주세요."
+            error.message || "오류가 발생했습니다.",
+            "error"
         );
 
-        return;
-
     }
 
+    finally {
 
-    if (password.length < 6) {
-
-        setAuthMessage(
-            "비밀번호는 6자 이상이어야 해요."
-        );
-
-        return;
-
-    }
-
-
-    setAuthMessage("처리 중...");
-
-
-    const { data, error } =
-        await supabaseClient.auth.signUp({
-            email,
-            password
-        });
-
-
-    if (error) {
-
-        setAuthMessage(error.message);
-
-        return;
-
-    }
-
-
-    if (data && data.session && data.user) {
-
-        currentUser = {
-            id: data.user.id,
-            email: data.user.email
-        };
-
-        setAuthMessage("");
-
-        updateAccountUI();
-
-
-        await pushLocalDataToSupabase();
-
-        await loadUserDataFromSupabase();
-
-
-        /* 세션이 바로 생긴 경우 → 입력 화면으로 이동 */
-
-        showScreen("input");
-
-    }
-
-    else {
-
-        setAuthMessage(
-            "가입 확인 메일을 확인해주세요."
-        );
+        if (submitBtn) submitBtn.disabled = false;
 
     }
 
 }
 
 
+/* =========================
+   로그인
+========================= */
+
 async function handleSignIn() {
 
     if (!supabaseClient) {
 
         setAuthMessage(
-            "Supabase 연결 정보가 설정되지 않았습니다."
+            "Supabase 연결 정보가 설정되지 않았습니다.",
+            "error"
         );
 
         return;
@@ -433,53 +725,93 @@ async function handleSignIn() {
         passwordInput ? passwordInput.value : "";
 
 
-    if (!email || !password) {
+    if (!validateAuthInputs(email, password)) return;
+
+
+    setAuthMessage("로그인 중...", "info");
+
+
+    const submitBtn =
+        document.getElementById("authSubmitBtn");
+
+    if (submitBtn) submitBtn.disabled = true;
+
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+
+        if (error) {
+
+            setAuthMessage(error.message, "error");
+
+            return;
+
+        }
+
+
+        currentUser = {
+            id: data.user.id,
+            email: data.user.email
+        };
+
+
+        setAuthMessage("", "");
+
+        updateAccountUI();
+
+
+        await loadUserDataFromSupabase();
+
+
+        showScreen("input");
+
+    }
+
+    catch (error) {
 
         setAuthMessage(
-            "이메일과 비밀번호를 입력해주세요."
+            error.message || "오류가 발생했습니다.",
+            "error"
         );
 
-        return;
+    }
+
+    finally {
+
+        if (submitBtn) submitBtn.disabled = false;
 
     }
 
-
-    setAuthMessage("로그인 중...");
-
-
-    const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
+}
 
 
-    if (error) {
+/* =========================
+   로그아웃
+========================= */
 
-        setAuthMessage(error.message);
+function confirmSignOut() {
 
-        return;
+    appConfirm(
+        "로그아웃하시겠어요?\n\n이 기기의 로컬 데이터가 초기화됩니다.",
+        {
+            title: "로그아웃",
+            confirmText: "로그아웃",
+            cancelText: "취소",
+            danger: true
+        }
+    ).then(function(confirmed) {
 
-    }
+        if (!confirmed) return;
 
+        handleSignOut();
 
-    currentUser = {
-        id: data.user.id,
-        email: data.user.email
-    };
-
-
-    setAuthMessage("");
-
-    updateAccountUI();
-
-
-    await loadUserDataFromSupabase();
-
-
-    /* 로그인 성공 → 입력 화면으로 이동 */
-
-    showScreen("input");
+    });
 
 }
 
@@ -508,10 +840,7 @@ async function handleSignOut() {
     }
 
 
-    /* =========================
-       로컬 상태 초기화
-       (계정 전환 시 이전 계정 데이터 유출 방지)
-    ========================= */
+    /* 로컬 상태 초기화 */
 
     transactions = [];
 
@@ -529,6 +858,7 @@ async function handleSignOut() {
     localStorage.removeItem("householdCategories");
     localStorage.removeItem("householdPaymentMethods");
     localStorage.removeItem("householdSubjects");
+    localStorage.removeItem("householdLastSync");
 
 
     /* 선택 상태 초기화 */
@@ -543,7 +873,9 @@ async function handleSignOut() {
 
     historySearchKeyword = "";
 
-    monthlyChartSelectedCategory = "";
+    if (typeof monthlyChartSelectedCategory !== "undefined") {
+        monthlyChartSelectedCategory = "";
+    }
 
 
     /* UI 재렌더 */
@@ -562,15 +894,13 @@ async function handleSignOut() {
     renderSelectedDate();
 
 
-    setAuthMessage("");
+    setAuthMessage("", "");
 
     setSyncStatus("");
 
 
     updateAccountUI();
 
-
-    /* 로그아웃 → 로그인 화면으로 이동 */
 
     showScreen("accountSettings");
 
@@ -583,3 +913,87 @@ async function handleSignOut() {
     );
 
 }
+
+
+/* =========================
+   Enter 키 제출
+========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        const emailInput =
+            document.getElementById("authEmailInput");
+
+        const passwordInput =
+            document.getElementById("authPasswordInput");
+
+
+        if (emailInput) {
+
+            emailInput.addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        if (passwordInput) passwordInput.focus();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        if (passwordInput) {
+
+            passwordInput.addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        handleAuthSubmit();
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* 입력 시 에러 메시지 자동 제거 */
+
+        if (emailInput) {
+
+            emailInput.addEventListener(
+                "input",
+                function() {
+                    setAuthFieldError("authEmailError", "");
+                }
+            );
+
+        }
+
+
+        if (passwordInput) {
+
+            passwordInput.addEventListener(
+                "input",
+                function() {
+                    setAuthFieldError("authPasswordError", "");
+                }
+            );
+
+        }
+
+    }
+);

@@ -701,3 +701,297 @@ input {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* =========================
+   계정 설정 (로그인/회원가입 개선)
+========================= */
+
+.auth-section {
+    padding-top: 8px;
+}
+
+/* 탭 */
+
+.auth-tabs {
+    display: flex;
+    background: #f3f3f3;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.auth-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 11px 0;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #777;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+}
+
+.auth-tab.active {
+    background: white;
+    color: #222;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* 입력 필드 */
+
+.auth-field {
+    margin-bottom: 16px;
+}
+
+.auth-field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+    padding-left: 2px;
+}
+
+.auth-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-input {
+    width: 100%;
+    height: 48px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    outline: none;
+    background: white;
+    transition: border-color 0.15s ease;
+    color: #222;
+}
+
+.auth-input:focus {
+    border-color: #222;
+}
+
+.auth-input::placeholder {
+    color: #bbb;
+}
+
+/* 비밀번호 표시 토글 */
+
+.auth-password-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.auth-password-toggle:active {
+    background: #f0f0f0;
+}
+
+.auth-password-toggle.visible {
+    color: #222;
+}
+
+/* 에러 메시지 */
+
+.auth-field-error {
+    min-height: 16px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #e05252;
+    padding-left: 2px;
+    line-height: 1.4;
+}
+
+/* 전체 메시지 */
+
+.auth-message {
+    min-height: 20px;
+    margin: 16px 0 12px;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.5;
+    font-weight: 500;
+    padding: 0 8px;
+}
+
+.auth-message.error {
+    color: #e05252;
+}
+
+.auth-message.success {
+    color: #4caf68;
+}
+
+.auth-message.info {
+    color: #777;
+}
+
+/* 제출 버튼 */
+
+.auth-submit-btn {
+    width: 100%;
+    height: 50px;
+    border: none;
+    background: #222;
+    color: white;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.auth-submit-btn:active {
+    transform: scale(0.99);
+    opacity: 0.9;
+}
+
+.auth-submit-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+}
+
+/* 모드 전환 힌트 */
+
+.auth-mode-hint {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 13px;
+    color: #777;
+}
+
+.auth-mode-hint-btn {
+    border: none;
+    background: transparent;
+    color: #222;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 6px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* 로그인 상태 프로필 카드 */
+
+.auth-profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 24px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.auth-profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f3f3f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.auth-profile-email {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 6px;
+    word-break: break-all;
+    text-align: center;
+}
+
+.auth-profile-status {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4caf68;
+    padding: 4px 12px;
+    background: #eef8f1;
+    border-radius: 20px;
+    min-height: 20px;
+}
+
+.auth-profile-status:empty {
+    display: none;
+}
+
+/* 프로필 상세 정보 */
+
+.auth-profile-info {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 4px 16px;
+    margin-bottom: 20px;
+}
+
+.auth-profile-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.auth-profile-info-row:last-child {
+    border-bottom: none;
+}
+
+.auth-profile-info-label {
+    color: #777;
+    font-size: 13px;
+}
+
+.auth-profile-info-value {
+    color: #222;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* 로그아웃 버튼 */
+
+.auth-logout-btn {
+    width: 100%;
+    height: 50px;
+    border: 1px solid #e05252;
+    background: white;
+    color: #e05252;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+
+.auth-logout-btn:active {
+    background: #fdeeee;
+}
