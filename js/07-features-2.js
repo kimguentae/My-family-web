@@ -255,7 +255,7 @@ function updateAnalysisGroupVisibility() {
 
 
 /* =========================
-   분석 항목 순서 관리
+   분석 항목 순서 관리 (카드형)
 ========================= */
 
 const analysisGroupMeta = {
@@ -294,6 +294,13 @@ function renderAnalysisGroupOrderList() {
     container.innerHTML = "";
 
 
+    /* 기존 리스트 컨테이너 클래스를 카드 그리드로 변경 */
+
+    container.classList.remove("category-manage-list");
+
+    container.classList.add("analysis-card-grid");
+
+
     settings.analysisGroupOrder.forEach((key, index) => {
 
         const meta = analysisGroupMeta[key];
@@ -301,40 +308,61 @@ function renderAnalysisGroupOrderList() {
         if (!meta) return;
 
 
-        const item = document.createElement("div");
-        item.className = "category-manage-item";
-        item.dataset.index = index;
+        const card = document.createElement("div");
+
+        card.className = "analysis-setting-card";
+
+        card.dataset.index = index;
+        card.dataset.key = key;
 
 
-        const content = document.createElement("div");
-        content.className = "category-manage-content";
+        /* 헤더 (이름 + 토글) */
+
+        const header = document.createElement("div");
+
+        header.className = "analysis-setting-card-header";
 
 
-        const name = document.createElement("span");
-        name.className = "category-name";
+        const name = document.createElement("div");
+
+        name.className = "analysis-setting-card-name";
+
         name.innerText = meta.label;
 
 
-        const right = document.createElement("div");
-        right.style.display = "flex";
-        right.style.alignItems = "center";
-        right.style.gap = "10px";
-
-
         const switchLabel = document.createElement("label");
+
         switchLabel.className = "switch";
 
 
         const checkbox = document.createElement("input");
+
         checkbox.type = "checkbox";
+
         checkbox.checked = settings[meta.settingKey];
 
-        checkbox.onchange = function() {
+
+        /* 토글 클릭 시 카드 드래그 방지 */
+
+        checkbox.addEventListener(
+            "click",
+            function(event) {
+                event.stopPropagation();
+            }
+        );
+
+
+        checkbox.onchange = function(event) {
+
+            event.stopPropagation();
 
             settings[meta.settingKey] = checkbox.checked;
 
             saveSettings();
+
             updateAnalysisGroupVisibility();
+
+            renderAnalysisGroupOrderList();
 
 
             const analysisScreen =
@@ -351,37 +379,63 @@ function renderAnalysisGroupOrderList() {
 
 
         const slider = document.createElement("span");
+
         slider.className = "slider";
 
 
         switchLabel.appendChild(checkbox);
+
         switchLabel.appendChild(slider);
 
 
-        const drag = document.createElement("span");
-        drag.className = "category-drag";
-        drag.innerText = "⋮⋮";
+        header.appendChild(name);
+
+        header.appendChild(switchLabel);
 
 
-        right.appendChild(switchLabel);
-        right.appendChild(drag);
+        /* 푸터 (상태 + 드래그 핸들) */
+
+        const footer = document.createElement("div");
+
+        footer.className = "analysis-setting-card-footer";
 
 
-        content.appendChild(name);
-        content.appendChild(right);
+        const status = document.createElement("span");
+
+        status.className =
+            "analysis-setting-card-status" +
+            (settings[meta.settingKey] ? " on" : "");
+
+        status.innerText =
+            settings[meta.settingKey] ? "표시 중" : "숨김";
 
 
-        item.appendChild(content);
+        const dragHandle = document.createElement("span");
 
-        container.appendChild(item);
+        dragHandle.className = "analysis-setting-card-drag";
+
+        dragHandle.innerText = "⋮⋮";
 
 
-        initializeDragSort(
-            item,
-            drag,
+        footer.appendChild(status);
+
+        footer.appendChild(dragHandle);
+
+
+        card.appendChild(header);
+
+        card.appendChild(footer);
+
+
+        container.appendChild(card);
+
+
+        /* 카드 드래그 (기존 initializeManageCardDrag 재사용) */
+
+        initializeManageCardDrag(
+            card,
             {
                 getArray: () => settings.analysisGroupOrder,
-                getItemHeight: () => 54,
                 onSave: saveSettings,
                 onRender: renderAnalysisGroupOrderList,
                 onAfterMove: function() {
@@ -2747,9 +2801,18 @@ function initializeManageCardDrag(
 
         if (!grid) return;
 
-        const firstCard =
-            grid.querySelector(".manage-card:not(.add-card)") ||
-            grid.children[0];
+        /* 그리드 안의 첫 번째 자식 (추가 카드 제외) */
+
+        let firstCard = null;
+
+        for (const child of grid.children) {
+
+            if (!child.classList.contains("add-card")) {
+                firstCard = child;
+                break;
+            }
+
+        }
 
         if (!firstCard) return;
 
@@ -2790,7 +2853,7 @@ function initializeManageCardDrag(
 
         if (!grid) return;
 
-        grid.querySelectorAll(".manage-card").forEach(el => {
+        Array.from(grid.children).forEach(el => {
 
             if (el !== card) {
                 el.style.transform = "";
@@ -2809,12 +2872,16 @@ function initializeManageCardDrag(
 
         if (!grid) return;
 
+        /* 그리드의 모든 자식 중 드래그 카드 제외 */
+
         const cards =
-            Array.from(grid.querySelectorAll(".manage-card"));
+            Array.from(grid.children).filter(el => {
+
+                return el !== card && !el.classList.contains("add-card");
+
+            });
 
         cards.forEach(el => {
-
-            if (el === card) return;
 
             let dataIndex = Number(el.dataset.index);
 

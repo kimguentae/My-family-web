@@ -537,7 +537,7 @@ input {
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    touch-action: pan-y;
     transition:
         transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
         box-shadow 0.22s ease,
@@ -1121,4 +1121,119 @@ input {
 .budget-card-amount-empty {
     color: #bbb;
     font-weight: 500;
+}
+
+/* =========================
+   분석 설정 카드 (순서 변경 + 토글)
+========================= */
+
+.analysis-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 4px 0 8px;
+}
+
+.analysis-setting-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+    transition:
+        transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 0.22s ease,
+        opacity 0.22s ease;
+    will-change: transform;
+}
+
+/* 드래그 중인 카드 */
+
+.analysis-setting-card.dragging {
+    z-index: 50;
+    opacity: 0.98;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+    cursor: grabbing;
+    transition: box-shadow 0.15s ease;
+}
+
+/* 다른 카드들이 부드럽게 이동 */
+
+.analysis-card-grid.dragging-active
+    .analysis-setting-card:not(.dragging) {
+    transition:
+        transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity 0.22s ease;
+}
+
+/* 원본 자리 표시 */
+
+.analysis-setting-card.dragging::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #f3f3f3;
+    border: 1.5px dashed #d0d0d0;
+    border-radius: 12px;
+    z-index: -1;
+}
+
+.analysis-setting-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.analysis-setting-card-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.analysis-setting-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.analysis-setting-card-status {
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+}
+
+.analysis-setting-card-status.on {
+    color: #4caf68;
+}
+
+.analysis-setting-card-drag {
+    color: #ccc;
+    font-size: 16px;
+    letter-spacing: -2px;
+    line-height: 1;
+    padding: 4px;
+}
+
+/* 분석 설정 안내 문구 */
+
+.analysis-settings-hint {
+    font-size: 12px;
+    color: #999;
+    padding: 0 4px 10px;
+    line-height: 1.5;
 }
