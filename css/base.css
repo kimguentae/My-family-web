@@ -1255,16 +1255,12 @@ input {
    관리 설정 화면 스크롤
 ========================= */
 
-#manageSettingsScreen.active {
-    height: calc(100vh - 70px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 40px;
-}
-
+#manageSettingsScreen.active,
 #usageSettingsScreen.active {
     height: calc(100vh - 70px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 40px;
+    box-sizing: border-box;
+    /* 하단 네비(70px) + 여유 공간 */
+    padding-bottom: 110px;
 }

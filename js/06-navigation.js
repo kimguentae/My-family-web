@@ -71,7 +71,7 @@ function showScreen(screenName) {
         analysis: "분석",
         settings: "설정",
         inputSettings: "입력 설정",
-        usageSettings: "사용 설정",
+        usageSettings: "입력항목 설정",
         manageSettings: "카테고리 설정",
         budgetSettings: "예산 설정",
         historyExport: "엑셀로 저장",
