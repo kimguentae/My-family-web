@@ -224,6 +224,8 @@ function createUsageSettingCard(
     switchLabel.appendChild(slider);
 
 
+    /* 이름 위, 토글 아래 */
+
     card.appendChild(labelElement);
 
     card.appendChild(switchLabel);

@@ -1197,65 +1197,74 @@ input {
 }
 
 /* =========================
-   사용 설정 카드 (지출/수입 토글)
+   사용 설정 카드 (카테고리 카드와 동일 사이즈)
 ========================= */
 
-.usage-setting-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 2px 0 8px;
-}
-
 .usage-setting-card {
+    aspect-ratio: 1 / 1;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 12px;
-    padding: 14px 14px 12px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 10px;
-    min-height: 60px;
+    padding: 8px 6px;
+    position: relative;
     -webkit-tap-highlight-color: transparent;
 }
 
 .usage-setting-card-label {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #222;
-    line-height: 1.3;
+    text-align: center;
+    line-height: 1.25;
     word-break: keep-all;
-    flex: 1;
-    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .usage-setting-card .switch {
-    flex-shrink: 0;
-    width: 44px;
-    height: 26px;
+    width: 40px;
+    height: 24px;
 }
 
 .usage-setting-card .slider::before {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
 }
 
 .usage-setting-card .switch input:checked + .slider::before {
-    transform: translateX(18px);
+    transform: translateX(16px);
 }
 
 @media (max-width: 360px) {
-    .usage-setting-grid {
-        gap: 8px;
-    }
-
-    .usage-setting-card {
-        padding: 12px 12px 10px;
-        min-height: 56px;
-    }
-
     .usage-setting-card-label {
-        font-size: 13px;
+        font-size: 11px;
     }
+}
+
+/* =========================
+   관리 설정 화면 스크롤
+========================= */
+
+#manageSettingsScreen.active {
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 40px;
+}
+
+#usageSettingsScreen.active {
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 40px;
 }
