@@ -109,8 +109,6 @@ function removeRecentAccount(userId) {
 
 /* =========================
    로그인 화면 모드 결정
-   - 최근 로그인 있음 + forceShowAuthForm=false → 아바타만
-   - 최근 로그인 없음 or forceShowAuthForm=true → 폼
 ========================= */
 
 function renderAuthMode() {
@@ -215,14 +213,10 @@ function renderRecentOnlyList(list) {
         emailLabel.innerText = account.email;
 
 
-        /* 탭 → 비밀번호 모달 */
-
         avatarBtn.onclick = function() {
             openRecentPasswordModal(account);
         };
 
-
-        /* 길게 누르기 → 삭제 */
 
         let pressTimer = null;
 
@@ -270,8 +264,6 @@ function renderRecentOnlyList(list) {
         );
 
 
-        /* 마우스(PC) 우클릭 삭제 */
-
         avatarBtn.addEventListener(
             "contextmenu",
             function(event) {
@@ -294,8 +286,6 @@ function renderRecentOnlyList(list) {
 
 }
 
-
-/* 직접 입력 버튼 */
 
 function showAuthFormView() {
 
@@ -660,220 +650,207 @@ function resizeAvatarImage(dataUrl, maxSize, callback) {
 
 
 /* =========================
-   소비 리포트
+   계정 리포트 (무지출 챌린지)
 ========================= */
 
 function renderAccountMonthSummary() {
 
-    /* 기존 이름 유지 (다른 곳에서 호출 중이므로) */
-
-    renderAccountReport();
+    renderNoSpendChallenge();
 
 }
 
 
-function renderAccountReport() {
+function renderNoSpendChallenge() {
 
-    const monthLabel =
-        document.getElementById("authReportMonthLabel");
-
-    const monthSub =
-        document.getElementById("authReportMonthSub");
-
-    const todayExpenseEl =
-        document.getElementById("authReportTodayExpense");
-
-    const weekExpenseEl =
-        document.getElementById("authReportWeekExpense");
-
-    const topCategoryEl =
-        document.getElementById("authReportTopCategory");
-
-    const topCategoryAmountEl =
-        document.getElementById("authReportTopCategoryAmount");
+    const totalEl =
+        document.getElementById("noSpendTotalDays");
 
     const streakEl =
-        document.getElementById("authReportStreak");
+        document.getElementById("noSpendStreak");
 
-    const streakSubEl =
-        document.getElementById("authReportStreakSub");
+    const bestEl =
+        document.getElementById("noSpendBest");
+
+    const todayStatusEl =
+        document.getElementById("noSpendTodayStatus");
+
+    const startDateTextEl =
+        document.getElementById("noSpendStartDateText");
 
 
-    if (!todayExpenseEl) return;
+    if (!totalEl) return;
+
+
+    const startDate =
+        settings.noSpendStartDate ||
+        getDefaultSettings().noSpendStartDate;
+
+
+    if (startDateTextEl) {
+
+        startDateTextEl.innerText = startDate;
+
+    }
+
+
+    const expenseDates = new Set();
+
+    (transactions || []).forEach(function(t) {
+
+        if (t.type === "expense" && t.date) {
+            expenseDates.add(t.date);
+        }
+
+    });
 
 
     const today = new Date();
 
-    const todayStr = getTodayString();
+    const yesterday = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - 1
+    );
 
-    const year = today.getFullYear();
-
-    const month = today.getMonth();
-
-    const monthStart =
-        `${year}-${String(month + 1).padStart(2, "0")}-01`;
-
-    const monthEnd =
-        `${year}-${String(month + 1).padStart(2, "0")}-${String(
-            new Date(year, month + 1, 0).getDate()
-        ).padStart(2, "0")}`;
-
-
-    if (monthLabel) {
-        monthLabel.innerText = `${month + 1}월`;
-    }
-
-    if (monthSub) {
-        monthSub.innerText = `${year}년`;
-    }
-
-
-    /* 이번 주 범위 (월~일) */
-
-    const dayOfWeek = today.getDay();
-
-    const mondayOffset =
-        dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-
-    const weekStartDate =
-        new Date(today.getFullYear(), today.getMonth(), today.getDate() + mondayOffset);
-
-    const weekEndDate =
-        new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate() + 6);
 
     const pad = function(n) { return String(n).padStart(2, "0"); };
 
-    const weekStart =
-        `${weekStartDate.getFullYear()}-${pad(weekStartDate.getMonth() + 1)}-${pad(weekStartDate.getDate())}`;
-
-    const weekEnd =
-        `${weekEndDate.getFullYear()}-${pad(weekEndDate.getMonth() + 1)}-${pad(weekEndDate.getDate())}`;
+    const toDateStr = function(d) {
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
 
 
-    let todayExpense = 0;
-    let weekExpense = 0;
-
-    const monthCategoryTotals = {};
+    const todayStr = toDateStr(today);
 
 
-    (transactions || []).forEach(function(transaction) {
+    function isNoSpendDay(dateStr) {
+        return !expenseDates.has(dateStr);
+    }
 
-        const amount = Number(transaction.amount) || 0;
 
-        /* 오늘 지출 */
+    const startDateObj =
+        new Date(startDate + "T00:00:00");
 
-        if (
-            transaction.type === "expense" &&
-            transaction.date === todayStr
-        ) {
-            todayExpense += amount;
+    const todayObj =
+        new Date(todayStr + "T00:00:00");
+
+
+    if (startDateObj > todayObj) {
+
+        totalEl.innerText = "0일";
+        streakEl.innerText = "0일";
+        bestEl.innerText = "0일";
+
+        if (todayStatusEl) {
+            todayStatusEl.innerText = "아직 시작 전";
+            todayStatusEl.className = "no-spend-today";
         }
 
+        return;
 
-        /* 이번 주 지출 */
+    }
 
-        if (
-            transaction.type === "expense" &&
-            transaction.date >= weekStart &&
-            transaction.date <= weekEnd
-        ) {
-            weekExpense += amount;
+
+    /* 총 무지출: 시작일 ~ 어제 */
+
+    let totalNoSpend = 0;
+
+    const cursor = new Date(startDateObj);
+
+    while (cursor <= yesterday) {
+
+        if (isNoSpendDay(toDateStr(cursor))) {
+            totalNoSpend += 1;
         }
 
+        cursor.setDate(cursor.getDate() + 1);
 
-        /* 이번 달 카테고리 집계 */
+    }
 
-        if (
-            transaction.type === "expense" &&
-            transaction.date >= monthStart &&
-            transaction.date <= monthEnd
-        ) {
+    totalEl.innerText = totalNoSpend + "일";
 
-            const category = transaction.category || "미분류";
 
-            if (!monthCategoryTotals[category]) {
-                monthCategoryTotals[category] = 0;
+    /* 현재 연속: 어제부터 거꾸로 */
+
+    let streak = 0;
+
+    const streakCursor = new Date(yesterday);
+
+    while (streakCursor >= startDateObj) {
+
+        if (isNoSpendDay(toDateStr(streakCursor))) {
+            streak += 1;
+            streakCursor.setDate(streakCursor.getDate() - 1);
+        }
+        else {
+            break;
+        }
+
+    }
+
+
+    if (expenseDates.has(todayStr)) {
+        streak = 0;
+    }
+
+    streakEl.innerText = streak + "일";
+
+
+    /* 최고 기록: 시작일 ~ 어제 최장 연속 (+ 오늘 무지출이면 현재 포함) */
+
+    let bestStreak = 0;
+    let currentRun = 0;
+
+    const bestCursor = new Date(startDateObj);
+
+    while (bestCursor <= yesterday) {
+
+        if (isNoSpendDay(toDateStr(bestCursor))) {
+
+            currentRun += 1;
+
+            if (currentRun > bestStreak) {
+                bestStreak = currentRun;
             }
 
-            monthCategoryTotals[category] += amount;
-
-        }
-
-    });
-
-
-    todayExpenseEl.innerText =
-        formatAnalysisAmount(todayExpense) + "원";
-
-    weekExpenseEl.innerText =
-        formatAnalysisAmount(weekExpense) + "원";
-
-
-    /* 가장 많이 쓴 카테고리 */
-
-    const sortedCategories =
-        Object.entries(monthCategoryTotals)
-            .sort(function(a, b) {
-                return b[1] - a[1];
-            });
-
-
-    if (topCategoryEl && topCategoryAmountEl) {
-
-        if (sortedCategories.length > 0) {
-
-            const [topName, topAmount] = sortedCategories[0];
-
-            topCategoryEl.innerText = topName;
-
-            const monthExpenseTotal =
-                Object.values(monthCategoryTotals)
-                    .reduce(function(s, v) { return s + v; }, 0);
-
-            const percent =
-                monthExpenseTotal > 0
-                    ? Math.round((topAmount / monthExpenseTotal) * 100)
-                    : 0;
-
-            topCategoryAmountEl.innerText =
-                formatAnalysisAmount(topAmount) + "원 · " + percent + "%";
-
         }
         else {
-
-            topCategoryEl.innerText = "-";
-
-            topCategoryAmountEl.innerText = "";
-
+            currentRun = 0;
         }
+
+        bestCursor.setDate(bestCursor.getDate() + 1);
 
     }
 
 
-    /* 연속 기록 */
+    if (!expenseDates.has(todayStr)) {
 
-    const streak = calculateStreak();
+        const todayRun = streak + 1;
 
-    if (streakEl) {
-        streakEl.innerText = streak + "일";
+        if (todayRun > bestStreak) {
+            bestStreak = todayRun;
+        }
+
     }
 
-    if (streakSubEl) {
+    bestEl.innerText = bestStreak + "일";
 
-        if (streak >= 30) {
-            streakSubEl.innerText = "🔥 한 달 넘게 이어가는 중";
-        }
-        else if (streak >= 7) {
-            streakSubEl.innerText = "🔥 일주일 넘게 이어가는 중";
-        }
-        else if (streak >= 3) {
-            streakSubEl.innerText = "💪 좋은 습관이에요";
-        }
-        else if (streak >= 1) {
-            streakSubEl.innerText = "시작이 반이에요";
+
+    /* 오늘 상태 */
+
+    if (todayStatusEl) {
+
+        if (expenseDates.has(todayStr)) {
+
+            todayStatusEl.innerText = "오늘 지출이 있어요";
+            todayStatusEl.className = "no-spend-today no-spend-today-done";
+
         }
         else {
-            streakSubEl.innerText = "오늘 기록하고 시작해보세요";
+
+            todayStatusEl.innerText = "오늘 무지출 도전 중!";
+            todayStatusEl.className = "no-spend-today no-spend-today-active";
+
         }
 
     }
@@ -881,68 +858,28 @@ function renderAccountReport() {
 }
 
 
-function calculateStreak() {
+function openNoSpendStartDatePicker() {
 
-    if (!transactions || !transactions.length) return 0;
+    const currentDate =
+        settings.noSpendStartDate ||
+        getDefaultSettings().noSpendStartDate;
 
 
-    /* 거래가 있는 날짜 Set */
+    openDatepickerSingle(
+        currentDate,
+        function(newDate) {
 
-    const datesWithTransactions = new Set();
+            settings.noSpendStartDate = newDate;
 
-    transactions.forEach(function(t) {
-        if (t.date) {
-            datesWithTransactions.add(t.date);
+            saveSettings();
+
+            renderNoSpendChallenge();
+
+        },
+        {
+            anchorId: "noSpendStartDateText"
         }
-    });
-
-
-    let streak = 0;
-
-    const cursor = new Date();
-
-    /* 오늘부터 거꾸로 세기 */
-
-    while (true) {
-
-        const pad = function(n) { return String(n).padStart(2, "0"); };
-
-        const dateStr =
-            `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}-${pad(cursor.getDate())}`;
-
-
-        if (datesWithTransactions.has(dateStr)) {
-
-            streak += 1;
-
-            cursor.setDate(cursor.getDate() - 1);
-
-        }
-        else {
-
-            /* 오늘 기록이 없으면 어제부터 체크 (오늘 아직 안 쓴 경우) */
-
-            if (streak === 0) {
-
-                cursor.setDate(cursor.getDate() - 1);
-
-                const yesterdayStr =
-                    `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}-${pad(cursor.getDate())}`;
-
-                if (datesWithTransactions.has(yesterdayStr)) {
-                    continue;
-                }
-
-            }
-
-            break;
-
-        }
-
-    }
-
-
-    return streak;
+    );
 
 }
 
@@ -1587,8 +1524,6 @@ async function handleSignIn() {
 
         if (error) {
 
-            /* 최근 로그인 모달에서 실패한 경우 */
-
             if (forceShowAuthForm === false) {
 
                 appAlert(
@@ -1705,8 +1640,6 @@ async function handleSignOut() {
     }
 
 
-    /* 로컬 상태 초기화 */
-
     transactions = [];
 
     settings = getDefaultSettings();
@@ -1721,9 +1654,6 @@ async function handleSignOut() {
     localStorage.removeItem("householdPaymentMethods");
     localStorage.removeItem("householdSubjects");
     localStorage.removeItem("householdLastSync");
-
-
-    /* 최근 로그인 계정과 프로필 사진은 유지 */
 
 
     selectedCategory = "";
@@ -1760,8 +1690,6 @@ async function handleSignOut() {
 
     setSyncStatus("");
 
-
-    /* 로그아웃 후에는 폼이 아닌 아바타 뷰 우선 */
 
     forceShowAuthForm = false;
 

@@ -29,7 +29,10 @@ var datepickerState = {
     editingField: "start",
 
     /* 콜백 (선택 완료 시 실행) */
-    onConfirm: null
+    onConfirm: null,
+
+    /* 커스텀 앵커 (계정 화면 무지출 시작일 등) */
+    anchorId: ""
 
 };
 
@@ -143,10 +146,14 @@ function ensureDatepickerDOM() {
 
 function openDatepickerSingle(
     currentDate,
-    onConfirm
+    onConfirm,
+    options
 ) {
 
     ensureDatepickerDOM();
+
+
+    options = options || {};
 
 
     datepickerState.mode = "single";
@@ -155,6 +162,7 @@ function openDatepickerSingle(
     datepickerState.onConfirm = onConfirm;
     datepickerState.yearMode = false;
     datepickerState.monthMode = false;
+    datepickerState.anchorId = options.anchorId || "";
 
 
     /* 현재 달 표시 */
@@ -192,6 +200,7 @@ function openDatepickerRange(
     datepickerState.onConfirm = onConfirm;
     datepickerState.yearMode = false;
     datepickerState.monthMode = false;
+    datepickerState.anchorId = "";
 
 
     /* 편집 중인 필드의 날짜를 기준으로 달 표시 */
@@ -239,11 +248,31 @@ function showDatepickerOverlay() {
 
     if (datepickerState.mode === "single") {
 
-        const inputDateText =
-            document.getElementById("inputDateText");
+        /* 커스텀 앵커가 있으면 우선 사용 (계정 화면 등) */
 
-        if (inputDateText) {
-            anchorRect = inputDateText.getBoundingClientRect();
+        if (datepickerState.anchorId) {
+
+            const customAnchor =
+                document.getElementById(datepickerState.anchorId);
+
+            if (customAnchor) {
+                anchorRect = customAnchor.getBoundingClientRect();
+            }
+
+        }
+
+
+        /* 없으면 입력탭 날짜 텍스트 */
+
+        if (!anchorRect) {
+
+            const inputDateText =
+                document.getElementById("inputDateText");
+
+            if (inputDateText) {
+                anchorRect = inputDateText.getBoundingClientRect();
+            }
+
         }
 
     }
@@ -504,7 +533,7 @@ function renderDatepicker() {
 
         if (datepickerState.mode === "single") {
 
-            /* 입력탭: 액션 버튼 전부 숨김 (날짜 탭하면 바로 확정) */
+            /* 입력탭 / 계정 화면: 액션 버튼 전부 숨김 (날짜 탭하면 바로 확정) */
 
             actions.classList.add("hidden");
 
@@ -898,7 +927,6 @@ function datepickerSelectThisYear() {
     const now = new Date();
 
     datepickerState.viewYear = now.getFullYear();
-
     datepickerState.viewMonth = now.getMonth();
 
 
@@ -925,7 +953,6 @@ function datepickerSelectThisMonth() {
 
 
     datepickerState.viewYear = now.getFullYear();
-
     datepickerState.viewMonth = now.getMonth();
 
 
