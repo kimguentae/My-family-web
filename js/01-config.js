@@ -473,12 +473,14 @@ function getDefaultSettings() {
         analysisCategoryEnabled: true,
         analysisPaymentEnabled: true,
         analysisSubjectEnabled: true,
+        analysisBalanceEnabled: true,
 
         analysisGroupOrder: [
             "monthlyChart",
             "category",
             "payment",
-            "subject"
+            "subject",
+            "balance"
         ],
 
         monthlyChartEnabled: true,

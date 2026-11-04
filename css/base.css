@@ -1388,3 +1388,67 @@ input {
     padding-right: 44px;
     text-align: center;
 }
+
+/* =========================
+   분석 - 잔액 그룹
+========================= */
+
+.balance-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.balance-item {
+    text-align: center;
+    padding: 14px 6px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+}
+
+.balance-item-label {
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.balance-item-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.balance-item-value.balance-income {
+    color: #3d78d8;
+}
+
+.balance-item-value.balance-expense {
+    color: #e05252;
+}
+
+.balance-item-value.balance-result {
+    color: #222;
+}
+
+.balance-item-value.balance-result.negative {
+    color: #e05252;
+}
+
+.balance-item-value.balance-result.positive {
+    color: #3d78d8;
+}
+
+@media (max-width: 360px) {
+    .balance-item-value {
+        font-size: 13px;
+    }
+
+    .balance-item-label {
+        font-size: 10px;
+    }
+}

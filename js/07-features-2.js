@@ -75,8 +75,6 @@ function renderUsageSettings() {
         if (!meta) return;
 
 
-        /* 지출 */
-
         expenseGrid.appendChild(
             createUsageSettingCard(
                 meta.label,
@@ -85,8 +83,6 @@ function renderUsageSettings() {
             )
         );
 
-
-        /* 수입 */
 
         incomeGrid.appendChild(
             createUsageSettingCard(
@@ -224,8 +220,6 @@ function createUsageSettingCard(
     switchLabel.appendChild(slider);
 
 
-    /* 이름 위, 토글 아래 */
-
     card.appendChild(labelElement);
 
     card.appendChild(switchLabel);
@@ -250,6 +244,9 @@ function updateAnalysisGroupVisibility() {
     const monthlyChartGroup =
         document.getElementById("analysisMonthlyChartGroup");
 
+    const balanceGroup =
+        document.getElementById("analysisBalanceGroup");
+
 
     if (categoryGroup)
         categoryGroup.style.display =
@@ -266,6 +263,10 @@ function updateAnalysisGroupVisibility() {
     if (monthlyChartGroup)
         monthlyChartGroup.style.display =
             settings.monthlyChartEnabled ? "block" : "none";
+
+    if (balanceGroup)
+        balanceGroup.style.display =
+            settings.analysisBalanceEnabled ? "block" : "none";
 
 }
 
@@ -295,6 +296,11 @@ const analysisGroupMeta = {
     subject: {
         label: "주체",
         settingKey: "analysisSubjectEnabled"
+    },
+
+    balance: {
+        label: "잔액",
+        settingKey: "analysisBalanceEnabled"
     }
 
 };
@@ -318,9 +324,9 @@ function renderAnalysisGroupOrderList() {
 
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 4
+        settings.analysisGroupOrder.length === 5
             ? settings.analysisGroupOrder
-            : ["monthlyChart", "category", "payment", "subject"];
+            : ["monthlyChart", "category", "payment", "subject", "balance"];
 
 
     order.forEach((key, index) => {
@@ -442,16 +448,19 @@ function reorderAnalysisGroupsInDOM() {
             document.getElementById("analysisPaymentGroup"),
 
         subject:
-            document.getElementById("analysisSubjectGroup")
+            document.getElementById("analysisSubjectGroup"),
+
+        balance:
+            document.getElementById("analysisBalanceGroup")
 
     };
 
 
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 4
+        settings.analysisGroupOrder.length === 5
             ? settings.analysisGroupOrder
-            : ["monthlyChart", "category", "payment", "subject"];
+            : ["monthlyChart", "category", "payment", "subject", "balance"];
 
 
     order.forEach(key => {
@@ -1081,6 +1090,83 @@ function formatAnalysisDate(dateString) {
 
 
 /* =========================
+   분석 - 잔액
+========================= */
+
+function renderAnalysisBalance(startDate, endDate) {
+
+    const incomeEl =
+        document.getElementById("analysisBalanceIncome");
+
+    const expenseEl =
+        document.getElementById("analysisBalanceExpense");
+
+    const resultEl =
+        document.getElementById("analysisBalanceResult");
+
+
+    if (!incomeEl || !expenseEl || !resultEl) return;
+
+
+    if (!startDate || !endDate) {
+
+        incomeEl.innerText = "0원";
+        expenseEl.innerText = "0원";
+        resultEl.innerText = "0원";
+
+        return;
+
+    }
+
+
+    let incomeTotal = 0;
+    let expenseTotal = 0;
+
+
+    (transactions || []).forEach(function(t) {
+
+        if (t.date < startDate || t.date > endDate) return;
+
+        const amount = Number(t.amount) || 0;
+
+        if (t.type === "income") {
+            incomeTotal += amount;
+        }
+        else if (t.type === "expense") {
+            expenseTotal += amount;
+        }
+
+    });
+
+
+    const balance = incomeTotal - expenseTotal;
+
+
+    incomeEl.innerText =
+        formatAnalysisAmount(incomeTotal) + "원";
+
+    expenseEl.innerText =
+        formatAnalysisAmount(expenseTotal) + "원";
+
+    resultEl.innerText =
+        (balance < 0 ? "-" : "") +
+        formatAnalysisAmount(Math.abs(balance)) + "원";
+
+
+    resultEl.classList.remove("negative", "positive");
+
+    if (balance < 0) {
+        resultEl.classList.add("negative");
+    }
+    else if (balance > 0) {
+        resultEl.classList.add("positive");
+    }
+
+}
+
+
+
+/* =========================
    분석 상세
 ========================= */
 
@@ -1676,6 +1762,11 @@ function renderAnalysis() {
 
     updateAnalysisGroupVisibility();
     reorderAnalysisGroupsInDOM();
+
+
+    /* 잔액 (type 무관, 항상 전체) */
+
+    renderAnalysisBalance(startDate, endDate);
 
 
     renderAnalysisMonthlyChart(transactions, startDate, endDate);
@@ -2638,8 +2729,6 @@ function createManageCard(
     card.appendChild(nameElement);
 
 
-    /* 길게 누르면 뜨는 액션 오버레이 */
-
     const overlay = document.createElement("div");
 
     overlay.className = "card-actions-overlay";
@@ -2690,8 +2779,6 @@ function createManageCard(
 
     card.appendChild(overlay);
 
-
-    /* 오버레이가 떠 있을 때 다른 곳 탭하면 닫힘 */
 
     document.addEventListener(
         "touchstart",
