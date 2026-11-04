@@ -103,17 +103,46 @@ async function loadUserDataFromSupabase() {
 
         if (userRow.settings) {
 
-            settings = {
-                ...settings,
-                ...userRow.settings
-            };
+    const remoteSettings = userRow.settings;
 
-            localStorage.setItem(
-                "householdSettings",
-                JSON.stringify(settings)
-            );
+    /* 원격 settings 병합 */
 
-        }
+    settings = { ...settings, ...remoteSettings };
+
+
+    /* analysisGroupOrder가 유효하지 않으면 로컬 기본값 유지 */
+
+    const validKeys = ["monthlyChart", "category", "payment", "subject", "balance"];
+
+    const remoteOrder = remoteSettings.analysisGroupOrder;
+
+    const remoteIsValid =
+        Array.isArray(remoteOrder) &&
+        remoteOrder.length === 5 &&
+        validKeys.every(k => remoteOrder.includes(k));
+
+
+    if (!remoteIsValid) {
+
+        settings.analysisGroupOrder = [
+            "balance",
+            "monthlyChart",
+            "category",
+            "payment",
+            "subject"
+        ];
+
+        settings.analysisGroupOrderMigratedV3 = true;
+
+    }
+
+
+    localStorage.setItem(
+        "householdSettings",
+        JSON.stringify(settings)
+    );
+
+}
 
 
         if (userRow.categories) {

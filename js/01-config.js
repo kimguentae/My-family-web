@@ -239,12 +239,12 @@ const DEFAULT_ANALYSIS_ORDER_V2 = [
 
 /* 1회성 마이그레이션: 기존 사용자도 새 순서로 강제 변경 */
 
-if (!settings.analysisGroupOrderMigratedV2) {
+if (!settings.analysisGroupOrderMigratedV3) {
 
     settings.analysisGroupOrder =
         DEFAULT_ANALYSIS_ORDER_V2.slice();
 
-    settings.analysisGroupOrderMigratedV2 = true;
+    settings.analysisGroupOrderMigratedV3 = true;
 
 }
 else if (!Array.isArray(settings.analysisGroupOrder)) {
@@ -254,8 +254,6 @@ else if (!Array.isArray(settings.analysisGroupOrder)) {
 
 }
 else {
-
-    /* 배열이면 유효한 키만 필터 + 누락 키 추가 */
 
     let order = settings.analysisGroupOrder.filter(
         key => validAnalysisGroupKeys.includes(key)
