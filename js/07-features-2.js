@@ -421,7 +421,19 @@ function renderAnalysisGroupOrderList() {
             card,
             {
                 getArray: () => settings.analysisGroupOrder,
-                onSave: saveSettings,
+                onSave: function() {
+                    saveSettings();
+
+                    /* Supabase에 즉시 반영 (600ms 디바운스 무시) */
+
+                    if (typeof pushLocalDataToSupabase === "function" &&
+                        supabaseClient &&
+                        currentUser) {
+
+                        pushLocalDataToSupabase();
+
+                    }
+                },
                 onRender: renderAnalysisGroupOrderList,
                 onAfterMove: function() {
 
