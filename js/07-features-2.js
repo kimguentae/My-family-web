@@ -3172,33 +3172,14 @@ function initializeManageCardDrag(
 
     function finishDrag() {
 
-        if (longPressTimer) {
-
-            clearTimeout(longPressTimer);
-
-            longPressTimer = null;
-
-        }
-
+        console.log("[drag] finishDrag",
+            "dragging:", dragging,
+            "originIndex:", originIndex,
+            "currentIndex:", currentIndex);
 
         if (!dragging) return;
 
         dragging = false;
-
-
-        const array = options.getArray();
-
-
-        /* ★ 배열 순서 실제 변경 */
-
-        if (currentIndex !== originIndex) {
-
-            moveArrayItem(array, originIndex, currentIndex);
-
-            options.onSave();
-
-        }
-
 
         card.style.transform = "";
         card.classList.remove("dragging");
@@ -3212,7 +3193,25 @@ function initializeManageCardDrag(
         }
 
 
-        /* ★ 재렌더는 항상 (dataset.index 갱신을 위해) */
+        const array = options.getArray();
+
+        console.log("[drag] array BEFORE:", array.slice());
+
+
+        if (currentIndex !== originIndex) {
+
+            const result = moveArrayItem(array, originIndex, currentIndex);
+
+            console.log("[drag] moved:", result);
+            console.log("[drag] array AFTER:", array.slice());
+
+            options.onSave();
+
+        }
+        else {
+            console.log("[drag] no move (same index)");
+        }
+
 
         options.onRender();
 
