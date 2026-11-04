@@ -213,65 +213,73 @@ if (
     settings.budgets = {};
 }
 
-if (
-    !Array.isArray(settings.analysisGroupOrder) ||
-    settings.analysisGroupOrder.length !== 4 ||
-    !settings.analysisGroupOrder.includes(
-        "monthlyChart"
-    )
-) {
 
-    const existingOrder =
-        Array.isArray(
-            settings.analysisGroupOrder
-        )
-            ? settings.analysisGroupOrder.filter(
-                  key =>
-                      key === "category" ||
-                      key === "payment" ||
-                      key === "subject"
-              )
-            : [
-                  "category",
-                  "payment",
-                  "subject"
-              ];
+/* =========================
+   분석 그룹 순서 마이그레이션
+   (balance 추가 + 기본 순서: 잔액 → 월별 → 카테고리 → 결제수단 → 주체)
+========================= */
+
+const validAnalysisGroupKeys = [
+    "monthlyChart",
+    "category",
+    "payment",
+    "subject",
+    "balance"
+];
 
 
-    settings.analysisGroupOrder = [
-        "monthlyChart",
-        ...existingOrder
-    ];
+const DEFAULT_ANALYSIS_ORDER_V2 = [
+    "balance",
+    "monthlyChart",
+    "category",
+    "payment",
+    "subject"
+];
+
+
+/* 1회성 마이그레이션: 기존 사용자도 새 순서로 강제 변경 */
+
+if (!settings.analysisGroupOrderMigratedV2) {
+
+    settings.analysisGroupOrder =
+        DEFAULT_ANALYSIS_ORDER_V2.slice();
+
+    settings.analysisGroupOrderMigratedV2 = true;
+
+}
+else if (!Array.isArray(settings.analysisGroupOrder)) {
+
+    settings.analysisGroupOrder =
+        DEFAULT_ANALYSIS_ORDER_V2.slice();
+
+}
+else {
+
+    /* 배열이면 유효한 키만 필터 + 누락 키 추가 */
+
+    let order = settings.analysisGroupOrder.filter(
+        key => validAnalysisGroupKeys.includes(key)
+    );
+
+
+    validAnalysisGroupKeys.forEach(key => {
+
+        if (!order.includes(key)) {
+            order.push(key);
+        }
+
+    });
+
+
+    settings.analysisGroupOrder = order;
 
 }
 
 
-/* 무지출 챌린지 시작일 마이그레이션 */
+/* 잔액 표시 여부 마이그레이션 */
 
-if (
-    typeof settings.noSpendStartDate !== "string" ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(settings.noSpendStartDate)
-) {
-
-    settings.noSpendStartDate =
-        (function() {
-            const year = new Date().getFullYear();
-            return `${year}-01-01`;
-        })();
-
-}
-
-
-/* 이번 달 목표 마이그레이션 */
-
-if (
-    typeof settings.monthlyBudget !== "number" ||
-    isNaN(settings.monthlyBudget) ||
-    settings.monthlyBudget < 0
-) {
-
-    settings.monthlyBudget = 0;
-
+if (settings.analysisBalanceEnabled === undefined) {
+    settings.analysisBalanceEnabled = true;
 }
 
 
@@ -476,12 +484,14 @@ function getDefaultSettings() {
         analysisBalanceEnabled: true,
 
         analysisGroupOrder: [
+            "balance",
             "monthlyChart",
             "category",
             "payment",
-            "subject",
-            "balance"
+            "subject"
         ],
+
+        analysisGroupOrderMigratedV2: true,
 
         monthlyChartEnabled: true,
 
