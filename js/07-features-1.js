@@ -1739,13 +1739,30 @@ function createTransactionCard(
     editButton.className = "swipe-edit";
     editButton.innerText = "수정";
 
-    editButton.onclick = function(event) {
+    /* click + touchend 둘 다 처리 (iOS/안드로이드 호환) */
+
+    let editHandled = false;
+
+    function handleEdit(event) {
 
         event.stopPropagation();
+        event.preventDefault();
+
+        if (editHandled) return;
+
+        editHandled = true;
+
+        setTimeout(function() {
+            editHandled = false;
+        }, 300);
 
         editTransaction(transaction.id);
 
-    };
+    }
+
+    editButton.addEventListener("click", handleEdit);
+
+    editButton.addEventListener("touchend", handleEdit, { passive: false });
 
 
     const deleteButton =
@@ -1755,13 +1772,28 @@ function createTransactionCard(
     deleteButton.className = "swipe-delete";
     deleteButton.innerText = "삭제";
 
-    deleteButton.onclick = function(event) {
+    let deleteHandled = false;
+
+    function handleDelete(event) {
 
         event.stopPropagation();
+        event.preventDefault();
+
+        if (deleteHandled) return;
+
+        deleteHandled = true;
+
+        setTimeout(function() {
+            deleteHandled = false;
+        }, 300);
 
         deleteTransaction(transaction.id);
 
-    };
+    }
+
+    deleteButton.addEventListener("click", handleDelete);
+
+    deleteButton.addEventListener("touchend", handleDelete, { passive: false });
 
 
     actions.appendChild(editButton);
@@ -1967,6 +1999,23 @@ function initializeSwipe(card) {
     content.addEventListener(
         "touchstart",
         function(event) {
+
+            /* 버튼 위에서 시작하면 스와이프 무시 */
+
+            const target = event.target;
+
+            if (
+                target &&
+                target.closest &&
+                (
+                    target.closest(".swipe-edit") ||
+                    target.closest(".swipe-delete")
+                )
+            ) {
+                swiping = false;
+                return;
+            }
+
 
             const touch = event.touches[0];
 

@@ -445,6 +445,7 @@
     border: 1px solid #eee;
     border-radius: 12px;
     transition: transform 0.2s ease;
+    will-change: transform;
 }
 
 .transaction-content.swiped-open {
@@ -513,6 +514,8 @@
     top: 0;
     bottom: 0;
     display: flex;
+    z-index: 1;
+    /* 버튼이 콘텐츠 아래에 깔리지 않도록 */
 }
 
 .swipe-edit {
@@ -521,6 +524,10 @@
     background: #777;
     color: white;
     font-size: 13px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    z-index: 3;
 }
 
 .swipe-delete {
@@ -529,6 +536,10 @@
     background: #e05252;
     color: white;
     font-size: 13px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    z-index: 3;
 }
 
 /* =========================
