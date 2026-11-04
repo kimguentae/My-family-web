@@ -417,10 +417,9 @@ function renderAnalysisGroupOrderList() {
         container.appendChild(card);
 
 
-        initializeManageCardDrag(
+        initializeAnalysisCardDrag(
             card,
             {
-                enableLongPress: false,
                 getArray: () => settings.analysisGroupOrder,
                 onSave: saveSettings,
                 onRender: renderAnalysisGroupOrderList,
@@ -3214,6 +3213,311 @@ function initializeManageCardDrag(
 
 
         /* ★ 재렌더는 항상 (dataset.index 갱신을 위해) */
+
+        options.onRender();
+
+        if (options.onAfterMove) {
+            options.onAfterMove();
+        }
+
+    }
+
+
+    card.addEventListener("touchend", finishDrag);
+
+    card.addEventListener("touchcancel", finishDrag);
+
+}
+
+/* =========================
+   분석 설정 카드 전용 드래그
+   (analysis-card-grid 4열, 카드 5개 대응)
+========================= */
+
+function initializeAnalysisCardDrag(card, options) {
+
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    let dragging = false;
+
+    let CELL_W = 100;
+    let CELL_H = 100;
+
+    let originIndex = 0;
+    let originLeft = 0;
+    let originTop = 0;
+
+    let currentIndex = 0;
+
+    const DRAG_START_THRESHOLD = 18;
+    const COLUMNS = 4;
+
+
+    function getGrid() {
+        return card.parentElement;
+    }
+
+
+    function getCellSize() {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        let firstCard = null;
+
+        for (const child of grid.children) {
+
+            if (!child.classList.contains("add-card")) {
+                firstCard = child;
+                break;
+            }
+
+        }
+
+        if (!firstCard) return;
+
+        const rect = firstCard.getBoundingClientRect();
+
+        let gap = 8;
+
+        if (grid.children.length > 1) {
+
+            const firstRect =
+                grid.children[0].getBoundingClientRect();
+
+            const secondRect =
+                grid.children[1].getBoundingClientRect();
+
+            if (Math.abs(firstRect.top - secondRect.top) < 5) {
+                gap = secondRect.left - firstRect.right;
+            }
+
+        }
+
+        CELL_W = rect.width + gap;
+        CELL_H = rect.height + gap;
+
+    }
+
+
+    function resetOtherCardsTransform() {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        Array.from(grid.children).forEach(el => {
+
+            if (el !== card) {
+                el.style.transform = "";
+            }
+
+        });
+
+    }
+
+
+    function updateOtherCardsVisual(newIndex) {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        const cards =
+            Array.from(grid.children).filter(el => el !== card);
+
+        cards.forEach(el => {
+
+            const dataIndex = Number(el.dataset.index);
+
+            if (isNaN(dataIndex)) return;
+
+
+            let visualIndex = dataIndex;
+
+
+            if (originIndex < newIndex) {
+
+                if (dataIndex > originIndex && dataIndex <= newIndex) {
+                    visualIndex = dataIndex - 1;
+                }
+
+            }
+            else if (originIndex > newIndex) {
+
+                if (dataIndex >= newIndex && dataIndex < originIndex) {
+                    visualIndex = dataIndex + 1;
+                }
+
+            }
+
+
+            const offsetX =
+                (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+
+            const offsetY =
+                (Math.floor(visualIndex / COLUMNS) -
+                 Math.floor(dataIndex / COLUMNS)) * CELL_H;
+
+
+            el.style.transform =
+                `translate(${offsetX}px, ${offsetY}px)`;
+
+        });
+
+    }
+
+
+    card.addEventListener(
+        "touchstart",
+        function(event) {
+
+            if (event.touches.length !== 1) return;
+
+            const touch = event.touches[0];
+
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            currentX = startX;
+            currentY = startY;
+
+
+            getCellSize();
+
+
+            originIndex = Number(card.dataset.index);
+            currentIndex = originIndex;
+
+
+            const rect = card.getBoundingClientRect();
+
+            originLeft = rect.left;
+            originTop = rect.top;
+
+        },
+        { passive: true }
+    );
+
+
+    card.addEventListener(
+        "touchmove",
+        function(event) {
+
+            if (event.touches.length !== 1) return;
+
+            const touch = event.touches[0];
+
+            currentX = touch.clientX;
+            currentY = touch.clientY;
+
+
+            const diffX = currentX - startX;
+            const diffY = currentY - startY;
+
+
+            if (!dragging) {
+
+                if (
+                    Math.abs(diffX) < DRAG_START_THRESHOLD &&
+                    Math.abs(diffY) < DRAG_START_THRESHOLD
+                ) {
+                    return;
+                }
+
+                dragging = true;
+
+                card.classList.add("dragging");
+
+                const grid = getGrid();
+
+                if (grid) {
+                    grid.classList.add("dragging-active");
+                }
+
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+
+            }
+
+
+            card.style.transform =
+                `translate(${diffX}px, ${diffY}px) scale(1.05)`;
+
+
+            const grid = getGrid();
+            if (!grid) return;
+
+            const containerRect =
+                grid.getBoundingClientRect();
+
+            const relX =
+                (originLeft + diffX) - containerRect.left;
+
+            const relY =
+                (originTop + diffY) - containerRect.top;
+
+
+            const col =
+                Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
+
+            const row = Math.max(0, Math.floor(relY / CELL_H));
+
+            const targetIndex = row * COLUMNS + col;
+
+
+            const array = options.getArray();
+
+            const maxIndex = array.length - 1;
+
+            const clampedTarget =
+                Math.max(0, Math.min(maxIndex, targetIndex));
+
+
+            if (clampedTarget === currentIndex) return;
+
+            currentIndex = clampedTarget;
+
+
+            updateOtherCardsVisual(clampedTarget);
+
+        },
+        { passive: true }
+    );
+
+
+    function finishDrag() {
+
+        if (!dragging) return;
+
+        dragging = false;
+
+
+        card.style.transform = "";
+        card.classList.remove("dragging");
+
+        resetOtherCardsTransform();
+
+        const grid = getGrid();
+
+        if (grid) {
+            grid.classList.remove("dragging-active");
+        }
+
+
+        const array = options.getArray();
+
+
+        if (currentIndex !== originIndex) {
+
+            moveArrayItem(array, originIndex, currentIndex);
+
+            options.onSave();
+
+        }
+
 
         options.onRender();
 
