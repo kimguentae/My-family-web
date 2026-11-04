@@ -322,11 +322,22 @@ function renderAnalysisGroupOrderList() {
     container.classList.add("analysis-card-grid");
 
 
+    /* 기본 순서: 잔액 → 월별 → 카테고리 → 결제수단 → 주체 */
+
+    const DEFAULT_ORDER = [
+        "balance",
+        "monthlyChart",
+        "category",
+        "payment",
+        "subject"
+    ];
+
+
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
         settings.analysisGroupOrder.length === 5
             ? settings.analysisGroupOrder
-            : ["monthlyChart", "category", "payment", "subject", "balance"];
+            : DEFAULT_ORDER;
 
 
     order.forEach((key, index) => {
@@ -340,7 +351,7 @@ function renderAnalysisGroupOrderList() {
 
         card.className = "analysis-setting-card";
 
-        card.dataset.index = index;
+        card.dataset.index = String(index);
 
         card.dataset.key = key;
 
@@ -456,11 +467,20 @@ function reorderAnalysisGroupsInDOM() {
     };
 
 
+    const DEFAULT_ORDER = [
+        "balance",
+        "monthlyChart",
+        "category",
+        "payment",
+        "subject"
+    ];
+
+
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
         settings.analysisGroupOrder.length === 5
             ? settings.analysisGroupOrder
-            : ["monthlyChart", "category", "payment", "subject", "balance"];
+            : DEFAULT_ORDER;
 
 
     order.forEach(key => {
@@ -2892,8 +2912,18 @@ function initializeManageCardDrag(
 
         const gridWidth = grid.clientWidth;
 
-        COLUMNS =
-            Math.max(1, Math.round((gridWidth + gap) / CELL_W));
+        /* 4열 고정 (analysis-card-grid와 card-grid 모두 4열) */
+
+        COLUMNS = 4;
+
+        /* 실제 열 개수 재계산 (안전장치) */
+
+        const estimated =
+            Math.round((gridWidth + gap) / CELL_W);
+
+        if (estimated >= 3 && estimated <= 6) {
+            COLUMNS = estimated;
+        }
 
     }
 
@@ -3160,6 +3190,8 @@ function initializeManageCardDrag(
         const array = options.getArray();
 
 
+        /* ★ 배열 순서 실제 변경 */
+
         if (currentIndex !== originIndex) {
 
             moveArrayItem(array, originIndex, currentIndex);
@@ -3181,14 +3213,12 @@ function initializeManageCardDrag(
         }
 
 
-        if (currentIndex !== originIndex) {
+        /* ★ 재렌더는 항상 (dataset.index 갱신을 위해) */
 
-            options.onRender();
+        options.onRender();
 
-            if (options.onAfterMove) {
-                options.onAfterMove();
-            }
-
+        if (options.onAfterMove) {
+            options.onAfterMove();
         }
 
     }
