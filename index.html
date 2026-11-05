@@ -159,12 +159,36 @@
                     id="amountInput"
                     class="amount-input"
                     placeholder="0"
-                    inputmode="numeric"
+                    inputmode="decimal"
                     autocomplete="off"
                 >
 
-                <span class="won">원</span>
+                <button
+                    type="button"
+                    id="currencyButton"
+                    class="currency-button"
+                    onclick="openCurrencyPicker()"
+                    aria-label="통화 선택"
+                >₩</button>
 
+            </div>
+
+
+            <!-- 환율 표시 (외화일 때만) -->
+
+            <div
+                id="exchangeRateRow"
+                class="exchange-rate-row"
+                style="display: none;"
+            >
+                <div
+                    id="exchangeRateText"
+                    class="exchange-rate-text"
+                ></div>
+                <div
+                    id="exchangeRateSource"
+                    class="exchange-rate-source"
+                ></div>
             </div>
 
             <div
@@ -1321,6 +1345,22 @@
     </nav>
 
 
+        <!-- 통화 선택 모달 -->
+
+    <div
+        id="currencyPickerOverlay"
+        class="currency-picker-overlay"
+        onclick="handleCurrencyPickerOverlayClick(event)"
+    >
+        <div class="currency-picker-sheet">
+            <div class="currency-picker-title">통화 선택</div>
+            <div
+                id="currencyPickerList"
+                class="currency-picker-list"
+            ></div>
+        </div>
+    </div>
+
     <!-- 공용 모달 -->
 
     <div
@@ -1426,6 +1466,7 @@
 <script src="./js/07-features-2.js"></script>
 <script src="./js/08-main.js"></script>
 <script src="./js/09-datepicker.js"></script>
+<script src="./js/10-currency.js"></script>
 
 
 <!-- 서비스 워커 등록 -->

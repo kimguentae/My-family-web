@@ -1452,3 +1452,167 @@ input {
         font-size: 10px;
     }
 }
+
+/* =========================
+   다중 통화 - 입력 화면
+========================= */
+
+.currency-button {
+    margin-left: 8px;
+    min-width: 44px;
+    height: 44px;
+    border: none;
+    background: #f3f3f3;
+    color: #222;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 0 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.currency-button:active {
+    background: #e5e5e5;
+    transform: scale(0.97);
+}
+
+.exchange-rate-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    background: #f7f7f7;
+    border-radius: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+
+.exchange-rate-row:active {
+    background: #eee;
+}
+
+.exchange-rate-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+.exchange-rate-source {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+}
+
+.exchange-rate-source:empty {
+    display: none;
+}
+
+/* =========================
+   통화 선택 모달
+========================= */
+
+.currency-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.currency-picker-overlay.active {
+    display: flex;
+}
+
+.currency-picker-sheet {
+    width: 100%;
+    max-width: 320px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 16px;
+    padding: 18px 16px 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    animation: currencyPickerFade 0.18s ease;
+}
+
+@keyframes currencyPickerFade {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.currency-picker-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.currency-picker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.currency-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #f7f7f7;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #222;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    text-align: left;
+}
+
+.currency-picker-item:active {
+    background: #eee;
+}
+
+.currency-picker-item.active {
+    background: #eef4fd;
+    border-color: #3d78d8;
+}
+
+.currency-picker-flag {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.currency-picker-label {
+    flex: 1;
+    font-weight: 600;
+}
+
+.currency-picker-code {
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+}
+
+.currency-picker-item.active .currency-picker-code {
+    color: #3d78d8;
+}

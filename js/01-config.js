@@ -2,11 +2,31 @@
    01. 설정 및 전역 상태
 ========================= */
 
-/* 
-   ★ 이 함수는 02-utils.js에도 정의되어 있지만,
-   01-config.js가 먼저 로드되면서 이 함수를 필요로 하므로
-   여기서 먼저 선언해둔다. (중복 정의되지만 나중 로드가 덮어씀)
-*/
+/* =========================
+   통화 정의 (다중 통화)
+========================= */
+
+var CURRENCY_LIST = [
+    { code: "KRW", symbol: "₩",  label: "원",   flag: "🇰🇷", name: "대한민국 원" },
+    { code: "USD", symbol: "$",  label: "달러", flag: "🇺🇸", name: "미국 달러" },
+    { code: "JPY", symbol: "¥",  label: "엔",   flag: "🇯🇵", name: "일본 엔" },
+    { code: "EUR", symbol: "€",  label: "유로", flag: "🇪🇺", name: "유로" },
+    { code: "CNY", symbol: "¥",  label: "위안", flag: "🇨🇳", name: "중국 위안" },
+    { code: "VND", symbol: "₫",  label: "동",   flag: "🇻🇳", name: "베트남 동" },
+    { code: "THB", symbol: "฿",  label: "바트", flag: "🇹🇭", name: "태국 바트" }
+];
+
+
+function getCurrencyMeta(code) {
+
+    return CURRENCY_LIST.find(c => c.code === code) || CURRENCY_LIST[0];
+
+}
+
+
+/* =========================
+   날짜 유틸
+========================= */
 
 function getTodayString() {
 
@@ -26,6 +46,7 @@ function getTodayString() {
 
 }
 
+
 const SUPABASE_URL =
     "https://lyassaicxiixzyqlewhx.supabase.co";
 
@@ -36,8 +57,7 @@ const SUPABASE_ANON_KEY =
 var supabaseClient =
     typeof window !== "undefined" &&
     window.supabase &&
-    typeof window.supabase.createClient ===
-        "function"
+    typeof window.supabase.createClient === "function"
         ? window.supabase.createClient(
               SUPABASE_URL,
               SUPABASE_ANON_KEY,
@@ -47,8 +67,7 @@ var supabaseClient =
                       autoRefreshToken: true,
                       detectSessionInUrl: true,
                       storage: window.localStorage,
-                      storageKey:
-                          "household-auth-token"
+                      storageKey: "household-auth-token"
                   }
               }
           )
@@ -128,82 +147,36 @@ if (!settings || typeof settings !== "object") {
 
 /* 기존 설정값 이어받기 */
 
-if (settings.memoEnabled === undefined) {
-    settings.memoEnabled = true;
-}
-
-if (settings.paymentEnabled === undefined) {
-    settings.paymentEnabled = true;
-}
-
-if (settings.categoryEnabled === undefined) {
-    settings.categoryEnabled = true;
-}
-
-if (settings.subjectEnabled === undefined) {
-    settings.subjectEnabled = true;
-}
+if (settings.memoEnabled === undefined) settings.memoEnabled = true;
+if (settings.paymentEnabled === undefined) settings.paymentEnabled = true;
+if (settings.categoryEnabled === undefined) settings.categoryEnabled = true;
+if (settings.subjectEnabled === undefined) settings.subjectEnabled = true;
 
 
-if (settings.memoExpenseEnabled === undefined) {
-    settings.memoExpenseEnabled =
-        settings.memoEnabled !== false;
-}
+if (settings.memoExpenseEnabled === undefined)
+    settings.memoExpenseEnabled = settings.memoEnabled !== false;
+if (settings.memoIncomeEnabled === undefined)
+    settings.memoIncomeEnabled = settings.memoEnabled !== false;
 
-if (settings.memoIncomeEnabled === undefined) {
-    settings.memoIncomeEnabled =
-        settings.memoEnabled !== false;
-}
+if (settings.paymentExpenseEnabled === undefined)
+    settings.paymentExpenseEnabled = settings.paymentEnabled !== false;
+if (settings.paymentIncomeEnabled === undefined)
+    settings.paymentIncomeEnabled = settings.paymentEnabled !== false;
 
+if (settings.categoryExpenseEnabled === undefined)
+    settings.categoryExpenseEnabled = settings.categoryEnabled !== false;
+if (settings.categoryIncomeEnabled === undefined)
+    settings.categoryIncomeEnabled = settings.categoryEnabled !== false;
 
-if (settings.paymentExpenseEnabled === undefined) {
-    settings.paymentExpenseEnabled =
-        settings.paymentEnabled !== false;
-}
+if (settings.subjectExpenseEnabled === undefined)
+    settings.subjectExpenseEnabled = settings.subjectEnabled !== false;
+if (settings.subjectIncomeEnabled === undefined)
+    settings.subjectIncomeEnabled = settings.subjectEnabled !== false;
 
-if (settings.paymentIncomeEnabled === undefined) {
-    settings.paymentIncomeEnabled =
-        settings.paymentEnabled !== false;
-}
-
-
-if (settings.categoryExpenseEnabled === undefined) {
-    settings.categoryExpenseEnabled =
-        settings.categoryEnabled !== false;
-}
-
-if (settings.categoryIncomeEnabled === undefined) {
-    settings.categoryIncomeEnabled =
-        settings.categoryEnabled !== false;
-}
-
-
-if (settings.subjectExpenseEnabled === undefined) {
-    settings.subjectExpenseEnabled =
-        settings.subjectEnabled !== false;
-}
-
-if (settings.subjectIncomeEnabled === undefined) {
-    settings.subjectIncomeEnabled =
-        settings.subjectEnabled !== false;
-}
-
-
-if (settings.analysisCategoryEnabled === undefined) {
-    settings.analysisCategoryEnabled = true;
-}
-
-if (settings.analysisPaymentEnabled === undefined) {
-    settings.analysisPaymentEnabled = true;
-}
-
-if (settings.analysisSubjectEnabled === undefined) {
-    settings.analysisSubjectEnabled = true;
-}
-
-if (settings.monthlyChartEnabled === undefined) {
-    settings.monthlyChartEnabled = true;
-}
+if (settings.analysisCategoryEnabled === undefined) settings.analysisCategoryEnabled = true;
+if (settings.analysisPaymentEnabled === undefined) settings.analysisPaymentEnabled = true;
+if (settings.analysisSubjectEnabled === undefined) settings.analysisSubjectEnabled = true;
+if (settings.monthlyChartEnabled === undefined) settings.monthlyChartEnabled = true;
 
 if (
     !settings.budgets ||
@@ -216,7 +189,7 @@ if (
 
 /* =========================
    분석 그룹 순서 마이그레이션
-   (balance 추가 + 기본 순서: 잔액 → 월별 → 카테고리 → 결제수단 → 주체)
+   (balance 추가 + 잔액 → 월별 → 카테고리 → 결제수단 → 주체)
 ========================= */
 
 const validAnalysisGroupKeys = [
@@ -237,20 +210,15 @@ const DEFAULT_ANALYSIS_ORDER_V2 = [
 ];
 
 
-/* 1회성 마이그레이션: 기존 사용자도 새 순서로 강제 변경 */
+if (!settings.analysisGroupOrderMigratedV2) {
 
-if (!settings.analysisGroupOrderMigratedV3) {
-
-    settings.analysisGroupOrder =
-        DEFAULT_ANALYSIS_ORDER_V2.slice();
-
-    settings.analysisGroupOrderMigratedV3 = true;
+    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V2.slice();
+    settings.analysisGroupOrderMigratedV2 = true;
 
 }
 else if (!Array.isArray(settings.analysisGroupOrder)) {
 
-    settings.analysisGroupOrder =
-        DEFAULT_ANALYSIS_ORDER_V2.slice();
+    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V2.slice();
 
 }
 else {
@@ -259,115 +227,126 @@ else {
         key => validAnalysisGroupKeys.includes(key)
     );
 
-
     validAnalysisGroupKeys.forEach(key => {
-
-        if (!order.includes(key)) {
-            order.push(key);
-        }
-
+        if (!order.includes(key)) order.push(key);
     });
-
 
     settings.analysisGroupOrder = order;
 
 }
 
 
-/* 잔액 표시 여부 마이그레이션 */
-
 if (settings.analysisBalanceEnabled === undefined) {
     settings.analysisBalanceEnabled = true;
 }
 
 
+/* =========================
+   통화 설정 마이그레이션 (다중 통화)
+========================= */
+
+/* 설정된 통화 목록 (순서대로). 기본은 원화만 ON */
+
+if (
+    !Array.isArray(settings.currencies) ||
+    settings.currencies.length === 0
+) {
+    settings.currencies = [ "KRW" ];
+}
+
+
+/* 선택된 통화 (입력 화면에서 현재 선택된 통화) */
+
+if (typeof settings.selectedCurrency !== "string") {
+    settings.selectedCurrency = "KRW";
+}
+
+if (!settings.currencies.includes(settings.selectedCurrency)) {
+    settings.selectedCurrency = settings.currencies[0] || "KRW";
+}
+
+
+/* 환율 캐시 (Supabase 공유용) */
+
+if (
+    !settings.exchangeRates ||
+    typeof settings.exchangeRates !== "object" ||
+    Array.isArray(settings.exchangeRates)
+) {
+    settings.exchangeRates = {};
+}
+
+
+
+/* =========================
+   카테고리 / 결제수단 / 주체
+========================= */
 
 var categories = JSON.parse(
     localStorage.getItem("householdCategories") || "null"
 );
 
-
 if (!categories || typeof categories !== "object") {
-
     categories = {
-
         expense: [
-            "식비",
-            "교통",
-            "쇼핑",
-            "생활",
-            "의료",
-            "교육",
-            "여가",
-            "기타"
+            "식비", "교통", "쇼핑", "생활",
+            "의료", "교육", "여가", "기타"
         ],
-
         income: [
-            "급여",
-            "용돈",
-            "이자",
-            "투자수익",
-            "기타"
+            "급여", "용돈", "이자", "투자수익", "기타"
         ]
-
     };
-
 }
 
-
-if (!Array.isArray(categories.expense)) {
-    categories.expense = [];
-}
-
-if (!Array.isArray(categories.income)) {
-    categories.income = [];
-}
-
+if (!Array.isArray(categories.expense)) categories.expense = [];
+if (!Array.isArray(categories.income)) categories.income = [];
 
 
 var paymentMethods = JSON.parse(
     localStorage.getItem("householdPaymentMethods") || "null"
 );
 
-
 if (!Array.isArray(paymentMethods)) {
-
-    paymentMethods = [
-        "카드1",
-        "카드2",
-        "현금",
-        "상품권"
-    ];
-
+    paymentMethods = [ "카드1", "카드2", "현금", "상품권" ];
 }
-
 
 
 var subjects = JSON.parse(
     localStorage.getItem("householdSubjects") || "null"
 );
 
-
 if (!Array.isArray(subjects)) {
-
-    subjects = [
-        "남편",
-        "아내",
-        "아기",
-        "기타"
-    ];
-
+    subjects = [ "남편", "아내", "아기", "기타" ];
 }
 
 
 
-/* UI 상태 */
+/* =========================
+   UI 상태
+========================= */
 
 var currentType = "expense";
 
 var selectedCategory = "";
 var selectedPayment = "";
 var selectedSubject = "";
+
+/* 현재 입력 화면에서 선택된 통화 */
+
+var currentCurrency = settings.selectedCurrency || "KRW";
+
+/* 현재 입력 중인 환율 (외화일 때) */
+
+var currentExchangeRate = 1;
+
+/* 환율 기준일 */
+
+var currentRateDate = "";
+
+/* 환율 출처 */
+
+var currentRateSource = "";
+
 
 var selectedDate = getTodayString();
 
@@ -480,13 +459,15 @@ function getDefaultSettings() {
         analysisPaymentEnabled: true,
         analysisSubjectEnabled: true,
         analysisBalanceEnabled: true,
+        analysisCurrencyEnabled: true,
 
         analysisGroupOrder: [
             "balance",
             "monthlyChart",
             "category",
             "payment",
-            "subject"
+            "subject",
+            "currency"
         ],
 
         analysisGroupOrderMigratedV2: true,
@@ -500,7 +481,15 @@ function getDefaultSettings() {
             return `${year}-01-01`;
         })(),
 
-        monthlyBudget: 0
+        monthlyBudget: 0,
+
+        /* 다중 통화 */
+
+        currencies: [ "KRW" ],
+
+        selectedCurrency: "KRW",
+
+        exchangeRates: {}
 
     };
 
@@ -510,26 +499,13 @@ function getDefaultSettings() {
 function getDefaultCategories() {
 
     return {
-
         expense: [
-            "식비",
-            "교통",
-            "쇼핑",
-            "생활",
-            "의료",
-            "교육",
-            "여가",
-            "기타"
+            "식비", "교통", "쇼핑", "생활",
+            "의료", "교육", "여가", "기타"
         ],
-
         income: [
-            "급여",
-            "용돈",
-            "이자",
-            "투자수익",
-            "기타"
+            "급여", "용돈", "이자", "투자수익", "기타"
         ]
-
     };
 
 }
@@ -537,23 +513,13 @@ function getDefaultCategories() {
 
 function getDefaultPaymentMethods() {
 
-    return [
-        "카드1",
-        "카드2",
-        "현금",
-        "상품권"
-    ];
+    return [ "카드1", "카드2", "현금", "상품권" ];
 
 }
 
 
 function getDefaultSubjects() {
 
-    return [
-        "남편",
-        "아내",
-        "아기",
-        "기타"
-    ];
+    return [ "남편", "아내", "아기", "기타" ];
 
 }

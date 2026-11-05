@@ -109,5 +109,14 @@ document.addEventListener(
 
         updateOnlineStatus();
 
+
+        /* 4. 다중 통화 초기화 */
+
+        applyCurrencyToInputUI();
+
+        if (currentCurrency !== "KRW") {
+            refreshExchangeRateForCurrentCurrency();
+        }
+
     }
 );

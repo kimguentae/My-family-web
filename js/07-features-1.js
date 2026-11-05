@@ -82,24 +82,74 @@ function applyInputDate(dateString) {
 
 function formatAmountInput() {
 
-    const input =
-        document.getElementById("amountInput");
-
+    const input = document.getElementById("amountInput");
     if (!input) return;
 
 
-    let value =
-        input.value.replace(/[^0-9]/g, "");
+    const isKRW = currentCurrency === "KRW";
+    const isIntegerOnly =
+        currentCurrency === "JPY" ||
+        currentCurrency === "VND" ||
+        currentCurrency === "KRW";
 
 
-    if (!value) {
+    /* 숫자 + 소수점만 */
+
+    let raw = input.value.replace(/[^0-9.]/g, "");
+
+
+    /* 소수점 하나만 */
+
+    const parts = raw.split(".");
+
+    if (parts.length > 2) {
+        raw = parts[0] + "." + parts.slice(1).join("");
+    }
+
+
+    /* 정수 전용 통화는 소수점 제거 */
+
+    if (isIntegerOnly) {
+        raw = raw.split(".")[0];
+    }
+
+
+    if (!raw || raw === ".") {
         input.value = "";
+        updateExchangeRateDisplay(false);
         return;
     }
 
 
-    input.value =
-        Number(value).toLocaleString("ko-KR");
+    /* 소수점 있으면 유지 */
+
+    const num = Number(raw);
+
+    if (isNaN(num)) {
+        input.value = "";
+        updateExchangeRateDisplay(false);
+        return;
+    }
+
+
+    if (raw.includes(".")) {
+
+        const [intPart, decPart] = raw.split(".");
+
+        const formattedInt = Number(intPart || 0).toLocaleString("ko-KR");
+
+        input.value = formattedInt + "." + (decPart || "");
+
+    }
+
+    else {
+
+        input.value = num.toLocaleString("ko-KR");
+
+    }
+
+
+    updateExchangeRateDisplay(false);
 
 }
 
@@ -386,89 +436,72 @@ function renderPaymentButtons() {
 
 function saveTransaction() {
 
-    const dateInput =
-        document.getElementById("dateInput");
-
-    const amountInput =
-        document.getElementById("amountInput");
-
-    const memoInput =
-        document.getElementById("memoInput");
+    const dateInput = document.getElementById("dateInput");
+    const amountInput = document.getElementById("amountInput");
+    const memoInput = document.getElementById("memoInput");
 
 
     const date = dateInput.value;
 
 
-    const amount =
-        Number(
-            amountInput.value.replace(/[^0-9]/g, "")
-        );
+    const rawAmountStr = amountInput.value.replace(/[^0-9.]/g, "");
+
+    const amount = Number(rawAmountStr);
 
 
     const memo = memoInput.value.trim();
 
 
     if (!date) {
-
         appAlert("날짜를 선택해주세요.");
-
         return;
-
     }
-
 
     if (!amount || amount <= 0) {
-
         appAlert("금액을 입력해주세요.");
-
         return;
-
     }
 
-
-    if (
-        isCategoryEnabledForCurrentType() &&
-        !selectedCategory
-    ) {
-
+    if (isCategoryEnabledForCurrentType() && !selectedCategory) {
         appAlert("카테고리를 선택해주세요.");
-
         return;
-
     }
 
-
-    if (
-        isPaymentEnabledForCurrentType() &&
-        !selectedPayment
-    ) {
-
+    if (isPaymentEnabledForCurrentType() && !selectedPayment) {
         appAlert("결제수단을 선택해주세요.");
-
         return;
-
     }
 
-
-    const subjectEnabled =
-        isSubjectEnabledForCurrentType();
-
+    const subjectEnabled = isSubjectEnabledForCurrentType();
 
     if (subjectEnabled && !selectedSubject) {
-
         appAlert("주체를 선택해주세요.");
-
         return;
-
     }
+
+
+    /* 통화 정보 */
+
+    const currency = currentCurrency;
+
+    const exchangeRate =
+        currency === "KRW" ? 1 : Number(currentExchangeRate) || 1;
+
+    const amountKRW = convertToKRW(amount, currency, exchangeRate);
+
+
+    const rateDate = currency === "KRW"
+        ? getTodayString()
+        : currentRateDate || getTodayString();
+
+    const rateSource = currency === "KRW"
+        ? "fixed"
+        : currentRateSource || "unknown";
 
 
     const newTransaction = {
 
-        id:
-            String(Date.now()) +
-            "-" +
-            Math.random().toString(36).slice(2, 8),
+        id: String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8),
 
         date: date,
 
@@ -476,20 +509,24 @@ function saveTransaction() {
 
         amount: amount,
 
+        currency: currency,
+
+        exchange_rate: exchangeRate,
+
+        amount_krw: amountKRW,
+
+        rate_date: rateDate,
+
+        rate_source: rateSource,
+
         category:
-            isCategoryEnabledForCurrentType()
-                ? selectedCategory
-                : "",
+            isCategoryEnabledForCurrentType() ? selectedCategory : "",
 
         memo:
-            isMemoEnabledForCurrentType()
-                ? memo
-                : "",
+            isMemoEnabledForCurrentType() ? memo : "",
 
         payment:
-            isPaymentEnabledForCurrentType()
-                ? selectedPayment
-                : "",
+            isPaymentEnabledForCurrentType() ? selectedPayment : "",
 
         subject:
             subjectEnabled ? selectedSubject : ""
@@ -498,7 +535,6 @@ function saveTransaction() {
 
 
     transactions.push(newTransaction);
-
 
     saveTransactions();
 
@@ -519,13 +555,13 @@ function saveTransaction() {
 
     renderCalendar();
 
-    /* ★ 토스트 표시 */
 
     showSaveToast(
-        (newTransaction.type === "expense"
-            ? "지출"
-            : "수입") + "이 저장되었습니다"
+        (newTransaction.type === "expense" ? "지출" : "수입") + "이 저장되었습니다"
     );
+
+
+    updateExchangeRateDisplay(false);
 
 }
 
@@ -2702,3 +2738,140 @@ window.addEventListener(
 
     }
 );
+
+/* =========================
+   다중 통화 - 통화 선택 모달
+========================= */
+
+function openCurrencyPicker() {
+
+    const overlay = document.getElementById("currencyPickerOverlay");
+    const list = document.getElementById("currencyPickerList");
+
+    if (!overlay || !list) return;
+
+
+    list.innerHTML = "";
+
+
+    /* ON된 통화만, 설정된 순서대로 */
+
+    const activeCurrencies =
+        Array.isArray(settings.currencies) && settings.currencies.length > 0
+            ? settings.currencies
+            : ["KRW"];
+
+
+    activeCurrencies.forEach(code => {
+
+        const meta = getCurrencyMeta(code);
+
+        const item = document.createElement("button");
+
+        item.type = "button";
+
+        item.className = "currency-picker-item";
+
+        if (code === currentCurrency) {
+            item.classList.add("active");
+        }
+
+
+        const flag = document.createElement("span");
+        flag.className = "currency-picker-flag";
+        flag.innerText = meta.flag;
+
+        const label = document.createElement("span");
+        label.className = "currency-picker-label";
+        label.innerText = meta.label;
+
+        const codeEl = document.createElement("span");
+        codeEl.className = "currency-picker-code";
+        codeEl.innerText = code;
+
+
+        item.appendChild(flag);
+        item.appendChild(label);
+        item.appendChild(codeEl);
+
+
+        item.onclick = function() {
+
+            selectCurrency(code);
+
+            closeCurrencyPicker();
+
+        };
+
+
+        list.appendChild(item);
+
+    });
+
+
+    overlay.classList.add("active");
+
+}
+
+
+function closeCurrencyPicker() {
+
+    const overlay = document.getElementById("currencyPickerOverlay");
+
+    if (overlay) {
+        overlay.classList.remove("active");
+    }
+
+}
+
+
+function handleCurrencyPickerOverlayClick(event) {
+
+    if (event.target.id === "currencyPickerOverlay") {
+        closeCurrencyPicker();
+    }
+
+}
+
+
+function selectCurrency(code) {
+
+    if (!code) return;
+
+    if (!CURRENCY_LIST.some(c => c.code === code)) return;
+
+    if (!settings.currencies.includes(code)) return;
+
+
+    currentCurrency = code;
+
+    settings.selectedCurrency = code;
+
+    saveSettings();
+
+
+    applyCurrencyToInputUI();
+
+    formatAmountInput();
+
+
+    if (code === "KRW") {
+
+        currentExchangeRate = 1;
+        currentRateDate = getTodayString();
+        currentRateSource = "fixed";
+
+        updateExchangeRateDisplay(false);
+
+    }
+    else {
+
+        currentExchangeRate = 1;
+        currentRateDate = "";
+        currentRateSource = "";
+
+        refreshExchangeRateForCurrentCurrency();
+
+    }
+
+}
