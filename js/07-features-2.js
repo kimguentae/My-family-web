@@ -39,6 +39,8 @@ function updateSettingsUI() {
 
     renderUsageSettings();
 
+    renderUsageCurrencySettings();
+
     updateInputAreas();
 
     updateAnalysisGroupVisibility();
@@ -50,46 +52,27 @@ function updateSettingsUI() {
 
 function renderUsageSettings() {
 
-    const expenseGrid =
-        document.getElementById("usageExpenseGrid");
-
-    const incomeGrid =
-        document.getElementById("usageIncomeGrid");
-
+    const expenseGrid = document.getElementById("usageExpenseGrid");
+    const incomeGrid = document.getElementById("usageIncomeGrid");
 
     if (!expenseGrid || !incomeGrid) return;
 
-
     expenseGrid.innerHTML = "";
-
     incomeGrid.innerHTML = "";
 
-
     const order = ["memo", "category", "payment", "subject"];
-
 
     order.forEach((key) => {
 
         const meta = usageSettingMeta[key];
-
         if (!meta) return;
 
-
         expenseGrid.appendChild(
-            createUsageSettingCard(
-                meta.label,
-                meta.expenseKey,
-                "expense"
-            )
+            createUsageSettingCard(meta.label, meta.expenseKey, "expense")
         );
 
-
         incomeGrid.appendChild(
-            createUsageSettingCard(
-                meta.label,
-                meta.incomeKey,
-                "income"
-            )
+            createUsageSettingCard(meta.label, meta.incomeKey, "income")
         );
 
     });
@@ -97,176 +80,263 @@ function renderUsageSettings() {
 }
 
 
-function createUsageSettingCard(
-    label,
-    settingKey,
-    type
-) {
+function createUsageSettingCard(label, settingKey, type) {
 
     const card = document.createElement("div");
-
     card.className = "usage-setting-card";
 
-
     const labelElement = document.createElement("div");
-
     labelElement.className = "usage-setting-card-label";
-
     labelElement.innerText = label;
 
-
     const switchLabel = document.createElement("label");
-
     switchLabel.className = "switch";
 
-
     const checkbox = document.createElement("input");
-
     checkbox.type = "checkbox";
-
     checkbox.checked = !!settings[settingKey];
-
 
     checkbox.onchange = function() {
 
         settings[settingKey] = checkbox.checked;
 
-
         if (type === "expense" && currentType === "expense") {
-
-            if (
-                settingKey === "memoExpenseEnabled" &&
-                !checkbox.checked
-            ) {
+            if (settingKey === "memoExpenseEnabled" && !checkbox.checked) {
                 const input = document.getElementById("memoInput");
                 if (input) input.value = "";
             }
-
-            if (
-                settingKey === "categoryExpenseEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedCategory = "";
-            }
-
-            if (
-                settingKey === "paymentExpenseEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedPayment = "";
-            }
-
-            if (
-                settingKey === "subjectExpenseEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedSubject = "";
-            }
-
+            if (settingKey === "categoryExpenseEnabled" && !checkbox.checked) selectedCategory = "";
+            if (settingKey === "paymentExpenseEnabled" && !checkbox.checked) selectedPayment = "";
+            if (settingKey === "subjectExpenseEnabled" && !checkbox.checked) selectedSubject = "";
         }
-
         else if (type === "income" && currentType === "income") {
-
-            if (
-                settingKey === "memoIncomeEnabled" &&
-                !checkbox.checked
-            ) {
+            if (settingKey === "memoIncomeEnabled" && !checkbox.checked) {
                 const input = document.getElementById("memoInput");
                 if (input) input.value = "";
             }
-
-            if (
-                settingKey === "categoryIncomeEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedCategory = "";
-            }
-
-            if (
-                settingKey === "paymentIncomeEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedPayment = "";
-            }
-
-            if (
-                settingKey === "subjectIncomeEnabled" &&
-                !checkbox.checked
-            ) {
-                selectedSubject = "";
-            }
-
+            if (settingKey === "categoryIncomeEnabled" && !checkbox.checked) selectedCategory = "";
+            if (settingKey === "paymentIncomeEnabled" && !checkbox.checked) selectedPayment = "";
+            if (settingKey === "subjectIncomeEnabled" && !checkbox.checked) selectedSubject = "";
         }
-
 
         saveSettings();
-
         updateInputAreas();
-
         renderCategoryButtons();
         renderSubjectButtons();
         renderPaymentButtons();
 
     };
 
-
     const slider = document.createElement("span");
-
     slider.className = "slider";
 
-
     switchLabel.appendChild(checkbox);
-
     switchLabel.appendChild(slider);
 
-
     card.appendChild(labelElement);
-
     card.appendChild(switchLabel);
-
 
     return card;
 
 }
 
 
+/* =========================
+   통화 사용 설정 (ON/OFF + 순서)
+========================= */
+
+function renderUsageCurrencySettings() {
+
+    const grid = document.getElementById("usageCurrencyGrid");
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    /* settings.currencies 순서대로 */
+
+    const order =
+        Array.isArray(settings.currencies) && settings.currencies.length > 0
+            ? settings.currencies
+            : ["KRW"];
+
+
+    /* 모든 7개 통화를 보여주되, ON/OFF는 currencies 배열 포함 여부 */
+
+    CURRENCY_LIST.forEach(meta => {
+
+        const isOn = order.includes(meta.code);
+
+        /* 순서: ON 먼저, 그다음 OFF (원래 순서 유지) */
+
+        const card = document.createElement("div");
+        card.className = "usage-setting-card currency-usage-card";
+        card.dataset.code = meta.code;
+        card.dataset.index = order.indexOf(meta.code);
+
+        const labelElement = document.createElement("div");
+        labelElement.className = "usage-setting-card-label";
+        labelElement.innerHTML =
+            `<span class="currency-flag">${meta.flag}</span>` +
+            `<span class="currency-label-text">${meta.label}</span>`;
+
+        const switchLabel = document.createElement("label");
+        switchLabel.className = "switch";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = isOn;
+
+        /* 원화는 무조건 ON (해제 불가) */
+
+        if (meta.code === "KRW") {
+            checkbox.disabled = true;
+        }
+
+        checkbox.onchange = function() {
+
+            toggleCurrencyUsage(meta.code, checkbox.checked);
+
+        };
+
+        const slider = document.createElement("span");
+        slider.className = "slider";
+
+        switchLabel.appendChild(checkbox);
+        switchLabel.appendChild(slider);
+
+        card.appendChild(labelElement);
+        card.appendChild(switchLabel);
+
+        grid.appendChild(card);
+
+        /* 원화 제외 드래그 가능 */
+
+        if (meta.code !== "KRW") {
+            initializeCurrencyUsageDrag(card, meta.code);
+        }
+
+    });
+
+}
+
+
+function toggleCurrencyUsage(code, enabled) {
+
+    if (code === "KRW") return;   /* 원화는 항상 ON */
+
+    let list =
+        Array.isArray(settings.currencies)
+            ? settings.currencies.slice()
+            : ["KRW"];
+
+
+    if (enabled) {
+
+        if (!list.includes(code)) list.push(code);
+
+    }
+    else {
+
+        list = list.filter(c => c !== code);
+
+        if (list.length === 0) list = ["KRW"];
+
+    }
+
+
+    settings.currencies = list;
+
+
+    /* 현재 선택 통화가 꺼졌으면 원화로 */
+
+    if (!list.includes(currentCurrency)) {
+
+        currentCurrency = "KRW";
+        settings.selectedCurrency = "KRW";
+
+        applyCurrencyToInputUI();
+
+    }
+
+
+    saveSettings();
+
+    renderUsageCurrencySettings();
+
+}
+
+
+/* 통화 카드 드래그 (원화 제외) */
+
+function initializeCurrencyUsageDrag(card, code) {
+
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let longPressTimer = null;
+
+    card.addEventListener("touchstart", function(event) {
+
+        if (event.touches.length !== 1) return;
+
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+
+        longPressTimer = setTimeout(function() {
+            longPressTimer = null;
+        }, 500);
+
+    }, { passive: true });
+
+
+    card.addEventListener("touchmove", function(event) {
+
+        if (event.touches.length !== 1) return;
+
+        if (longPressTimer) {
+            const touch = event.touches[0];
+            const dx = Math.abs(touch.clientX - startX);
+            const dy = Math.abs(touch.clientY - startY);
+
+            if (dx > 10 || dy > 10) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }
+
+    }, { passive: true });
+
+
+    card.addEventListener("touchend", function() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    });
+
+}
+
+
+/* =========================
+   분석 그룹 표시 여부
+========================= */
+
 function updateAnalysisGroupVisibility() {
 
-    const categoryGroup =
-        document.getElementById("analysisCategoryGroup");
+    const categoryGroup = document.getElementById("analysisCategoryGroup");
+    const paymentGroup = document.getElementById("analysisPaymentGroup");
+    const subjectGroup = document.getElementById("analysisSubjectGroup");
+    const monthlyChartGroup = document.getElementById("analysisMonthlyChartGroup");
+    const balanceGroup = document.getElementById("analysisBalanceGroup");
+    const currencyGroup = document.getElementById("analysisCurrencyGroup");
 
-    const paymentGroup =
-        document.getElementById("analysisPaymentGroup");
-
-    const subjectGroup =
-        document.getElementById("analysisSubjectGroup");
-
-    const monthlyChartGroup =
-        document.getElementById("analysisMonthlyChartGroup");
-
-    const balanceGroup =
-        document.getElementById("analysisBalanceGroup");
-
-
-    if (categoryGroup)
-        categoryGroup.style.display =
-            settings.analysisCategoryEnabled ? "block" : "none";
-
-    if (paymentGroup)
-        paymentGroup.style.display =
-            settings.analysisPaymentEnabled ? "block" : "none";
-
-    if (subjectGroup)
-        subjectGroup.style.display =
-            settings.analysisSubjectEnabled ? "block" : "none";
-
-    if (monthlyChartGroup)
-        monthlyChartGroup.style.display =
-            settings.monthlyChartEnabled ? "block" : "none";
-
-    if (balanceGroup)
-        balanceGroup.style.display =
-            settings.analysisBalanceEnabled ? "block" : "none";
+    if (categoryGroup) categoryGroup.style.display = settings.analysisCategoryEnabled ? "block" : "none";
+    if (paymentGroup) paymentGroup.style.display = settings.analysisPaymentEnabled ? "block" : "none";
+    if (subjectGroup) subjectGroup.style.display = settings.analysisSubjectEnabled ? "block" : "none";
+    if (monthlyChartGroup) monthlyChartGroup.style.display = settings.monthlyChartEnabled ? "block" : "none";
+    if (balanceGroup) balanceGroup.style.display = settings.analysisBalanceEnabled ? "block" : "none";
+    if (currencyGroup) currencyGroup.style.display = settings.analysisCurrencyEnabled ? "block" : "none";
 
 }
 
@@ -278,178 +348,100 @@ function updateAnalysisGroupVisibility() {
 
 const analysisGroupMeta = {
 
-    monthlyChart: {
-        label: "월별 그래프",
-        settingKey: "monthlyChartEnabled"
-    },
-
-    category: {
-        label: "카테고리",
-        settingKey: "analysisCategoryEnabled"
-    },
-
-    payment: {
-        label: "결제수단",
-        settingKey: "analysisPaymentEnabled"
-    },
-
-    subject: {
-        label: "주체",
-        settingKey: "analysisSubjectEnabled"
-    },
-
-    balance: {
-        label: "잔액",
-        settingKey: "analysisBalanceEnabled"
-    }
+    monthlyChart: { label: "월별 그래프", settingKey: "monthlyChartEnabled" },
+    category: { label: "카테고리", settingKey: "analysisCategoryEnabled" },
+    payment: { label: "결제수단", settingKey: "analysisPaymentEnabled" },
+    subject: { label: "주체", settingKey: "analysisSubjectEnabled" },
+    balance: { label: "잔액", settingKey: "analysisBalanceEnabled" },
+    currency: { label: "통화", settingKey: "analysisCurrencyEnabled" }
 
 };
 
 
 function renderAnalysisGroupOrderList() {
 
-    const container =
-        document.getElementById("analysisGroupOrderList");
-
+    const container = document.getElementById("analysisGroupOrderList");
     if (!container) return;
 
-
     container.innerHTML = "";
-
-
     container.classList.remove("category-manage-list");
-
     container.classList.add("analysis-card-grid");
-
-
-    /* 기본 순서: 잔액 → 월별 → 카테고리 → 결제수단 → 주체 */
 
     const DEFAULT_ORDER = [
         "balance",
+        "currency",
         "monthlyChart",
         "category",
         "payment",
         "subject"
     ];
 
-
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 5
+        settings.analysisGroupOrder.length === 6
             ? settings.analysisGroupOrder
             : DEFAULT_ORDER;
-
 
     order.forEach((key, index) => {
 
         const meta = analysisGroupMeta[key];
-
         if (!meta) return;
 
-
         const card = document.createElement("div");
-
         card.className = "analysis-setting-card";
-
-        card.dataset.index = String(index);
-
+        card.dataset.index = index;
         card.dataset.key = key;
 
-
         const name = document.createElement("div");
-
         name.className = "analysis-setting-card-name";
-
         name.innerText = meta.label;
 
-
         const switchLabel = document.createElement("label");
-
         switchLabel.className = "switch";
 
-
         const checkbox = document.createElement("input");
-
         checkbox.type = "checkbox";
-
         checkbox.checked = settings[meta.settingKey];
 
-
         checkbox.onchange = function(event) {
-
             event.stopPropagation();
-
             settings[meta.settingKey] = checkbox.checked;
-
             saveSettings();
-
             updateAnalysisGroupVisibility();
 
-
-            const analysisScreen =
-                document.getElementById("analysisScreen");
-
-            if (
-                analysisScreen &&
-                analysisScreen.classList.contains("active")
-            ) {
+            const analysisScreen = document.getElementById("analysisScreen");
+            if (analysisScreen && analysisScreen.classList.contains("active")) {
                 renderAnalysis();
             }
-
         };
 
-
         const slider = document.createElement("span");
-
         slider.className = "slider";
 
-
         switchLabel.appendChild(checkbox);
-
         switchLabel.appendChild(slider);
 
-
         card.appendChild(name);
-
         card.appendChild(switchLabel);
-
 
         container.appendChild(card);
 
-
-        initializeAnalysisCardDrag(
-            card,
-            {
-                getArray: () => settings.analysisGroupOrder,
-                onSave: function() {
-                    saveSettings();
-
-                    /* Supabase에 즉시 반영 (600ms 디바운스 무시) */
-
-                    if (typeof pushLocalDataToSupabase === "function" &&
-                        supabaseClient &&
-                        currentUser) {
-
-                        pushLocalDataToSupabase();
-
-                    }
-                },
-                onRender: renderAnalysisGroupOrderList,
-                onAfterMove: function() {
-
-                    const analysisScreen =
-                        document.getElementById("analysisScreen");
-
-                    if (
-                        analysisScreen &&
-                        analysisScreen.classList.contains("active")
-                    ) {
-                        renderAnalysis();
-                    }
-
+        initializeAnalysisCardDrag(card, {
+            getArray: () => settings.analysisGroupOrder,
+            onSave: function() {
+                saveSettings();
+                if (typeof pushLocalDataToSupabase === "function" && supabaseClient && currentUser) {
+                    pushLocalDataToSupabase();
+                }
+            },
+            onRender: renderAnalysisGroupOrderList,
+            onAfterMove: function() {
+                const analysisScreen = document.getElementById("analysisScreen");
+                if (analysisScreen && analysisScreen.classList.contains("active")) {
+                    renderAnalysis();
                 }
             }
-        );
+        });
 
     });
 
@@ -459,49 +451,34 @@ function renderAnalysisGroupOrderList() {
 function reorderAnalysisGroupsInDOM() {
 
     const groupElements = {
-
-        monthlyChart:
-            document.getElementById("analysisMonthlyChartGroup"),
-
-        category:
-            document.getElementById("analysisCategoryGroup"),
-
-        payment:
-            document.getElementById("analysisPaymentGroup"),
-
-        subject:
-            document.getElementById("analysisSubjectGroup"),
-
-        balance:
-            document.getElementById("analysisBalanceGroup")
-
+        monthlyChart: document.getElementById("analysisMonthlyChartGroup"),
+        category: document.getElementById("analysisCategoryGroup"),
+        payment: document.getElementById("analysisPaymentGroup"),
+        subject: document.getElementById("analysisSubjectGroup"),
+        balance: document.getElementById("analysisBalanceGroup"),
+        currency: document.getElementById("analysisCurrencyGroup")
     };
-
 
     const DEFAULT_ORDER = [
         "balance",
+        "currency",
         "monthlyChart",
         "category",
         "payment",
         "subject"
     ];
 
-
     const order =
         Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 5
+        settings.analysisGroupOrder.length === 6
             ? settings.analysisGroupOrder
             : DEFAULT_ORDER;
 
-
     order.forEach(key => {
-
         const element = groupElements[key];
-
         if (element && element.parentNode) {
             element.parentNode.appendChild(element);
         }
-
     });
 
 }
@@ -513,65 +490,57 @@ function reorderAnalysisGroupsInDOM() {
 ========================= */
 
 function getAnalysisTodayString() {
-
     const today = new Date();
-
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-
 }
-
 
 function getAnalysisStartOfYear() {
-
     return `${new Date().getFullYear()}-01-01`;
-
 }
-
 
 function getAnalysisMonthlyAverage(amount, startDate, endDate) {
 
     if (!startDate || !endDate) return 0;
 
-
     const start = new Date(startDate + "T00:00:00");
     const end = new Date(endDate + "T00:00:00");
 
-
-    const months =
-        (end.getFullYear() - start.getFullYear()) * 12 +
-        (end.getMonth() - start.getMonth()) +
-        1;
-
+    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
 
     if (months <= 0) return 0;
-
 
     return Number(amount || 0) / months;
 
 }
 
 
+/* ★ 원화 환산 기준 필터 (amount_krw) */
+
 function getAnalysisTransactions() {
 
-    const start =
-        document.getElementById("analysisStartDate")?.value;
-
-    const end =
-        document.getElementById("analysisEndDate")?.value;
-
+    const start = document.getElementById("analysisStartDate")?.value;
+    const end = document.getElementById("analysisEndDate")?.value;
 
     if (!start || !end) return [];
 
-
     return transactions.filter(transaction => {
-
         if (transaction.type !== analysisType) return false;
-
         if (transaction.date < start || transaction.date > end) return false;
-
         return true;
-
     });
+
+}
+
+
+/* ★ KRW 환산 금액 반환 헬퍼 */
+
+function getKRWAmount(transaction) {
+
+    if (typeof transaction.amount_krw === "number" && transaction.amount_krw > 0) {
+        return transaction.amount_krw;
+    }
+
+    return Number(transaction.amount) || 0;
 
 }
 
@@ -584,20 +553,11 @@ function setAnalysisType(type) {
     analysisSelectedPayment = "";
     analysisSelectedSubject = "";
 
+    const expenseButton = document.getElementById("analysisExpenseBtn");
+    const incomeButton = document.getElementById("analysisIncomeBtn");
 
-    const expenseButton =
-        document.getElementById("analysisExpenseBtn");
-
-    const incomeButton =
-        document.getElementById("analysisIncomeBtn");
-
-
-    if (expenseButton)
-        expenseButton.classList.toggle("active", type === "expense");
-
-    if (incomeButton)
-        incomeButton.classList.toggle("active", type === "income");
-
+    if (expenseButton) expenseButton.classList.toggle("active", type === "expense");
+    if (incomeButton) incomeButton.classList.toggle("active", type === "income");
 
     renderAnalysis();
 
@@ -619,67 +579,30 @@ function updateAnalysisDateText() {
 
     const startText = document.getElementById("analysisStartDateText");
     const endText = document.getElementById("analysisEndDateText");
-
     const startInput = document.getElementById("analysisStartDate");
     const endInput = document.getElementById("analysisEndDate");
 
-
-    if (startText && startInput)
-        startText.innerText = formatAnalysisDateDisplay(startInput.value);
-
-    if (endText && endInput)
-        endText.innerText = formatAnalysisDateDisplay(endInput.value);
-
+    if (startText && startInput) startText.innerText = formatAnalysisDateDisplay(startInput.value);
+    if (endText && endInput) endText.innerText = formatAnalysisDateDisplay(endInput.value);
 
     fitAnalysisDateRow();
 
 }
 
-/* =========================
-   분석탭 날짜 반영 (커스텀 피커용)
-========================= */
 
 function applyAnalysisDates() {
 
-    const startInput =
-        document.getElementById("analysisStartDate");
+    const startInput = document.getElementById("analysisStartDate");
+    const endInput = document.getElementById("analysisEndDate");
+    const startText = document.getElementById("analysisStartDateText");
+    const endText = document.getElementById("analysisEndDateText");
 
-    const endInput =
-        document.getElementById("analysisEndDate");
+    if (!startInput || !endInput || !startText || !endText) return;
 
-    const startText =
-        document.getElementById("analysisStartDateText");
-
-    const endText =
-        document.getElementById("analysisEndDateText");
-
-
-    if (
-        !startInput ||
-        !endInput ||
-        !startText ||
-        !endText
-    ) return;
-
-
-    if (startInput.value) {
-
-        startText.innerText =
-            formatAnalysisDateDisplay(startInput.value);
-
-    }
-
-
-    if (endInput.value) {
-
-        endText.innerText =
-            formatAnalysisDateDisplay(endInput.value);
-
-    }
-
+    if (startInput.value) startText.innerText = formatAnalysisDateDisplay(startInput.value);
+    if (endInput.value) endText.innerText = formatAnalysisDateDisplay(endInput.value);
 
     fitAnalysisDateRow();
-
 
     analysisSelectedCategory = "";
     analysisSelectedPayment = "";
@@ -694,34 +617,16 @@ function fitAnalysisDateRow() {
     const row = document.getElementById("analysisDateRow");
     if (!row) return;
 
-
-    const pieces =
-        row.querySelectorAll(
-            ".analysis-date-text, .analysis-date-separator"
-        );
-
-
+    const pieces = row.querySelectorAll(".analysis-date-text, .analysis-date-separator");
     if (!pieces.length) return;
-
 
     let fontSize = 23;
 
-    pieces.forEach(piece => {
-        piece.style.fontSize = fontSize + "px";
-    });
+    pieces.forEach(piece => { piece.style.fontSize = fontSize + "px"; });
 
-
-    while (
-        row.scrollWidth > row.clientWidth &&
-        fontSize > 13
-    ) {
-
+    while (row.scrollWidth > row.clientWidth && fontSize > 13) {
         fontSize -= 1;
-
-        pieces.forEach(piece => {
-            piece.style.fontSize = fontSize + "px";
-        });
-
+        pieces.forEach(piece => { piece.style.fontSize = fontSize + "px"; });
     }
 
 }
@@ -734,13 +639,8 @@ function initializeAnalysisDates() {
 
     if (!startInput || !endInput) return;
 
-
-    if (!startInput.value)
-        startInput.value = getAnalysisStartOfYear();
-
-    if (!endInput.value)
-        endInput.value = getAnalysisTodayString();
-
+    if (!startInput.value) startInput.value = getAnalysisStartOfYear();
+    if (!endInput.value) endInput.value = getAnalysisTodayString();
 
     updateAnalysisDateText();
 
@@ -753,156 +653,85 @@ function initializeAnalysisDates() {
 ========================= */
 
 function getAnalysisCategoryData(transactions) {
-
     const result = {};
-
-    transactions.forEach(transaction => {
-
-        const name = transaction.category || "미분류";
-
+    transactions.forEach(t => {
+        const name = t.category || "미분류";
         if (!result[name]) result[name] = 0;
-
-        result[name] += Number(transaction.amount) || 0;
-
+        result[name] += getKRWAmount(t);
     });
-
     return result;
-
 }
 
 
 function getAnalysisPaymentData(transactions) {
-
     const result = {};
-
-    transactions.forEach(transaction => {
-
-        const name = transaction.payment || "미지정";
-
+    transactions.forEach(t => {
+        const name = t.payment || "미지정";
         if (!result[name]) result[name] = 0;
-
-        result[name] += Number(transaction.amount) || 0;
-
+        result[name] += getKRWAmount(t);
     });
-
     return result;
-
 }
 
 
 function getAnalysisSubjectData(transactions) {
-
     const result = {};
-
-    transactions.forEach(transaction => {
-
-        const name = transaction.subject || "미지정";
-
+    transactions.forEach(t => {
+        const name = t.subject || "미지정";
         if (!result[name]) result[name] = 0;
-
-        result[name] += Number(transaction.amount) || 0;
-
+        result[name] += getKRWAmount(t);
     });
-
     return result;
-
 }
 
 
 const analysisBarColors = [
-    "#222222",
-    "#3d78d8",
-    "#e05252",
-    "#f0a93a",
-    "#4caf50",
-    "#8e6dd8",
-    "#00acc1",
-    "#c2185b",
-    "#8d6e63",
-    "#7ba7e0",
-    "#aaaaaa",
-    "#cfcfcf"
+    "#222222", "#3d78d8", "#e05252", "#f0a93a",
+    "#4caf50", "#8e6dd8", "#00acc1", "#c2185b",
+    "#8d6e63", "#7ba7e0", "#aaaaaa", "#cfcfcf"
 ];
 
-
 function sortAnalysisEntriesByAmount(dataObject) {
-
     return Object.entries(dataObject).sort((a, b) => b[1] - a[1]);
-
 }
 
 
-function renderAnalysisGroupBar(
-    elementId,
-    infoElementId,
-    dataObject,
-    total
-) {
+function renderAnalysisGroupBar(elementId, infoElementId, dataObject, total) {
 
     const container = document.getElementById(elementId);
     const info = document.getElementById(infoElementId);
 
     if (!container) return;
 
-
     container.innerHTML = "";
-
     if (info) info.innerText = "";
-
 
     if (!total || total <= 0) return;
 
-
     let selectedSegment = null;
-
 
     sortAnalysisEntriesByAmount(dataObject).forEach(([name, amount], index) => {
 
         const percentage = (amount / total) * 100;
-
         const segment = document.createElement("div");
         segment.className = "analysis-group-bar-segment";
-
         segment.style.width = percentage + "%";
-        segment.style.background =
-            analysisBarColors[index % analysisBarColors.length];
-
+        segment.style.background = analysisBarColors[index % analysisBarColors.length];
 
         segment.onclick = function() {
-
-            const allSegments =
-                container.querySelectorAll(
-                    ".analysis-group-bar-segment"
-                );
-
+            const allSegments = container.querySelectorAll(".analysis-group-bar-segment");
 
             if (selectedSegment === segment) {
-
                 selectedSegment = null;
-
-                allSegments.forEach(other => {
-                    other.classList.remove("dimmed");
-                });
-
+                allSegments.forEach(other => other.classList.remove("dimmed"));
                 if (info) info.innerText = "";
-
                 return;
-
             }
 
-
             selectedSegment = segment;
-
-            allSegments.forEach(other => {
-                other.classList.toggle("dimmed", other !== segment);
-            });
-
-
-            if (info)
-                info.innerText = `${name} · ${percentage.toFixed(1)}%`;
-
+            allSegments.forEach(other => other.classList.toggle("dimmed", other !== segment));
+            if (info) info.innerText = `${name} · ${percentage.toFixed(1)}%`;
         };
-
 
         container.appendChild(segment);
 
@@ -911,148 +740,95 @@ function renderAnalysisGroupBar(
 }
 
 
-function createAnalysisItem(
-    name,
-    amount,
-    clickFunction,
-    startDate,
-    endDate
-) {
+function createAnalysisItem(name, amount, clickFunction, startDate, endDate) {
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = "analysis-item";
     button.onclick = clickFunction;
 
-
     const nameElement = document.createElement("span");
     nameElement.className = "analysis-item-name";
     nameElement.textContent = name;
-
 
     const amountElement = document.createElement("span");
     amountElement.className = "analysis-item-amount";
     amountElement.textContent = formatAnalysisAmount(amount) + "원";
 
-
     const averageElement = document.createElement("span");
     averageElement.className = "analysis-item-average";
-
-
-    const periodAverage =
-        getAnalysisMonthlyAverage(amount, startDate, endDate);
-
-    averageElement.textContent =
-        formatAnalysisAmount(Math.round(periodAverage)) + "원";
-
+    const periodAverage = getAnalysisMonthlyAverage(amount, startDate, endDate);
+    averageElement.textContent = formatAnalysisAmount(Math.round(periodAverage)) + "원";
 
     button.appendChild(nameElement);
     button.appendChild(amountElement);
     button.appendChild(averageElement);
-
 
     return button;
 
 }
 
 
-function createAnalysisCategoryItem(
-    name,
-    amount,
-    startDate,
-    endDate
-) {
+function createAnalysisCategoryItem(name, amount, startDate, endDate) {
 
-    const periodAverage =
-        getAnalysisMonthlyAverage(amount, startDate, endDate);
-
-
-    const budget =
-        Number(settings.budgets && settings.budgets[name]) || 0;
-
-
-    const isOverBudget =
-        budget > 0 && periodAverage > budget;
-
+    const periodAverage = getAnalysisMonthlyAverage(amount, startDate, endDate);
+    const budget = Number(settings.budgets && settings.budgets[name]) || 0;
+    const isOverBudget = budget > 0 && periodAverage > budget;
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = "analysis-item analysis-item-flip";
 
-
     const inner = document.createElement("div");
     inner.className = "analysis-item-inner";
 
-
     const front = document.createElement("div");
     front.className = "analysis-item-front";
-
 
     const nameElement = document.createElement("span");
     nameElement.className = "analysis-item-name";
     nameElement.textContent = name;
 
-
     const amountElement = document.createElement("span");
     amountElement.className = "analysis-item-amount";
     amountElement.textContent = formatAnalysisAmount(amount) + "원";
 
-
     const averageElement = document.createElement("span");
     averageElement.className = "analysis-item-average";
-    averageElement.textContent =
-        formatAnalysisAmount(Math.round(periodAverage)) + "원";
-
+    averageElement.textContent = formatAnalysisAmount(Math.round(periodAverage)) + "원";
 
     front.appendChild(nameElement);
     front.appendChild(amountElement);
     front.appendChild(averageElement);
 
-
     const back = document.createElement("div");
-    back.className =
-        "analysis-item-back" +
-        (isOverBudget ? " over-budget" : "");
-
+    back.className = "analysis-item-back" + (isOverBudget ? " over-budget" : "");
 
     const backName = document.createElement("span");
     backName.className = "analysis-item-back-name";
     backName.textContent = name;
 
-
     const budgetElement = document.createElement("span");
     budgetElement.className = "analysis-item-budget-label";
-    budgetElement.textContent =
-        budget > 0
-            ? formatAnalysisAmount(budget) + "원"
-            : "예산 미설정";
-
+    budgetElement.textContent = budget > 0 ? formatAnalysisAmount(budget) + "원" : "예산 미설정";
 
     const budgetAverageElement = document.createElement("span");
     budgetAverageElement.className = "analysis-item-budget-average";
-    budgetAverageElement.textContent =
-        formatAnalysisAmount(Math.round(periodAverage)) + "원";
-
+    budgetAverageElement.textContent = formatAnalysisAmount(Math.round(periodAverage)) + "원";
 
     back.appendChild(backName);
     back.appendChild(budgetElement);
     back.appendChild(budgetAverageElement);
-
 
     inner.appendChild(front);
     inner.appendChild(back);
 
     button.appendChild(inner);
 
-
     button.onclick = function() {
-
         button.classList.toggle("flipped");
-
         selectAnalysisCategory(name);
-
     };
-
 
     return button;
 
@@ -1064,58 +840,36 @@ function createAnalysisCategoryItem(
    분석 요약
 ========================= */
 
-function renderAnalysisOverallSummary(
-    total,
-    startDate,
-    endDate
-) {
+function renderAnalysisOverallSummary(total, startDate, endDate) {
 
-    const element =
-        document.getElementById("analysisOverallSummary");
-
+    const element = document.getElementById("analysisOverallSummary");
     if (!element) return;
 
-
-    const monthlyAverage =
-        getAnalysisMonthlyAverage(total, startDate, endDate);
-
+    const monthlyAverage = getAnalysisMonthlyAverage(total, startDate, endDate);
 
     element.innerHTML = `
-
         <div class="analysis-overall-summary-item">
             <span class="analysis-overall-summary-label">전체금액</span>
             <span class="analysis-overall-summary-value">
                 ${formatAnalysisAmount(total)}원
             </span>
         </div>
-
         <div class="analysis-overall-summary-item">
             <span class="analysis-overall-summary-label">월평균</span>
             <span class="analysis-overall-summary-value">
                 ${formatAnalysisAmount(Math.round(monthlyAverage))}원
             </span>
         </div>
-
     `;
 
 }
 
 
 function formatAnalysisDate(dateString) {
-
     if (!dateString) return "";
-
     const parts = dateString.split("-");
-
     if (parts.length !== 3) return dateString;
-
-
-    return (
-        Number(parts[0]) + "." +
-        Number(parts[1]) + "." +
-        Number(parts[2])
-    );
-
+    return Number(parts[0]) + "." + Number(parts[1]) + "." + Number(parts[2]);
 }
 
 
@@ -1126,72 +880,158 @@ function formatAnalysisDate(dateString) {
 
 function renderAnalysisBalance(startDate, endDate) {
 
-    const incomeEl =
-        document.getElementById("analysisBalanceIncome");
-
-    const expenseEl =
-        document.getElementById("analysisBalanceExpense");
-
-    const resultEl =
-        document.getElementById("analysisBalanceResult");
-
+    const incomeEl = document.getElementById("analysisBalanceIncome");
+    const expenseEl = document.getElementById("analysisBalanceExpense");
+    const resultEl = document.getElementById("analysisBalanceResult");
 
     if (!incomeEl || !expenseEl || !resultEl) return;
 
-
     if (!startDate || !endDate) {
-
         incomeEl.innerText = "0원";
         expenseEl.innerText = "0원";
         resultEl.innerText = "0원";
-
         return;
-
     }
-
 
     let incomeTotal = 0;
     let expenseTotal = 0;
 
-
-    (transactions || []).forEach(function(t) {
+    (transactions || []).forEach(t => {
 
         if (t.date < startDate || t.date > endDate) return;
 
-        const amount = Number(t.amount) || 0;
+        const krw = getKRWAmount(t);
 
-        if (t.type === "income") {
-            incomeTotal += amount;
+        if (t.type === "income") incomeTotal += krw;
+        else if (t.type === "expense") expenseTotal += krw;
+
+    });
+
+    const balance = incomeTotal - expenseTotal;
+
+    incomeEl.innerText = formatAnalysisAmount(incomeTotal) + "원";
+    expenseEl.innerText = formatAnalysisAmount(expenseTotal) + "원";
+    resultEl.innerText = (balance < 0 ? "-" : "") + formatAnalysisAmount(Math.abs(balance)) + "원";
+
+    resultEl.classList.remove("negative", "positive");
+    if (balance < 0) resultEl.classList.add("negative");
+    else if (balance > 0) resultEl.classList.add("positive");
+
+}
+
+
+
+/* =========================
+   분석 - 통화별
+========================= */
+
+function renderAnalysisCurrency(startDate, endDate) {
+
+    const listEl = document.getElementById("analysisCurrencyList");
+    if (!listEl) return;
+
+    listEl.innerHTML = "";
+
+    if (!startDate || !endDate) return;
+
+    /* 통화별 집계 (type 무관하게 수입/지출 각각) */
+
+    const totals = {};
+
+    (transactions || []).forEach(t => {
+
+        if (t.date < startDate || t.date > endDate) return;
+
+        const code = t.currency || "KRW";
+
+        if (!totals[code]) {
+            totals[code] = { income: 0, expense: 0 };
         }
-        else if (t.type === "expense") {
-            expenseTotal += amount;
-        }
+
+        if (t.type === "income") totals[code].income += Number(t.amount) || 0;
+        else if (t.type === "expense") totals[code].expense += Number(t.amount) || 0;
 
     });
 
 
-    const balance = incomeTotal - expenseTotal;
+    const codes = Object.keys(totals).filter(code => {
+        const t = totals[code];
+        return t.income > 0 || t.expense > 0;
+    });
 
 
-    incomeEl.innerText =
-        formatAnalysisAmount(incomeTotal) + "원";
-
-    expenseEl.innerText =
-        formatAnalysisAmount(expenseTotal) + "원";
-
-    resultEl.innerText =
-        (balance < 0 ? "-" : "") +
-        formatAnalysisAmount(Math.abs(balance)) + "원";
-
-
-    resultEl.classList.remove("negative", "positive");
-
-    if (balance < 0) {
-        resultEl.classList.add("negative");
+    if (codes.length === 0) {
+        listEl.innerHTML = `<div class="no-transactions">해당 기간에 통화 내역이 없습니다.</div>`;
+        return;
     }
-    else if (balance > 0) {
-        resultEl.classList.add("positive");
-    }
+
+
+    /* 원화 우선, 나머지는 CURRENCY_LIST 순서 */
+
+    const sortedCodes = codes.sort((a, b) => {
+
+        if (a === "KRW") return -1;
+        if (b === "KRW") return 1;
+
+        const idxA = CURRENCY_LIST.findIndex(c => c.code === a);
+        const idxB = CURRENCY_LIST.findIndex(c => c.code === b);
+
+        return idxA - idxB;
+
+    });
+
+
+    sortedCodes.forEach(code => {
+
+        const meta = getCurrencyMeta(code);
+        const data = totals[code];
+        const balance = data.income - data.expense;
+
+        const row = document.createElement("div");
+        row.className = "currency-analysis-row";
+
+        const flagEl = document.createElement("div");
+        flagEl.className = "currency-analysis-flag";
+        flagEl.innerText = meta.flag;
+
+        const infoEl = document.createElement("div");
+        infoEl.className = "currency-analysis-info";
+
+        const codeEl = document.createElement("div");
+        codeEl.className = "currency-analysis-code";
+        codeEl.innerText = `${meta.label} (${code})`;
+
+        const detailEl = document.createElement("div");
+        detailEl.className = "currency-analysis-detail";
+        detailEl.innerText =
+            `수입 ${formatCurrencyWithSymbol(data.income, code)} · ` +
+            `지출 ${formatCurrencyWithSymbol(data.expense, code)}`;
+
+        infoEl.appendChild(codeEl);
+        infoEl.appendChild(detailEl);
+
+        const balanceEl = document.createElement("div");
+        balanceEl.className = "currency-analysis-balance";
+
+        if (balance === 0) {
+            balanceEl.classList.add("zero");
+        }
+        else if (balance > 0) {
+            balanceEl.classList.add("positive");
+        }
+        else {
+            balanceEl.classList.add("negative");
+        }
+
+        balanceEl.innerText = formatCurrencyWithSymbol(balance, code);
+
+        row.appendChild(flagEl);
+        row.appendChild(infoEl);
+        row.appendChild(balanceEl);
+
+        listEl.appendChild(row);
+
+    });
 
 }
 
@@ -1201,51 +1041,28 @@ function renderAnalysisBalance(startDate, endDate) {
    분석 상세
 ========================= */
 
-function renderAnalysisDetails(
-    elementId,
-    transactions,
-    filterField,
-    filterValue
-) {
+function renderAnalysisDetails(elementId, transactions, filterField, filterValue) {
 
     const element = document.getElementById(elementId);
-
     if (!element) return;
 
+    const filtered = transactions.filter(t => {
 
-    const filtered =
-        transactions.filter(transaction => {
+        const value = t[filterField] ||
+            (filterField === "payment" ? "미지정" :
+             filterField === "subject" ? "미지정" : "미분류");
 
-            const value =
-                transaction[filterField] ||
-                (
-                    filterField === "payment"
-                        ? "미지정"
-                        : filterField === "subject"
-                            ? "미지정"
-                            : "미분류"
-                );
+        return value === filterValue;
 
-
-            return value === filterValue;
-
-        });
-
+    });
 
     if (!filtered.length) {
-
-        element.innerHTML =
-            `<div class="no-transactions">해당 내역이 없습니다.</div>`;
-
+        element.innerHTML = `<div class="no-transactions">해당 내역이 없습니다.</div>`;
         element.classList.add("active");
-
         return;
-
     }
 
-
     element.innerHTML = "";
-
 
     filtered
         .sort((a, b) => String(a.date).localeCompare(String(b.date)))
@@ -1254,62 +1071,49 @@ function renderAnalysisDetails(
             const card = document.createElement("div");
             card.className = "analysis-detail-card";
 
-
             const left = document.createElement("div");
             left.className = "analysis-detail-left";
-
 
             const date = document.createElement("div");
             date.className = "analysis-detail-date";
             date.textContent = formatAnalysisDate(transaction.date);
 
-
             const name = document.createElement("div");
             name.className = "analysis-detail-name";
             name.textContent = transaction.category || "미분류";
-
 
             const meta = document.createElement("div");
             meta.className = "analysis-detail-meta";
 
             const metaParts = [];
 
-
             if (filterField !== "category") {
-
-                if (transaction.payment)
-                    metaParts.push(transaction.payment);
-
-                if (transaction.subject)
-                    metaParts.push(transaction.subject);
-
+                if (transaction.payment) metaParts.push(transaction.payment);
+                if (transaction.subject) metaParts.push(transaction.subject);
             }
 
-
-            if (transaction.memo)
-                metaParts.push(transaction.memo);
-
+            if (transaction.memo) metaParts.push(transaction.memo);
 
             meta.textContent = metaParts.join(" · ");
 
-
             left.appendChild(date);
-
-            if (filterField !== "category")
-                left.appendChild(name);
-
-            if (meta.textContent)
-                left.appendChild(meta);
-
+            if (filterField !== "category") left.appendChild(name);
+            if (meta.textContent) left.appendChild(meta);
 
             const amount = document.createElement("div");
-            amount.className =
-                "analysis-detail-amount " + analysisType;
+            amount.className = "analysis-detail-amount " + analysisType;
 
-            amount.textContent =
-                (analysisType === "expense" ? "-" : "+") +
-                formatAnalysisAmount(transaction.amount) + "원";
+            const code = transaction.currency || "KRW";
+            const krw = getKRWAmount(transaction);
 
+            if (code !== "KRW") {
+                amount.innerHTML =
+                    `<div class="analysis-detail-foreign">${formatCurrencyWithSymbol(transaction.amount, code)}</div>` +
+                    `<div class="analysis-detail-krw">${(analysisType === "expense" ? "-" : "+")}${formatAnalysisAmount(krw)}원</div>`;
+            }
+            else {
+                amount.textContent = (analysisType === "expense" ? "-" : "+") + formatAnalysisAmount(krw) + "원";
+            }
 
             card.appendChild(left);
             card.appendChild(amount);
@@ -1318,101 +1122,54 @@ function renderAnalysisDetails(
 
         });
 
-
     element.classList.add("active");
 
 }
-
-/* 월별 그래프에서 선택된 카테고리 */
 
 var monthlyChartSelectedCategory = "";
 
 function selectAnalysisCategory(category) {
 
     if (analysisSelectedCategory === category) {
-
         analysisSelectedCategory = "";
-
-        const details =
-            document.getElementById("analysisCategoryDetails");
-
+        const details = document.getElementById("analysisCategoryDetails");
         if (details) details.classList.remove("active");
-
         return;
-
     }
 
-
     analysisSelectedCategory = category;
-
     const transactions = getAnalysisTransactions();
-
-    renderAnalysisDetails(
-        "analysisCategoryDetails",
-        transactions,
-        "category",
-        category
-    );
+    renderAnalysisDetails("analysisCategoryDetails", transactions, "category", category);
 
 }
-
 
 function selectAnalysisPayment(payment) {
 
     if (analysisSelectedPayment === payment) {
-
         analysisSelectedPayment = "";
-
-        const details =
-            document.getElementById("analysisPaymentDetails");
-
+        const details = document.getElementById("analysisPaymentDetails");
         if (details) details.classList.remove("active");
-
         return;
-
     }
 
-
     analysisSelectedPayment = payment;
-
     const transactions = getAnalysisTransactions();
-
-    renderAnalysisDetails(
-        "analysisPaymentDetails",
-        transactions,
-        "payment",
-        payment
-    );
+    renderAnalysisDetails("analysisPaymentDetails", transactions, "payment", payment);
 
 }
-
 
 function selectAnalysisSubject(subject) {
 
     if (analysisSelectedSubject === subject) {
-
         analysisSelectedSubject = "";
-
-        const details =
-            document.getElementById("analysisSubjectDetails");
-
+        const details = document.getElementById("analysisSubjectDetails");
         if (details) details.classList.remove("active");
-
         return;
-
     }
 
-
     analysisSelectedSubject = subject;
-
     const transactions = getAnalysisTransactions();
-
-    renderAnalysisDetails(
-        "analysisSubjectDetails",
-        transactions,
-        "subject",
-        subject
-    );
+    renderAnalysisDetails("analysisSubjectDetails", transactions, "subject", subject);
 
 }
 
@@ -1423,43 +1180,23 @@ function selectAnalysisSubject(subject) {
 ========================= */
 
 const monthlyChartColors = [
-    "#4f80e1",
-    "#e9a23b",
-    "#5ec488",
-    "#e2607f",
-    "#8c6fd1",
-    "#3fb6c9",
-    "#d98a53",
-    "#7a90a4",
-    "#c8556b",
-    "#5aa8d1",
-    "#9c9c9c",
-    "#c9c9c9"
+    "#4f80e1", "#e9a23b", "#5ec488", "#e2607f",
+    "#8c6fd1", "#3fb6c9", "#d98a53", "#7a90a4",
+    "#c8556b", "#5aa8d1", "#9c9c9c", "#c9c9c9"
 ];
 
 
 function getAnalysisMonthKeys(startDate, endDate) {
 
     const keys = [];
-
-    const cursor =
-        new Date(startDate.slice(0, 7) + "-01T00:00:00");
-
-    const endCursor =
-        new Date(endDate.slice(0, 7) + "-01T00:00:00");
-
+    const cursor = new Date(startDate.slice(0, 7) + "-01T00:00:00");
+    const endCursor = new Date(endDate.slice(0, 7) + "-01T00:00:00");
 
     while (cursor <= endCursor) {
-
         const year = cursor.getFullYear();
-
-        const month =
-            String(cursor.getMonth() + 1).padStart(2, "0");
-
+        const month = String(cursor.getMonth() + 1).padStart(2, "0");
         keys.push(`${year}-${month}`);
-
         cursor.setMonth(cursor.getMonth() + 1);
-
     }
 
     return keys;
@@ -1467,24 +1204,13 @@ function getAnalysisMonthKeys(startDate, endDate) {
 }
 
 
-function renderAnalysisMonthlyChart(
-    transactionsForChart,
-    startDate,
-    endDate
-) {
+function renderAnalysisMonthlyChart(transactionsForChart, startDate, endDate) {
 
-    const group =
-        document.getElementById("analysisMonthlyChartGroup");
-
-    const container =
-        document.getElementById("analysisMonthlyChart");
-
-    const legend =
-        document.getElementById("analysisMonthlyLegend");
-
+    const group = document.getElementById("analysisMonthlyChartGroup");
+    const container = document.getElementById("analysisMonthlyChart");
+    const legend = document.getElementById("analysisMonthlyLegend");
 
     if (!group || !container || !legend) return;
-
 
     if (!settings.monthlyChartEnabled) {
         group.style.display = "none";
@@ -1496,90 +1222,52 @@ function renderAnalysisMonthlyChart(
     container.innerHTML = "";
     legend.innerHTML = "";
 
-
     if (!startDate || !endDate) return;
 
+    const monthKeys = getAnalysisMonthKeys(startDate, endDate);
 
-    const monthKeys =
-        getAnalysisMonthKeys(startDate, endDate);
-
-
-    if (monthKeys.length > 12) {
-        container.classList.add("many-months");
-    }
-    else {
-        container.classList.remove("many-months");
-    }
-
+    if (monthKeys.length > 12) container.classList.add("many-months");
+    else container.classList.remove("many-months");
 
     const monthData = {};
 
-    monthKeys.forEach(key => {
-        monthData[key] = { total: 0, categories: {} };
-    });
-
+    monthKeys.forEach(key => { monthData[key] = { total: 0, categories: {} }; });
 
     transactionsForChart.forEach(transaction => {
 
         const monthKey = transaction.date.slice(0, 7);
-
         if (!monthData[monthKey]) return;
 
         const name = transaction.category || "미분류";
-        const amount = Number(transaction.amount) || 0;
+        const amount = getKRWAmount(transaction);
 
-
-        monthData[monthKey].categories[name] =
-            (monthData[monthKey].categories[name] || 0) + amount;
-
+        monthData[monthKey].categories[name] = (monthData[monthKey].categories[name] || 0) + amount;
         monthData[monthKey].total += amount;
 
     });
 
-
     const categoryTotals = {};
 
     Object.values(monthData).forEach(month => {
-
         Object.entries(month.categories).forEach(([name, amount]) => {
-
-            categoryTotals[name] =
-                (categoryTotals[name] || 0) + amount;
-
+            categoryTotals[name] = (categoryTotals[name] || 0) + amount;
         });
-
     });
 
-
-    const sortedCategoryNames =
-        Object.keys(categoryTotals).sort(
-            (a, b) => categoryTotals[b] - categoryTotals[a]
-        );
-
+    const sortedCategoryNames = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]);
 
     const colorMap = {};
-
     sortedCategoryNames.forEach((name, index) => {
-        colorMap[name] =
-            monthlyChartColors[index % monthlyChartColors.length];
+        colorMap[name] = monthlyChartColors[index % monthlyChartColors.length];
     });
 
-
     if (!sortedCategoryNames.length) {
-
-        container.innerHTML =
-            `<div class="monthly-chart-empty">해당 기간에 내역이 없습니다.</div>`;
-
+        container.innerHTML = `<div class="monthly-chart-empty">해당 기간에 내역이 없습니다.</div>`;
         return;
-
     }
 
-
-    const maxTotal =
-        Math.max(1, ...monthKeys.map(key => monthData[key].total));
-
+    const maxTotal = Math.max(1, ...monthKeys.map(key => monthData[key].total));
     const barMaxHeight = 180;
-
 
     monthKeys.forEach(key => {
 
@@ -1588,127 +1276,84 @@ function renderAnalysisMonthlyChart(
         const col = document.createElement("div");
         col.className = "monthly-chart-col";
 
-
         const amountLabel = document.createElement("div");
         amountLabel.className = "monthly-chart-amount";
-        amountLabel.textContent =
-            data.total > 0 ? formatCompactAmount(data.total) : "";
-
+        amountLabel.textContent = data.total > 0 ? formatCompactAmount(data.total) : "";
 
         const barWrap = document.createElement("div");
         barWrap.className = "monthly-chart-bar-wrap";
 
-
         const bar = document.createElement("div");
         bar.className = "monthly-chart-bar";
 
-        const barHeight =
-            data.total > 0
-                ? (data.total / maxTotal) * barMaxHeight
-                : 0;
-
+        const barHeight = data.total > 0 ? (data.total / maxTotal) * barMaxHeight : 0;
         bar.style.height = barHeight + "px";
 
-
-        const monthCategoriesSorted =
-            Object.entries(data.categories).sort((a, b) => b[1] - a[1]);
-
+        const monthCategoriesSorted = Object.entries(data.categories).sort((a, b) => b[1] - a[1]);
 
         monthCategoriesSorted.forEach(([name, amount]) => {
 
-            const isSelected =
-                monthlyChartSelectedCategory === "" ||
-                monthlyChartSelectedCategory === name;
-
+            const isSelected = monthlyChartSelectedCategory === "" || monthlyChartSelectedCategory === name;
             if (!isSelected) return;
 
-
-            const ratio =
-                data.total > 0 ? amount / data.total : 0;
+            const ratio = data.total > 0 ? amount / data.total : 0;
 
             const segment = document.createElement("div");
             segment.className = "monthly-chart-segment";
             segment.style.height = (ratio * 100) + "%";
             segment.style.background = colorMap[name];
-
-            segment.title =
-                `${name} · ${Math.round(ratio * 100)}%`;
+            segment.title = `${name} · ${Math.round(ratio * 100)}%`;
 
             if (ratio >= 0.15) {
-
                 const label = document.createElement("span");
                 label.className = "monthly-chart-segment-label";
                 label.textContent = Math.round(ratio * 100) + "%";
-
                 segment.appendChild(label);
-
             }
-
 
             bar.appendChild(segment);
 
         });
 
-
         barWrap.appendChild(bar);
-
 
         const monthLabel = document.createElement("div");
         monthLabel.className = "monthly-chart-month";
 
         const [, monthPart] = key.split("-");
-
         monthLabel.textContent = Number(monthPart) + "월";
-
 
         col.appendChild(amountLabel);
         col.appendChild(barWrap);
         col.appendChild(monthLabel);
 
-
         container.appendChild(col);
 
     });
 
-
     legend.classList.remove("dimmed");
-
-
-    if (monthlyChartSelectedCategory) {
-        legend.classList.add("dimmed");
-    }
-
+    if (monthlyChartSelectedCategory) legend.classList.add("dimmed");
 
     sortedCategoryNames.forEach(name => {
 
         const item = document.createElement("div");
         item.className = "monthly-chart-legend-item";
 
-
-        if (monthlyChartSelectedCategory === name) {
-            item.classList.add("selected");
-        }
-
+        if (monthlyChartSelectedCategory === name) item.classList.add("selected");
 
         const dot = document.createElement("span");
         dot.className = "monthly-chart-legend-dot";
         dot.style.background = colorMap[name];
 
-
         const label = document.createElement("span");
         label.textContent = name;
-
 
         item.appendChild(dot);
         item.appendChild(label);
 
-
         item.onclick = function() {
-
             toggleMonthlyChartCategory(name);
-
         };
-
 
         legend.appendChild(item);
 
@@ -1716,44 +1361,23 @@ function renderAnalysisMonthlyChart(
 
 }
 
-/* =========================
-   월별 그래프 카테고리 필터 토글
-========================= */
 
 function toggleMonthlyChartCategory(name) {
 
-    if (monthlyChartSelectedCategory === name) {
+    if (monthlyChartSelectedCategory === name) monthlyChartSelectedCategory = "";
+    else monthlyChartSelectedCategory = name;
 
-        monthlyChartSelectedCategory = "";
-
-    }
-    else {
-
-        monthlyChartSelectedCategory = name;
-
-    }
-
-
-    const startInput =
-        document.getElementById("analysisStartDate");
-
-    const endInput =
-        document.getElementById("analysisEndDate");
+    const startInput = document.getElementById("analysisStartDate");
+    const endInput = document.getElementById("analysisEndDate");
 
     if (!startInput || !endInput) return;
 
+    const transactions = getAnalysisTransactions();
 
-    const transactions =
-        getAnalysisTransactions();
-
-
-    renderAnalysisMonthlyChart(
-        transactions,
-        startInput.value,
-        endInput.value
-    );
+    renderAnalysisMonthlyChart(transactions, startInput.value, endInput.value);
 
 }
+
 
 /* =========================
    분석 전체 렌더링
@@ -1766,84 +1390,40 @@ function renderAnalysis() {
 
     if (!startInput || !endInput) return;
 
-
-    if (!startInput.value || !endInput.value)
-        initializeAnalysisDates();
-
+    if (!startInput.value || !endInput.value) initializeAnalysisDates();
 
     const startDate = startInput.value;
     const endDate = endInput.value;
 
-
     if (!startDate || !endDate) return;
-
 
     const transactions = getAnalysisTransactions();
 
-
-    const total =
-        transactions.reduce(
-            (sum, transaction) =>
-                sum + (Number(transaction.amount) || 0),
-            0
-        );
-
+    const total = transactions.reduce((sum, t) => sum + getKRWAmount(t), 0);
 
     renderAnalysisOverallSummary(total, startDate, endDate);
 
     updateAnalysisGroupVisibility();
     reorderAnalysisGroupsInDOM();
 
-
-    /* 잔액 (type 무관, 항상 전체) */
-
     renderAnalysisBalance(startDate, endDate);
-
-
+    renderAnalysisCurrency(startDate, endDate);
     renderAnalysisMonthlyChart(transactions, startDate, endDate);
 
 
     /* 카테고리 */
 
-    const categoryList =
-        document.getElementById("analysisCategoryList");
-
-    const categoryDetails =
-        document.getElementById("analysisCategoryDetails");
-
+    const categoryList = document.getElementById("analysisCategoryList");
+    const categoryDetails = document.getElementById("analysisCategoryDetails");
 
     if (categoryList) {
-
         categoryList.innerHTML = "";
-
-        const categoryData =
-            getAnalysisCategoryData(transactions);
-
-
-        renderAnalysisGroupBar(
-            "analysisCategoryBar",
-            "analysisCategoryBarInfo",
-            categoryData,
-            total
-        );
-
-
-        sortAnalysisEntriesByAmount(categoryData)
-            .forEach(([name, amount]) => {
-
-                categoryList.appendChild(
-                    createAnalysisCategoryItem(
-                        name,
-                        amount,
-                        startDate,
-                        endDate
-                    )
-                );
-
-            });
-
+        const categoryData = getAnalysisCategoryData(transactions);
+        renderAnalysisGroupBar("analysisCategoryBar", "analysisCategoryBarInfo", categoryData, total);
+        sortAnalysisEntriesByAmount(categoryData).forEach(([name, amount]) => {
+            categoryList.appendChild(createAnalysisCategoryItem(name, amount, startDate, endDate));
+        });
     }
-
 
     if (categoryDetails && !analysisSelectedCategory) {
         categoryDetails.classList.remove("active");
@@ -1853,46 +1433,17 @@ function renderAnalysis() {
 
     /* 결제수단 */
 
-    const paymentList =
-        document.getElementById("analysisPaymentList");
-
-    const paymentDetails =
-        document.getElementById("analysisPaymentDetails");
-
+    const paymentList = document.getElementById("analysisPaymentList");
+    const paymentDetails = document.getElementById("analysisPaymentDetails");
 
     if (paymentList) {
-
         paymentList.innerHTML = "";
-
-        const paymentData =
-            getAnalysisPaymentData(transactions);
-
-
-        renderAnalysisGroupBar(
-            "analysisPaymentBar",
-            "analysisPaymentBarInfo",
-            paymentData,
-            total
-        );
-
-
-        sortAnalysisEntriesByAmount(paymentData)
-            .forEach(([name, amount]) => {
-
-                paymentList.appendChild(
-                    createAnalysisItem(
-                        name,
-                        amount,
-                        () => selectAnalysisPayment(name),
-                        startDate,
-                        endDate
-                    )
-                );
-
-            });
-
+        const paymentData = getAnalysisPaymentData(transactions);
+        renderAnalysisGroupBar("analysisPaymentBar", "analysisPaymentBarInfo", paymentData, total);
+        sortAnalysisEntriesByAmount(paymentData).forEach(([name, amount]) => {
+            paymentList.appendChild(createAnalysisItem(name, amount, () => selectAnalysisPayment(name), startDate, endDate));
+        });
     }
-
 
     if (paymentDetails && !analysisSelectedPayment) {
         paymentDetails.classList.remove("active");
@@ -1902,46 +1453,17 @@ function renderAnalysis() {
 
     /* 주체 */
 
-    const subjectList =
-        document.getElementById("analysisSubjectList");
-
-    const subjectDetails =
-        document.getElementById("analysisSubjectDetails");
-
+    const subjectList = document.getElementById("analysisSubjectList");
+    const subjectDetails = document.getElementById("analysisSubjectDetails");
 
     if (subjectList) {
-
         subjectList.innerHTML = "";
-
-        const subjectData =
-            getAnalysisSubjectData(transactions);
-
-
-        renderAnalysisGroupBar(
-            "analysisSubjectBar",
-            "analysisSubjectBarInfo",
-            subjectData,
-            total
-        );
-
-
-        sortAnalysisEntriesByAmount(subjectData)
-            .forEach(([name, amount]) => {
-
-                subjectList.appendChild(
-                    createAnalysisItem(
-                        name,
-                        amount,
-                        () => selectAnalysisSubject(name),
-                        startDate,
-                        endDate
-                    )
-                );
-
-            });
-
+        const subjectData = getAnalysisSubjectData(transactions);
+        renderAnalysisGroupBar("analysisSubjectBar", "analysisSubjectBarInfo", subjectData, total);
+        sortAnalysisEntriesByAmount(subjectData).forEach(([name, amount]) => {
+            subjectList.appendChild(createAnalysisItem(name, amount, () => selectAnalysisSubject(name), startDate, endDate));
+        });
     }
-
 
     if (subjectDetails && !analysisSelectedSubject) {
         subjectDetails.classList.remove("active");
@@ -1949,31 +1471,14 @@ function renderAnalysis() {
     }
 
 
-    /* 선택된 상세내역 유지 */
-
     if (analysisSelectedCategory)
-        renderAnalysisDetails(
-            "analysisCategoryDetails",
-            transactions,
-            "category",
-            analysisSelectedCategory
-        );
+        renderAnalysisDetails("analysisCategoryDetails", transactions, "category", analysisSelectedCategory);
 
     if (analysisSelectedPayment)
-        renderAnalysisDetails(
-            "analysisPaymentDetails",
-            transactions,
-            "payment",
-            analysisSelectedPayment
-        );
+        renderAnalysisDetails("analysisPaymentDetails", transactions, "payment", analysisSelectedPayment);
 
     if (analysisSelectedSubject)
-        renderAnalysisDetails(
-            "analysisSubjectDetails",
-            transactions,
-            "subject",
-            analysisSelectedSubject
-        );
+        renderAnalysisDetails("analysisSubjectDetails", transactions, "subject", analysisSelectedSubject);
 
 }
 
@@ -1985,75 +1490,42 @@ function renderAnalysis() {
 
 function renderBudgetSettings() {
 
-    const container =
-        document.getElementById("budgetCategoryList");
-
+    const container = document.getElementById("budgetCategoryList");
     if (!container) return;
-
 
     container.innerHTML = "";
 
-
     const list = categories.expense || [];
-
 
     if (!settings.budgets) settings.budgets = {};
 
-
     if (!list.length) {
-
-        container.innerHTML =
-            `<div class="no-transactions" style="grid-column: 1 / -1;">지출 카테고리가 없습니다.</div>`;
-
+        container.innerHTML = `<div class="no-transactions" style="grid-column: 1 / -1;">지출 카테고리가 없습니다.</div>`;
         return;
-
     }
-
 
     list.forEach((category, index) => {
 
-        const budget =
-            Number(settings.budgets[category]) || 0;
-
+        const budget = Number(settings.budgets[category]) || 0;
 
         const card = document.createElement("div");
-
         card.className = "manage-card budget-card";
-
         card.dataset.index = index;
 
-
         const label = document.createElement("div");
-
         label.className = "manage-card-name";
-
         label.textContent = category;
 
-
         const amount = document.createElement("div");
-
         amount.className = "budget-card-amount";
+        amount.textContent = budget > 0 ? formatCompactAmount(budget) + "원" : "미설정";
 
-        amount.textContent =
-            budget > 0
-                ? formatCompactAmount(budget) + "원"
-                : "미설정";
-
-
-        if (budget <= 0) {
-            amount.classList.add("budget-card-amount-empty");
-        }
-
+        if (budget <= 0) amount.classList.add("budget-card-amount-empty");
 
         card.appendChild(label);
-
         card.appendChild(amount);
 
-
-        card.onclick = function() {
-            editCategoryBudget(category);
-        };
-
+        card.onclick = function() { editCategoryBudget(category); };
 
         container.appendChild(card);
 
@@ -2066,50 +1538,26 @@ function editCategoryBudget(category) {
 
     if (!settings.budgets) settings.budgets = {};
 
-
-    const currentBudget =
-        Number(settings.budgets[category]) || 0;
-
+    const currentBudget = Number(settings.budgets[category]) || 0;
 
     appPrompt(
         `월 예산을 입력하세요.`,
-        currentBudget > 0
-            ? currentBudget.toLocaleString("ko-KR")
-            : "",
-        {
-            title: category,
-            formatAmount: true,
-            placeholder: "0"
-        }
+        currentBudget > 0 ? currentBudget.toLocaleString("ko-KR") : "",
+        { title: category, formatAmount: true, placeholder: "0" }
     ).then(function(input) {
 
         if (input === null) return;
 
-
         const trimmed = input.replace(/[^0-9]/g, "");
 
-
-        if (!trimmed || Number(trimmed) <= 0) {
-            delete settings.budgets[category];
-        }
-        else {
-            settings.budgets[category] = Number(trimmed);
-        }
-
+        if (!trimmed || Number(trimmed) <= 0) delete settings.budgets[category];
+        else settings.budgets[category] = Number(trimmed);
 
         saveSettings();
         renderBudgetSettings();
 
-
-        const analysisScreen =
-            document.getElementById("analysisScreen");
-
-        if (
-            analysisScreen &&
-            analysisScreen.classList.contains("active")
-        ) {
-            renderAnalysis();
-        }
+        const analysisScreen = document.getElementById("analysisScreen");
+        if (analysisScreen && analysisScreen.classList.contains("active")) renderAnalysis();
 
     });
 
@@ -2122,28 +1570,17 @@ function editCategoryBudget(category) {
 ========================= */
 
 function renderCategoryManagement() {
-
     renderCategoryManagementList("expense");
     renderCategoryManagementList("income");
-
 }
 
 
 function renderCategoryManagementList(type) {
 
-    const container =
-        document.getElementById(
-            type === "expense"
-                ? "expenseCategoryList"
-                : "incomeCategoryList"
-        );
-
-
+    const container = document.getElementById(type === "expense" ? "expenseCategoryList" : "incomeCategoryList");
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     categories[type].forEach((category, index) => {
 
@@ -2154,42 +1591,21 @@ function renderCategoryManagementList(type) {
             () => deleteCategory(type, index)
         );
 
-
-        initializeManageCardDrag(
-            card,
-            {
-                getArray: () => categories[type],
-                onSave: saveCategories,
-                onRender: renderCategoryManagement,
-                onAfterMove: renderCategoryButtons
-            }
-        );
-
+        initializeManageCardDrag(card, {
+            getArray: () => categories[type],
+            onSave: saveCategories,
+            onRender: renderCategoryManagement,
+            onAfterMove: renderCategoryButtons
+        });
 
         container.appendChild(card);
 
     });
 
-
-    /* + 추가 카드 */
-
     const addCard = document.createElement("div");
-
     addCard.className = "manage-card add-card";
-
-    addCard.innerHTML = `
-        <div class="manage-card-plus">+</div>
-        <div class="manage-card-name">추가</div>
-    `;
-
-
-    addCard.onclick = function() {
-
-        addCategory(type);
-
-    };
-
-
+    addCard.innerHTML = `<div class="manage-card-plus">+</div><div class="manage-card-name">추가</div>`;
+    addCard.onclick = function() { addCategory(type); };
     container.appendChild(addCard);
 
 }
@@ -2197,35 +1613,16 @@ function renderCategoryManagementList(type) {
 
 function addCategory(type) {
 
-    appPrompt(
-        "카테고리 이름을 입력하세요.",
-        "",
-        {
-            title: "카테고리 추가",
-            placeholder: "카테고리 이름"
-        }
-    ).then(function(name) {
-
+    appPrompt("카테고리 이름을 입력하세요.", "", { title: "카테고리 추가", placeholder: "카테고리 이름" })
+    .then(function(name) {
         if (name === null) return;
-
-
         const trimmed = name.trim();
-
         if (!trimmed) return;
-
-
-        if (categories[type].includes(trimmed)) {
-            appAlert("이미 존재하는 카테고리입니다.");
-            return;
-        }
-
-
+        if (categories[type].includes(trimmed)) { appAlert("이미 존재하는 카테고리입니다."); return; }
         categories[type].push(trimmed);
-
         saveCategories();
         renderCategoryManagement();
         renderCategoryButtons();
-
     });
 
 }
@@ -2235,53 +1632,24 @@ function editCategory(type, index) {
 
     const oldName = categories[type][index];
 
-
-    appPrompt(
-        "카테고리 이름을 수정하세요.",
-        oldName,
-        {
-            title: "카테고리 수정",
-            placeholder: "카테고리 이름"
-        }
-    ).then(function(newName) {
-
+    appPrompt("카테고리 이름을 수정하세요.", oldName, { title: "카테고리 수정", placeholder: "카테고리 이름" })
+    .then(function(newName) {
         if (newName === null) return;
-
-
         const trimmed = newName.trim();
-
         if (!trimmed) return;
-
-
-        if (categories[type].includes(trimmed) && trimmed !== oldName) {
-            appAlert("이미 존재하는 카테고리입니다.");
-            return;
-        }
-
+        if (categories[type].includes(trimmed) && trimmed !== oldName) { appAlert("이미 존재하는 카테고리입니다."); return; }
 
         categories[type][index] = trimmed;
 
+        transactions.forEach(t => { if (t.category === oldName) t.category = trimmed; });
 
-        transactions.forEach(transaction => {
-            if (transaction.category === oldName) {
-                transaction.category = trimmed;
-            }
-        });
+        if (selectedCategory === oldName) selectedCategory = trimmed;
 
-
-        if (selectedCategory === oldName)
-            selectedCategory = trimmed;
-
-
-        if (
-            settings.budgets &&
-            Object.prototype.hasOwnProperty.call(settings.budgets, oldName)
-        ) {
+        if (settings.budgets && Object.prototype.hasOwnProperty.call(settings.budgets, oldName)) {
             settings.budgets[trimmed] = settings.budgets[oldName];
             delete settings.budgets[oldName];
             saveSettings();
         }
-
 
         saveCategories();
         saveTransactions();
@@ -2291,7 +1659,6 @@ function editCategory(type, index) {
         renderCategoryManagement();
         renderCategoryButtons();
         renderSelectedDate();
-
     });
 
 }
@@ -2301,51 +1668,24 @@ function deleteCategory(type, index) {
 
     const name = categories[type][index];
 
+    const hasBudget = settings.budgets && Object.prototype.hasOwnProperty.call(settings.budgets, name);
 
-    const hasBudget =
-        settings.budgets &&
-        Object.prototype.hasOwnProperty.call(settings.budgets, name);
+    const message = hasBudget
+        ? `"${name}" 카테고리를 삭제할까요?\n\n· 기존 거래 내역은 삭제되지 않습니다.\n· 이 카테고리에 설정한 예산도 함께 삭제됩니다.`
+        : `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`;
 
-
-    const message =
-        hasBudget
-            ? `"${name}" 카테고리를 삭제할까요?\n\n· 기존 거래 내역은 삭제되지 않습니다.\n· 이 카테고리에 설정한 예산도 함께 삭제됩니다.`
-            : `"${name}" 카테고리를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`;
-
-
-    appConfirm(
-        message,
-        {
-            title: "카테고리 삭제",
-            confirmText: "삭제",
-            danger: true
-        }
-    ).then(function(confirmed) {
-
+    appConfirm(message, { title: "카테고리 삭제", confirmText: "삭제", danger: true })
+    .then(function(confirmed) {
         if (!confirmed) return;
-
-
         categories[type].splice(index, 1);
-
-
-        if (selectedCategory === name)
-            selectedCategory = "";
-
-
-        if (
-            settings.budgets &&
-            Object.prototype.hasOwnProperty.call(settings.budgets, name)
-        ) {
+        if (selectedCategory === name) selectedCategory = "";
+        if (settings.budgets && Object.prototype.hasOwnProperty.call(settings.budgets, name)) {
             delete settings.budgets[name];
             saveSettings();
         }
-
-
         saveCategories();
-
         renderCategoryManagement();
         renderCategoryButtons();
-
     });
 
 }
@@ -2358,14 +1698,10 @@ function deleteCategory(type, index) {
 
 function renderPaymentManagement() {
 
-    const container =
-        document.getElementById("paymentMethodList");
-
+    const container = document.getElementById("paymentMethodList");
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     paymentMethods.forEach((payment, index) => {
 
@@ -2376,168 +1712,73 @@ function renderPaymentManagement() {
             () => deletePaymentMethod(index)
         );
 
-
-        initializeManageCardDrag(
-            card,
-            {
-                getArray: () => paymentMethods,
-                onSave: savePaymentMethods,
-                onRender: renderPaymentManagement,
-                onAfterMove: renderPaymentButtons
-            }
-        );
-
+        initializeManageCardDrag(card, {
+            getArray: () => paymentMethods,
+            onSave: savePaymentMethods,
+            onRender: renderPaymentManagement,
+            onAfterMove: renderPaymentButtons
+        });
 
         container.appendChild(card);
 
     });
 
-
-    /* + 추가 카드 */
-
     const addCard = document.createElement("div");
-
     addCard.className = "manage-card add-card";
-
-    addCard.innerHTML = `
-        <div class="manage-card-plus">+</div>
-        <div class="manage-card-name">추가</div>
-    `;
-
-
-    addCard.onclick = function() {
-
-        addPaymentMethod();
-
-    };
-
-
+    addCard.innerHTML = `<div class="manage-card-plus">+</div><div class="manage-card-name">추가</div>`;
+    addCard.onclick = function() { addPaymentMethod(); };
     container.appendChild(addCard);
 
 }
 
 
 function addPaymentMethod() {
-
-    appPrompt(
-        "결제수단 이름을 입력하세요.",
-        "",
-        {
-            title: "결제수단 추가",
-            placeholder: "결제수단 이름"
-        }
-    ).then(function(name) {
-
+    appPrompt("결제수단 이름을 입력하세요.", "", { title: "결제수단 추가", placeholder: "결제수단 이름" })
+    .then(function(name) {
         if (name === null) return;
-
         const trimmed = name.trim();
-
         if (!trimmed) return;
-
-
-        if (paymentMethods.includes(trimmed)) {
-            appAlert("이미 존재하는 결제수단입니다.");
-            return;
-        }
-
-
+        if (paymentMethods.includes(trimmed)) { appAlert("이미 존재하는 결제수단입니다."); return; }
         paymentMethods.push(trimmed);
-
         savePaymentMethods();
         renderPaymentManagement();
         renderPaymentButtons();
-
     });
-
 }
 
 
 function editPaymentMethod(index) {
-
     const oldName = paymentMethods[index];
-
-
-    appPrompt(
-        "결제수단 이름을 수정하세요.",
-        oldName,
-        {
-            title: "결제수단 수정",
-            placeholder: "결제수단 이름"
-        }
-    ).then(function(newName) {
-
+    appPrompt("결제수단 이름을 수정하세요.", oldName, { title: "결제수단 수정", placeholder: "결제수단 이름" })
+    .then(function(newName) {
         if (newName === null) return;
-
         const trimmed = newName.trim();
-
         if (!trimmed) return;
-
-
-        if (paymentMethods.includes(trimmed) && trimmed !== oldName) {
-            appAlert("이미 존재하는 결제수단입니다.");
-            return;
-        }
-
-
+        if (paymentMethods.includes(trimmed) && trimmed !== oldName) { appAlert("이미 존재하는 결제수단입니다."); return; }
         paymentMethods[index] = trimmed;
-
-
-        transactions.forEach(transaction => {
-            if (transaction.payment === oldName) {
-                transaction.payment = trimmed;
-            }
-        });
-
-
-        if (selectedPayment === oldName)
-            selectedPayment = trimmed;
-
-
+        transactions.forEach(t => { if (t.payment === oldName) t.payment = trimmed; });
+        if (selectedPayment === oldName) selectedPayment = trimmed;
         savePaymentMethods();
         saveTransactions();
-
         syncRenameTransactionsField("payment", oldName, trimmed);
-
         renderPaymentManagement();
         renderPaymentButtons();
         renderSelectedDate();
-
     });
-
 }
 
 
 function deletePaymentMethod(index) {
-
     const name = paymentMethods[index];
-
-
-    appConfirm(
-        `"${name}" 결제수단을 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
-        {
-            title: "결제수단 삭제",
-            confirmText: "삭제",
-            danger: true
-        }
-    ).then(function(confirmed) {
-
+    appConfirm(`"${name}" 결제수단을 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`, { title: "결제수단 삭제", confirmText: "삭제", danger: true })
+    .then(function(confirmed) {
         if (!confirmed) return;
-
-
         paymentMethods.splice(index, 1);
-
-
-        if (selectedPayment === name)
-            selectedPayment = "";
-
-
+        if (selectedPayment === name) selectedPayment = "";
         savePaymentMethods();
-
         renderPaymentManagement();
         renderPaymentButtons();
-
     });
-
 }
 
 
@@ -2548,14 +1789,10 @@ function deletePaymentMethod(index) {
 
 function renderSubjectManagement() {
 
-    const container =
-        document.getElementById("subjectList");
-
+    const container = document.getElementById("subjectList");
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     subjects.forEach((subject, index) => {
 
@@ -2566,168 +1803,73 @@ function renderSubjectManagement() {
             () => deleteSubject(index)
         );
 
-
-        initializeManageCardDrag(
-            card,
-            {
-                getArray: () => subjects,
-                onSave: saveSubjects,
-                onRender: renderSubjectManagement,
-                onAfterMove: renderSubjectButtons
-            }
-        );
-
+        initializeManageCardDrag(card, {
+            getArray: () => subjects,
+            onSave: saveSubjects,
+            onRender: renderSubjectManagement,
+            onAfterMove: renderSubjectButtons
+        });
 
         container.appendChild(card);
 
     });
 
-
-    /* + 추가 카드 */
-
     const addCard = document.createElement("div");
-
     addCard.className = "manage-card add-card";
-
-    addCard.innerHTML = `
-        <div class="manage-card-plus">+</div>
-        <div class="manage-card-name">추가</div>
-    `;
-
-
-    addCard.onclick = function() {
-
-        addSubject();
-
-    };
-
-
+    addCard.innerHTML = `<div class="manage-card-plus">+</div><div class="manage-card-name">추가</div>`;
+    addCard.onclick = function() { addSubject(); };
     container.appendChild(addCard);
 
 }
 
 
 function addSubject() {
-
-    appPrompt(
-        "주체 이름을 입력하세요.",
-        "",
-        {
-            title: "주체 추가",
-            placeholder: "주체 이름"
-        }
-    ).then(function(name) {
-
+    appPrompt("주체 이름을 입력하세요.", "", { title: "주체 추가", placeholder: "주체 이름" })
+    .then(function(name) {
         if (name === null) return;
-
         const trimmed = name.trim();
-
         if (!trimmed) return;
-
-
-        if (subjects.includes(trimmed)) {
-            appAlert("이미 존재하는 주체입니다.");
-            return;
-        }
-
-
+        if (subjects.includes(trimmed)) { appAlert("이미 존재하는 주체입니다."); return; }
         subjects.push(trimmed);
-
         saveSubjects();
         renderSubjectManagement();
         renderSubjectButtons();
-
     });
-
 }
 
 
 function editSubject(index) {
-
     const oldName = subjects[index];
-
-
-    appPrompt(
-        "주체 이름을 수정하세요.",
-        oldName,
-        {
-            title: "주체 수정",
-            placeholder: "주체 이름"
-        }
-    ).then(function(newName) {
-
+    appPrompt("주체 이름을 수정하세요.", oldName, { title: "주체 수정", placeholder: "주체 이름" })
+    .then(function(newName) {
         if (newName === null) return;
-
         const trimmed = newName.trim();
-
         if (!trimmed) return;
-
-
-        if (subjects.includes(trimmed) && trimmed !== oldName) {
-            appAlert("이미 존재하는 주체입니다.");
-            return;
-        }
-
-
+        if (subjects.includes(trimmed) && trimmed !== oldName) { appAlert("이미 존재하는 주체입니다."); return; }
         subjects[index] = trimmed;
-
-
-        transactions.forEach(transaction => {
-            if (transaction.subject === oldName) {
-                transaction.subject = trimmed;
-            }
-        });
-
-
-        if (selectedSubject === oldName)
-            selectedSubject = trimmed;
-
-
+        transactions.forEach(t => { if (t.subject === oldName) t.subject = trimmed; });
+        if (selectedSubject === oldName) selectedSubject = trimmed;
         saveSubjects();
         saveTransactions();
-
         syncRenameTransactionsField("subject", oldName, trimmed);
-
         renderSubjectManagement();
         renderSubjectButtons();
         renderSelectedDate();
-
     });
-
 }
 
 
 function deleteSubject(index) {
-
     const name = subjects[index];
-
-
-    appConfirm(
-        `"${name}" 주체를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`,
-        {
-            title: "주체 삭제",
-            confirmText: "삭제",
-            danger: true
-        }
-    ).then(function(confirmed) {
-
+    appConfirm(`"${name}" 주체를 삭제할까요?\n\n기존 거래 내역은 삭제되지 않습니다.`, { title: "주체 삭제", confirmText: "삭제", danger: true })
+    .then(function(confirmed) {
         if (!confirmed) return;
-
-
         subjects.splice(index, 1);
-
-
-        if (selectedSubject === name)
-            selectedSubject = "";
-
-
+        if (selectedSubject === name) selectedSubject = "";
         saveSubjects();
-
         renderSubjectManagement();
         renderSubjectButtons();
-
     });
-
 }
 
 
@@ -2736,98 +1878,51 @@ function deleteSubject(index) {
    관리 카드 (카테고리/결제수단/주체 공용)
 ========================= */
 
-function createManageCard(
-    name,
-    index,
-    onEdit,
-    onDelete
-) {
+function createManageCard(name, index, onEdit, onDelete) {
 
     const card = document.createElement("div");
-
     card.className = "manage-card";
-
     card.dataset.index = index;
 
-
     const nameElement = document.createElement("div");
-
     nameElement.className = "manage-card-name";
-
     nameElement.textContent = name;
-
 
     card.appendChild(nameElement);
 
-
     const overlay = document.createElement("div");
-
     overlay.className = "card-actions-overlay";
 
-
     const editBtn = document.createElement("button");
-
     editBtn.type = "button";
-
     editBtn.className = "card-action-edit";
-
     editBtn.textContent = "수정";
-
     editBtn.onclick = function(event) {
-
         event.stopPropagation();
-
         card.classList.remove("actions-visible");
-
         onEdit();
-
     };
-
 
     const deleteBtn = document.createElement("button");
-
     deleteBtn.type = "button";
-
     deleteBtn.className = "card-action-delete";
-
     deleteBtn.textContent = "삭제";
-
     deleteBtn.onclick = function(event) {
-
         event.stopPropagation();
-
         card.classList.remove("actions-visible");
-
         onDelete();
-
     };
 
-
     overlay.appendChild(editBtn);
-
     overlay.appendChild(deleteBtn);
-
 
     card.appendChild(overlay);
 
-
-    document.addEventListener(
-        "touchstart",
-        function(event) {
-
-            if (
-                card.classList.contains("actions-visible") &&
-                !card.contains(event.target)
-            ) {
-
-                card.classList.remove("actions-visible");
-
-            }
-
-        },
-        { passive: true }
-    );
-
+    document.addEventListener("touchstart", function(event) {
+        if (card.classList.contains("actions-visible") && !card.contains(event.target)) {
+            card.classList.remove("actions-visible");
+        }
+    }, { passive: true });
 
     return card;
 
@@ -2836,711 +1931,329 @@ function createManageCard(
 
 
 /* =========================
-   관리 카드 드래그 (스냅 + CSS transform 방식)
+   관리 카드 드래그 (기존)
 ========================= */
 
-function initializeManageCardDrag(
-    card,
-    options
-) {
+function initializeManageCardDrag(card, options) {
 
-    const enableLongPress =
-        options.enableLongPress !== false;
+    const enableLongPress = options.enableLongPress !== false;
 
-    let startX = 0;
-    let startY = 0;
-
-    let currentX = 0;
-    let currentY = 0;
-
-    let dragging = false;
-    let longPressTimer = null;
-
-    let isLongPress = false;
-
-    let CELL_W = 100;
-    let CELL_H = 100;
-    let COLUMNS = 4;
-
-    let originIndex = 0;
-
-    let originLeft = 0;
-    let originTop = 0;
-
-    let currentIndex = 0;
+    let startX = 0, startY = 0, currentX = 0, currentY = 0;
+    let dragging = false, longPressTimer = null, isLongPress = false;
+    let CELL_W = 100, CELL_H = 100, COLUMNS = 4;
+    let originIndex = 0, originLeft = 0, originTop = 0, currentIndex = 0;
 
     const LONG_PRESS_MS = 500;
     const MOVE_THRESHOLD = 10;
     const DRAG_START_THRESHOLD = 18;
 
-
-    function getGrid() {
-        return card.parentElement;
-    }
-
+    function getGrid() { return card.parentElement; }
 
     function getCellSizeAndColumns() {
-
         const grid = getGrid();
-
         if (!grid) return;
 
         let firstCard = null;
-
         for (const child of grid.children) {
-
-            if (!child.classList.contains("add-card")) {
-                firstCard = child;
-                break;
-            }
-
+            if (!child.classList.contains("add-card")) { firstCard = child; break; }
         }
-
         if (!firstCard) return;
 
-        const rect =
-            firstCard.getBoundingClientRect();
-
+        const rect = firstCard.getBoundingClientRect();
         let gap = 8;
 
         if (grid.children.length > 1) {
-
-            const firstRect =
-                grid.children[0].getBoundingClientRect();
-
-            const secondRect =
-                grid.children[1].getBoundingClientRect();
-
+            const firstRect = grid.children[0].getBoundingClientRect();
+            const secondRect = grid.children[1].getBoundingClientRect();
             if (Math.abs(firstRect.top - secondRect.top) < 5) {
                 gap = secondRect.left - firstRect.right;
             }
-
         }
 
         CELL_W = rect.width + gap;
         CELL_H = rect.height + gap;
 
-
         const gridWidth = grid.clientWidth;
-
-        /* 4열 고정 (analysis-card-grid와 card-grid 모두 4열) */
-
-        COLUMNS = 4;
-
-        /* 실제 열 개수 재계산 (안전장치) */
-
-        const estimated =
-            Math.round((gridWidth + gap) / CELL_W);
-
-        if (estimated >= 3 && estimated <= 6) {
-            COLUMNS = estimated;
-        }
-
+        COLUMNS = Math.max(1, Math.round((gridWidth + gap) / CELL_W));
     }
-
 
     function resetOtherCardsTransform() {
-
         const grid = getGrid();
-
         if (!grid) return;
-
-        Array.from(grid.children).forEach(el => {
-
-            if (el !== card) {
-                el.style.transform = "";
-            }
-
-        });
-
+        Array.from(grid.children).forEach(el => { if (el !== card) el.style.transform = ""; });
     }
-
 
     function updateOtherCardsVisual(newIndex) {
-
         const grid = getGrid();
-
         if (!grid) return;
-
-        const cards =
-            Array.from(grid.children).filter(el => {
-
-                return el !== card && !el.classList.contains("add-card");
-
-            });
-
+        const cards = Array.from(grid.children).filter(el => el !== card && !el.classList.contains("add-card"));
         cards.forEach(el => {
-
             let dataIndex = Number(el.dataset.index);
-
             if (isNaN(dataIndex)) return;
-
-
             let visualIndex = dataIndex;
-
-
             if (originIndex < newIndex) {
-
-                if (
-                    dataIndex > originIndex &&
-                    dataIndex <= newIndex
-                ) {
-                    visualIndex = dataIndex - 1;
-                }
-
+                if (dataIndex > originIndex && dataIndex <= newIndex) visualIndex = dataIndex - 1;
             }
             else if (originIndex > newIndex) {
-
-                if (
-                    dataIndex >= newIndex &&
-                    dataIndex < originIndex
-                ) {
-                    visualIndex = dataIndex + 1;
-                }
-
+                if (dataIndex >= newIndex && dataIndex < originIndex) visualIndex = dataIndex + 1;
             }
-
-
-            const offsetX =
-                (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
-
-            const offsetY =
-                (Math.floor(visualIndex / COLUMNS) -
-                 Math.floor(dataIndex / COLUMNS)) * CELL_H;
-
-
-            el.style.transform =
-                `translate(${offsetX}px, ${offsetY}px)`;
-
+            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+            const offsetY = (Math.floor(visualIndex / COLUMNS) - Math.floor(dataIndex / COLUMNS)) * CELL_H;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         });
-
     }
 
+    card.addEventListener("touchstart", function(event) {
+        if (event.touches.length !== 1) return;
 
-    card.addEventListener(
-        "touchstart",
-        function(event) {
+        const touch = event.touches[0];
+        startX = touch.clientX; startY = touch.clientY;
+        currentX = startX; currentY = startY;
 
-            if (event.touches.length !== 1) return;
+        getCellSizeAndColumns();
 
+        originIndex = Number(card.dataset.index);
+        currentIndex = originIndex;
 
-            const touch = event.touches[0];
+        const rect = card.getBoundingClientRect();
+        originLeft = rect.left; originTop = rect.top;
 
-            startX = touch.clientX;
-            startY = touch.clientY;
+        isLongPress = false;
 
-            currentX = startX;
-            currentY = startY;
+        if (enableLongPress) {
+            longPressTimer = setTimeout(function() {
+                isLongPress = true;
+                card.classList.add("actions-visible");
+                if (navigator.vibrate) navigator.vibrate(15);
+            }, LONG_PRESS_MS);
+        }
+    }, { passive: true });
 
+    card.addEventListener("touchmove", function(event) {
+        if (event.touches.length !== 1) return;
 
-            getCellSizeAndColumns();
+        const touch = event.touches[0];
+        currentX = touch.clientX; currentY = touch.clientY;
 
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
 
-            originIndex = Number(card.dataset.index);
-            currentIndex = originIndex;
-
-
-            const rect = card.getBoundingClientRect();
-
-            originLeft = rect.left;
-            originTop = rect.top;
-
-
-            isLongPress = false;
-
-            if (enableLongPress) {
-
-                longPressTimer = setTimeout(
-                    function() {
-
-                        isLongPress = true;
-
-                        card.classList.add("actions-visible");
-
-                        if (navigator.vibrate) {
-                            navigator.vibrate(15);
-                        }
-
-                    },
-                    LONG_PRESS_MS
-                );
-
-            }
-
-        },
-        { passive: true }
-    );
-
-
-    card.addEventListener(
-        "touchmove",
-        function(event) {
-
-            if (event.touches.length !== 1) return;
-
-
-            const touch = event.touches[0];
-
-            currentX = touch.clientX;
-            currentY = touch.clientY;
-
-
-            const diffX = currentX - startX;
-            const diffY = currentY - startY;
-
-
-            if (
-                !isLongPress &&
-                longPressTimer &&
-                (
-                    Math.abs(diffX) > MOVE_THRESHOLD ||
-                    Math.abs(diffY) > MOVE_THRESHOLD
-                )
-            ) {
-
-                clearTimeout(longPressTimer);
-
-                longPressTimer = null;
-
-            }
-
-
-            if (card.classList.contains("actions-visible")) return;
-
-
-            if (!dragging) {
-
-                if (
-                    Math.abs(diffX) < DRAG_START_THRESHOLD &&
-                    Math.abs(diffY) < DRAG_START_THRESHOLD
-                ) {
-                    return;
-                }
-
-                dragging = true;
-
-                card.classList.add("dragging");
-
-                const grid = getGrid();
-
-                if (grid) {
-                    grid.classList.add("dragging-active");
-                }
-
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-
-            }
-
-
-            card.style.transform =
-                `translate(${diffX}px, ${diffY}px) scale(1.05)`;
-
-
-            const grid = getGrid();
-
-            if (!grid) return;
-
-            const containerRect =
-                grid.getBoundingClientRect();
-
-            const relX =
-                (originLeft + diffX) - containerRect.left;
-
-            const relY =
-                (originTop + diffY) - containerRect.top;
-
-
-            const col =
-                Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
-
-            const row = Math.max(0, Math.floor(relY / CELL_H));
-
-            const targetIndex = row * COLUMNS + col;
-
-
-            const array = options.getArray();
-
-            const maxIndex = array.length - 1;
-
-
-            let clampedTarget =
-                Math.max(0, Math.min(maxIndex, targetIndex));
-
-
-            if (clampedTarget === currentIndex) return;
-
-
-            currentIndex = clampedTarget;
-
-
-            updateOtherCardsVisual(clampedTarget);
-
-        },
-        { passive: true }
-    );
-
-
-    function finishDrag() {
-
-        console.log("[drag] finishDrag",
-            "dragging:", dragging,
-            "originIndex:", originIndex,
-            "currentIndex:", currentIndex);
-
-        if (!dragging) return;
-
-        dragging = false;
-
-        card.style.transform = "";
-        card.classList.remove("dragging");
-
-        resetOtherCardsTransform();
-
-        const grid = getGrid();
-
-        if (grid) {
-            grid.classList.remove("dragging-active");
+        if (!isLongPress && longPressTimer && (Math.abs(diffX) > MOVE_THRESHOLD || Math.abs(diffY) > MOVE_THRESHOLD)) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
         }
 
+        if (card.classList.contains("actions-visible")) return;
+
+        if (!dragging) {
+            if (Math.abs(diffX) < DRAG_START_THRESHOLD && Math.abs(diffY) < DRAG_START_THRESHOLD) return;
+            dragging = true;
+            card.classList.add("dragging");
+            const grid = getGrid();
+            if (grid) grid.classList.add("dragging-active");
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+
+        card.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.05)`;
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        const containerRect = grid.getBoundingClientRect();
+        const relX = (originLeft + diffX) - containerRect.left;
+        const relY = (originTop + diffY) - containerRect.top;
+
+        const col = Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
+        const row = Math.max(0, Math.floor(relY / CELL_H));
+        const targetIndex = row * COLUMNS + col;
+
+        const array = options.getArray();
+        const maxIndex = array.length - 1;
+        let clampedTarget = Math.max(0, Math.min(maxIndex, targetIndex));
+
+        if (clampedTarget === currentIndex) return;
+        currentIndex = clampedTarget;
+        updateOtherCardsVisual(clampedTarget);
+    }, { passive: true });
+
+    function finishDrag() {
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        if (!dragging) return;
+        dragging = false;
 
         const array = options.getArray();
 
-        console.log("[drag] array BEFORE:", array.slice());
+        if (currentIndex !== originIndex) {
+            moveArrayItem(array, originIndex, currentIndex);
+            options.onSave();
+        }
 
+        card.style.transform = "";
+        card.classList.remove("dragging");
+        resetOtherCardsTransform();
+
+        const grid = getGrid();
+        if (grid) grid.classList.remove("dragging-active");
 
         if (currentIndex !== originIndex) {
-
-            const result = moveArrayItem(array, originIndex, currentIndex);
-
-            console.log("[drag] moved:", result);
-            console.log("[drag] array AFTER:", array.slice());
-
-            options.onSave();
-
+            options.onRender();
+            if (options.onAfterMove) options.onAfterMove();
         }
-        else {
-            console.log("[drag] no move (same index)");
-        }
-
-
-        options.onRender();
-
-        if (options.onAfterMove) {
-            options.onAfterMove();
-        }
-
     }
 
-
     card.addEventListener("touchend", finishDrag);
-
     card.addEventListener("touchcancel", finishDrag);
 
 }
 
+
+
 /* =========================
-   분석 설정 카드 전용 드래그
-   (analysis-card-grid 4열, 카드 5개 대응)
+   분석 설정 카드 드래그 (전용)
 ========================= */
 
 function initializeAnalysisCardDrag(card, options) {
 
-    let startX = 0;
-    let startY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
+    let startX = 0, startY = 0, currentX = 0, currentY = 0;
     let dragging = false;
-
-    let CELL_W = 100;
-    let CELL_H = 100;
-
-    let originIndex = 0;
-    let originLeft = 0;
-    let originTop = 0;
-
-    let currentIndex = 0;
+    let CELL_W = 100, CELL_H = 100;
+    let originIndex = 0, originLeft = 0, originTop = 0, currentIndex = 0;
 
     const DRAG_START_THRESHOLD = 18;
     const COLUMNS = 4;
 
-
-    function getGrid() {
-        return card.parentElement;
-    }
-
+    function getGrid() { return card.parentElement; }
 
     function getCellSize() {
-
         const grid = getGrid();
         if (!grid) return;
 
         let firstCard = null;
-
         for (const child of grid.children) {
-
-            if (!child.classList.contains("add-card")) {
-                firstCard = child;
-                break;
-            }
-
+            if (!child.classList.contains("add-card")) { firstCard = child; break; }
         }
-
         if (!firstCard) return;
 
         const rect = firstCard.getBoundingClientRect();
-
         let gap = 8;
 
         if (grid.children.length > 1) {
-
-            const firstRect =
-                grid.children[0].getBoundingClientRect();
-
-            const secondRect =
-                grid.children[1].getBoundingClientRect();
-
+            const firstRect = grid.children[0].getBoundingClientRect();
+            const secondRect = grid.children[1].getBoundingClientRect();
             if (Math.abs(firstRect.top - secondRect.top) < 5) {
                 gap = secondRect.left - firstRect.right;
             }
-
         }
 
         CELL_W = rect.width + gap;
         CELL_H = rect.height + gap;
-
     }
-
 
     function resetOtherCardsTransform() {
-
         const grid = getGrid();
         if (!grid) return;
-
-        Array.from(grid.children).forEach(el => {
-
-            if (el !== card) {
-                el.style.transform = "";
-            }
-
-        });
-
+        Array.from(grid.children).forEach(el => { if (el !== card) el.style.transform = ""; });
     }
-
 
     function updateOtherCardsVisual(newIndex) {
+        const grid = getGrid();
+        if (!grid) return;
+        const cards = Array.from(grid.children).filter(el => el !== card);
+        cards.forEach(el => {
+            const dataIndex = Number(el.dataset.index);
+            if (isNaN(dataIndex)) return;
+            let visualIndex = dataIndex;
+            if (originIndex < newIndex) {
+                if (dataIndex > originIndex && dataIndex <= newIndex) visualIndex = dataIndex - 1;
+            }
+            else if (originIndex > newIndex) {
+                if (dataIndex >= newIndex && dataIndex < originIndex) visualIndex = dataIndex + 1;
+            }
+            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+            const offsetY = (Math.floor(visualIndex / COLUMNS) - Math.floor(dataIndex / COLUMNS)) * CELL_H;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        });
+    }
+
+    card.addEventListener("touchstart", function(event) {
+        if (event.touches.length !== 1) return;
+
+        const touch = event.touches[0];
+        startX = touch.clientX; startY = touch.clientY;
+        currentX = startX; currentY = startY;
+
+        getCellSize();
+
+        originIndex = Number(card.dataset.index);
+        currentIndex = originIndex;
+
+        const rect = card.getBoundingClientRect();
+        originLeft = rect.left; originTop = rect.top;
+    }, { passive: true });
+
+    card.addEventListener("touchmove", function(event) {
+        if (event.touches.length !== 1) return;
+
+        const touch = event.touches[0];
+        currentX = touch.clientX; currentY = touch.clientY;
+
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
+
+        if (!dragging) {
+            if (Math.abs(diffX) < DRAG_START_THRESHOLD && Math.abs(diffY) < DRAG_START_THRESHOLD) return;
+            dragging = true;
+            card.classList.add("dragging");
+            const grid = getGrid();
+            if (grid) grid.classList.add("dragging-active");
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+
+        card.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.05)`;
 
         const grid = getGrid();
         if (!grid) return;
 
-        const cards =
-            Array.from(grid.children).filter(el => el !== card);
-
-        cards.forEach(el => {
-
-            const dataIndex = Number(el.dataset.index);
-
-            if (isNaN(dataIndex)) return;
-
-
-            let visualIndex = dataIndex;
-
-
-            if (originIndex < newIndex) {
-
-                if (dataIndex > originIndex && dataIndex <= newIndex) {
-                    visualIndex = dataIndex - 1;
-                }
-
-            }
-            else if (originIndex > newIndex) {
-
-                if (dataIndex >= newIndex && dataIndex < originIndex) {
-                    visualIndex = dataIndex + 1;
-                }
-
-            }
-
-
-            const offsetX =
-                (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
-
-            const offsetY =
-                (Math.floor(visualIndex / COLUMNS) -
-                 Math.floor(dataIndex / COLUMNS)) * CELL_H;
-
-
-            el.style.transform =
-                `translate(${offsetX}px, ${offsetY}px)`;
-
-        });
-
-    }
-
-
-    card.addEventListener(
-        "touchstart",
-        function(event) {
-
-            if (event.touches.length !== 1) return;
-
-            const touch = event.touches[0];
-
-            startX = touch.clientX;
-            startY = touch.clientY;
-
-            currentX = startX;
-            currentY = startY;
-
-
-            getCellSize();
-
-
-            originIndex = Number(card.dataset.index);
-            currentIndex = originIndex;
-
-
-            const rect = card.getBoundingClientRect();
-
-            originLeft = rect.left;
-            originTop = rect.top;
-
-        },
-        { passive: true }
-    );
-
-
-    card.addEventListener(
-        "touchmove",
-        function(event) {
-
-            if (event.touches.length !== 1) return;
-
-            const touch = event.touches[0];
-
-            currentX = touch.clientX;
-            currentY = touch.clientY;
-
-
-            const diffX = currentX - startX;
-            const diffY = currentY - startY;
-
-
-            if (!dragging) {
-
-                if (
-                    Math.abs(diffX) < DRAG_START_THRESHOLD &&
-                    Math.abs(diffY) < DRAG_START_THRESHOLD
-                ) {
-                    return;
-                }
-
-                dragging = true;
-
-                card.classList.add("dragging");
-
-                const grid = getGrid();
-
-                if (grid) {
-                    grid.classList.add("dragging-active");
-                }
-
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-
-            }
-
-
-            card.style.transform =
-                `translate(${diffX}px, ${diffY}px) scale(1.05)`;
-
-
-            const grid = getGrid();
-            if (!grid) return;
-
-            const containerRect =
-                grid.getBoundingClientRect();
-
-            const relX =
-                (originLeft + diffX) - containerRect.left;
-
-            const relY =
-                (originTop + diffY) - containerRect.top;
-
-
-            const col =
-                Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
-
-            const row = Math.max(0, Math.floor(relY / CELL_H));
-
-            const targetIndex = row * COLUMNS + col;
-
-
-            const array = options.getArray();
-
-            const maxIndex = array.length - 1;
-
-            const clampedTarget =
-                Math.max(0, Math.min(maxIndex, targetIndex));
-
-
-            if (clampedTarget === currentIndex) return;
-
-            currentIndex = clampedTarget;
-
-
-            updateOtherCardsVisual(clampedTarget);
-
-        },
-        { passive: true }
-    );
-
+        const containerRect = grid.getBoundingClientRect();
+        const relX = (originLeft + diffX) - containerRect.left;
+        const relY = (originTop + diffY) - containerRect.top;
+
+        const col = Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
+        const row = Math.max(0, Math.floor(relY / CELL_H));
+        const targetIndex = row * COLUMNS + col;
+
+        const array = options.getArray();
+        const maxIndex = array.length - 1;
+        const clampedTarget = Math.max(0, Math.min(maxIndex, targetIndex));
+
+        if (clampedTarget === currentIndex) return;
+        currentIndex = clampedTarget;
+        updateOtherCardsVisual(clampedTarget);
+    }, { passive: true });
 
     function finishDrag() {
-
         if (!dragging) return;
-
         dragging = false;
-
 
         card.style.transform = "";
         card.classList.remove("dragging");
-
         resetOtherCardsTransform();
 
         const grid = getGrid();
-
-        if (grid) {
-            grid.classList.remove("dragging-active");
-        }
-
+        if (grid) grid.classList.remove("dragging-active");
 
         const array = options.getArray();
 
-
         if (currentIndex !== originIndex) {
-
             moveArrayItem(array, originIndex, currentIndex);
-
             options.onSave();
-
         }
-
 
         options.onRender();
-
-        if (options.onAfterMove) {
-            options.onAfterMove();
-        }
-
+        if (options.onAfterMove) options.onAfterMove();
     }
 
-
     card.addEventListener("touchend", finishDrag);
-
     card.addEventListener("touchcancel", finishDrag);
 
 }

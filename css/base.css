@@ -1645,3 +1645,96 @@ input {
 .transaction-amount.income .transaction-amount-krw {
     color: #3d78d8;
 }
+
+/* =========================
+   통화 사용 설정 카드
+========================= */
+
+.currency-usage-card .usage-setting-card-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.currency-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.currency-label-text {
+    font-weight: 600;
+    color: #222;
+}
+
+
+/* =========================
+   통화 분석 (분석 탭)
+========================= */
+
+.currency-analysis-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.currency-analysis-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+}
+
+.currency-analysis-flag {
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.currency-analysis-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.currency-analysis-code {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+}
+
+.currency-analysis-detail {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.currency-analysis-balance {
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+    flex-shrink: 0;
+    color: #222;
+}
+
+.currency-analysis-balance.positive { color: #3d78d8; }
+.currency-analysis-balance.negative { color: #e05252; }
+.currency-analysis-balance.zero { color: #999; }
+
+.analysis-detail-foreign {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+.analysis-detail-krw {
+    font-size: 14px;
+    font-weight: 700;
+}

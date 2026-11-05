@@ -188,8 +188,7 @@ if (
 
 
 /* =========================
-   분석 그룹 순서 마이그레이션
-   (balance 추가 + 잔액 → 월별 → 카테고리 → 결제수단 → 주체)
+   분석 그룹 순서 마이그레이션 (balance + currency)
 ========================= */
 
 const validAnalysisGroupKeys = [
@@ -197,12 +196,14 @@ const validAnalysisGroupKeys = [
     "category",
     "payment",
     "subject",
-    "balance"
+    "balance",
+    "currency"
 ];
 
 
-const DEFAULT_ANALYSIS_ORDER_V2 = [
+const DEFAULT_ANALYSIS_ORDER_V3 = [
     "balance",
+    "currency",
     "monthlyChart",
     "category",
     "payment",
@@ -210,15 +211,15 @@ const DEFAULT_ANALYSIS_ORDER_V2 = [
 ];
 
 
-if (!settings.analysisGroupOrderMigratedV2) {
+if (!settings.analysisGroupOrderMigratedV3) {
 
-    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V2.slice();
-    settings.analysisGroupOrderMigratedV2 = true;
+    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V3.slice();
+    settings.analysisGroupOrderMigratedV3 = true;
 
 }
 else if (!Array.isArray(settings.analysisGroupOrder)) {
 
-    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V2.slice();
+    settings.analysisGroupOrder = DEFAULT_ANALYSIS_ORDER_V3.slice();
 
 }
 else {
@@ -238,6 +239,10 @@ else {
 
 if (settings.analysisBalanceEnabled === undefined) {
     settings.analysisBalanceEnabled = true;
+}
+
+if (settings.analysisCurrencyEnabled === undefined) {
+    settings.analysisCurrencyEnabled = true;
 }
 
 
@@ -470,7 +475,7 @@ function getDefaultSettings() {
             "currency"
         ],
 
-        analysisGroupOrderMigratedV2: true,
+        analysisGroupOrderMigratedV3: true,
 
         monthlyChartEnabled: true,
 
