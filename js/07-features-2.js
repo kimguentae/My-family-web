@@ -152,26 +152,34 @@ function renderUsageCurrencySettings() {
 
     grid.innerHTML = "";
 
-    /* settings.currencies 순서대로 */
-
     const order =
         Array.isArray(settings.currencies) && settings.currencies.length > 0
             ? settings.currencies
             : ["KRW"];
 
 
-    /* 모든 7개 통화를 보여주되, ON/OFF는 currencies 배열 포함 여부 */
+    /* ON된 통화 먼저, 그다음 OFF 통화 */
 
-    CURRENCY_LIST.forEach(meta => {
+    const onCodes = order.slice();
 
-        const isOn = order.includes(meta.code);
+    const offCodes = CURRENCY_LIST
+        .filter(meta => !onCodes.includes(meta.code))
+        .map(meta => meta.code);
 
-        /* 순서: ON 먼저, 그다음 OFF (원래 순서 유지) */
+
+    [...onCodes, ...offCodes].forEach((code) => {
+
+        const meta = getCurrencyMeta(code);
+        const isOn = onCodes.includes(code);
 
         const card = document.createElement("div");
         card.className = "usage-setting-card currency-usage-card";
-        card.dataset.code = meta.code;
-        card.dataset.index = order.indexOf(meta.code);
+        card.dataset.code = code;
+        card.dataset.index = isOn ? onCodes.indexOf(code) : -1;
+
+        if (!isOn) {
+            card.classList.add("currency-off");
+        }
 
         const labelElement = document.createElement("div");
         labelElement.className = "usage-setting-card-label";
@@ -186,16 +194,12 @@ function renderUsageCurrencySettings() {
         checkbox.type = "checkbox";
         checkbox.checked = isOn;
 
-        /* 원화는 무조건 ON (해제 불가) */
-
         if (meta.code === "KRW") {
             checkbox.disabled = true;
         }
 
         checkbox.onchange = function() {
-
             toggleCurrencyUsage(meta.code, checkbox.checked);
-
         };
 
         const slider = document.createElement("span");
@@ -209,9 +213,10 @@ function renderUsageCurrencySettings() {
 
         grid.appendChild(card);
 
-        /* 원화 제외 드래그 가능 */
 
-        if (meta.code !== "KRW") {
+        /* 원화가 아니고 ON 상태면 드래그 가능 */
+
+        if (meta.code !== "KRW" && isOn) {
             initializeCurrencyUsageDrag(card, meta.code);
         }
 
@@ -222,7 +227,7 @@ function renderUsageCurrencySettings() {
 
 function toggleCurrencyUsage(code, enabled) {
 
-    if (code === "KRW") return;   /* 원화는 항상 ON */
+    if (code === "KRW") return;
 
     let list =
         Array.isArray(settings.currencies)
@@ -247,21 +252,230 @@ function toggleCurrencyUsage(code, enabled) {
     settings.currencies = list;
 
 
-    /* 현재 선택 통화가 꺼졌으면 원화로 */
-
     if (!list.includes(currentCurrency)) {
-
         currentCurrency = "KRW";
         settings.selectedCurrency = "KRW";
-
         applyCurrencyToInputUI();
-
     }
 
 
     saveSettings();
 
     renderUsageCurrencySettings();
+
+}
+
+
+/* =========================
+   통화 카드 순서 변경 (드래그)
+========================= */
+
+function initializeCurrencyUsageDrag(card, code) {
+
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let originIndex = 0;
+    let currentIndex = 0;
+    let CELL_W = 100;
+    let CELL_H = 100;
+
+    const DRAG_START_THRESHOLD = 15;
+    const COLUMNS = 4;
+
+
+    function getGrid() {
+        return card.parentElement;
+    }
+
+
+    function getCellSize() {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        let firstCard = null;
+
+        for (const child of grid.children) {
+            if (!child.classList.contains("add-card")) {
+                firstCard = child;
+                break;
+            }
+        }
+
+        if (!firstCard) return;
+
+        const rect = firstCard.getBoundingClientRect();
+
+        let gap = 8;
+
+        if (grid.children.length > 1) {
+            const firstRect = grid.children[0].getBoundingClientRect();
+            const secondRect = grid.children[1].getBoundingClientRect();
+            if (Math.abs(firstRect.top - secondRect.top) < 5) {
+                gap = secondRect.left - firstRect.right;
+            }
+        }
+
+        CELL_W = rect.width + gap;
+        CELL_H = rect.height + gap;
+
+    }
+
+
+    function resetOtherCardsTransform() {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        Array.from(grid.children).forEach(el => {
+            if (el !== card) el.style.transform = "";
+        });
+
+    }
+
+
+    function updateOtherCardsVisual(newIndex) {
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        /* ON인 카드들만 밀어내기 */
+
+        const cards = Array.from(grid.children).filter(el => {
+            if (el === card) return false;
+            if (el.classList.contains("currency-off")) return false;
+            return true;
+        });
+
+        cards.forEach(el => {
+
+            const dataIndex = Number(el.dataset.index);
+            if (isNaN(dataIndex) || dataIndex < 0) return;
+
+            let visualIndex = dataIndex;
+
+            if (originIndex < newIndex) {
+                if (dataIndex > originIndex && dataIndex <= newIndex) {
+                    visualIndex = dataIndex - 1;
+                }
+            }
+            else if (originIndex > newIndex) {
+                if (dataIndex >= newIndex && dataIndex < originIndex) {
+                    visualIndex = dataIndex + 1;
+                }
+            }
+
+            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+            const offsetY = (Math.floor(visualIndex / COLUMNS) - Math.floor(dataIndex / COLUMNS)) * CELL_H;
+
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
+        });
+
+    }
+
+
+    card.addEventListener("touchstart", function(event) {
+
+        if (event.touches.length !== 1) return;
+
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+
+        getCellSize();
+
+        originIndex = Number(card.dataset.index);
+        currentIndex = originIndex;
+
+    }, { passive: true });
+
+
+    card.addEventListener("touchmove", function(event) {
+
+        if (event.touches.length !== 1) return;
+
+        const touch = event.touches[0];
+
+        const diffX = touch.clientX - startX;
+        const diffY = touch.clientY - startY;
+
+        if (!dragging) {
+            if (Math.abs(diffX) < DRAG_START_THRESHOLD && Math.abs(diffY) < DRAG_START_THRESHOLD) {
+                return;
+            }
+            dragging = true;
+            card.classList.add("dragging");
+            const grid = getGrid();
+            if (grid) grid.classList.add("dragging-active");
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+
+        card.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.05)`;
+
+        const grid = getGrid();
+        if (!grid) return;
+
+        const containerRect = grid.getBoundingClientRect();
+
+        const relX = (card.getBoundingClientRect().left - diffX + diffX) - containerRect.left + diffX;
+        const relY = (card.getBoundingClientRect().top - diffY + diffY) - containerRect.top + diffY;
+
+        /* 카드 원래 위치 + 이동량 기준 */
+
+        const originRect = card.getBoundingClientRect();
+        const baseLeft = originRect.left - diffX;
+        const baseTop = originRect.top - diffY;
+
+        const currentLeft = baseLeft + diffX;
+        const currentTop = baseTop + diffY;
+
+        const col = Math.max(0, Math.min(COLUMNS - 1, Math.round((currentLeft - containerRect.left) / CELL_W)));
+        const row = Math.max(0, Math.round((currentTop - containerRect.top) / CELL_H));
+
+        const targetIndex = row * COLUMNS + col;
+
+        const onCount = settings.currencies.length;
+
+        let clampedTarget = Math.max(0, Math.min(onCount - 1, targetIndex));
+
+        if (clampedTarget === currentIndex) return;
+        currentIndex = clampedTarget;
+
+        updateOtherCardsVisual(clampedTarget);
+
+    }, { passive: true });
+
+
+    function finishDrag() {
+
+        if (!dragging) return;
+        dragging = false;
+
+        card.style.transform = "";
+        card.classList.remove("dragging");
+        resetOtherCardsTransform();
+
+        const grid = getGrid();
+        if (grid) grid.classList.remove("dragging-active");
+
+
+        if (currentIndex !== originIndex) {
+
+            moveArrayItem(settings.currencies, originIndex, currentIndex);
+
+            saveSettings();
+
+            renderUsageCurrencySettings();
+
+        }
+
+    }
+
+
+    card.addEventListener("touchend", finishDrag);
+    card.addEventListener("touchcancel", finishDrag);
 
 }
 
@@ -367,6 +581,7 @@ function renderAnalysisGroupOrderList() {
     container.classList.remove("category-manage-list");
     container.classList.add("analysis-card-grid");
 
+
     const DEFAULT_ORDER = [
         "balance",
         "currency",
@@ -376,11 +591,26 @@ function renderAnalysisGroupOrderList() {
         "subject"
     ];
 
-    const order =
-        Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 6
-            ? settings.analysisGroupOrder
-            : DEFAULT_ORDER;
+
+    /* settings.analysisGroupOrder 정규화 (6개 강제) */
+
+    const validKeys = Object.keys(analysisGroupMeta);
+
+    let order =
+        Array.isArray(settings.analysisGroupOrder)
+            ? settings.analysisGroupOrder.filter(key => validKeys.includes(key))
+            : [];
+
+
+    /* 누락 키 추가 */
+
+    validKeys.forEach(key => {
+        if (!order.includes(key)) order.push(key);
+    });
+
+
+    settings.analysisGroupOrder = order;
+
 
     order.forEach((key, index) => {
 
@@ -459,20 +689,12 @@ function reorderAnalysisGroupsInDOM() {
         currency: document.getElementById("analysisCurrencyGroup")
     };
 
-    const DEFAULT_ORDER = [
-        "balance",
-        "currency",
-        "monthlyChart",
-        "category",
-        "payment",
-        "subject"
-    ];
 
     const order =
-        Array.isArray(settings.analysisGroupOrder) &&
-        settings.analysisGroupOrder.length === 6
+        Array.isArray(settings.analysisGroupOrder)
             ? settings.analysisGroupOrder
-            : DEFAULT_ORDER;
+            : ["balance", "currency", "monthlyChart", "category", "payment", "subject"];
+
 
     order.forEach(key => {
         const element = groupElements[key];
