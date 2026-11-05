@@ -1769,18 +1769,3 @@ input {
 #usageCurrencyGrid.dragging-active .currency-usage-card:not(.dragging) {
     transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-
-/* 드래그 중 */
-
-.currency-usage-card.dragging {
-    z-index: 50;
-    opacity: 0.98;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
-    transition: box-shadow 0.15s ease;
-}
-
-/* 다른 카드 밀어내기 */
-
-#usageCurrencyGrid.dragging-active .currency-usage-card:not(.dragging) {
-    transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
