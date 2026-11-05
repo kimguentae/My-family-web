@@ -1740,19 +1740,15 @@ input {
 }
 
 /* =========================
-   통화 사용 설정 - OFF 상태 & 드래그
+   통화 사용 설정 - OFF / 드래그
 ========================= */
 
 .currency-usage-card {
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition: opacity 0.15s ease;
 }
 
 .currency-usage-card.currency-off {
     opacity: 0.55;
-}
-
-.currency-usage-card.currency-off .usage-setting-card-label {
-    color: #999;
 }
 
 .currency-usage-card.currency-off .currency-label-text {
@@ -1760,7 +1756,18 @@ input {
 }
 
 .currency-usage-card.currency-off .currency-flag {
-    filter: grayscale(0.5);
+    filter: grayscale(0.6);
+}
+
+.currency-usage-card.dragging {
+    z-index: 50;
+    opacity: 0.98;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+    transition: box-shadow 0.15s ease;
+}
+
+#usageCurrencyGrid.dragging-active .currency-usage-card:not(.dragging) {
+    transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* 드래그 중 */

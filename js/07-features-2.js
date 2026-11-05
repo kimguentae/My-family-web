@@ -152,15 +152,29 @@ function renderUsageCurrencySettings() {
 
     grid.innerHTML = "";
 
-    const order =
+
+    /* 원화는 항상 첫 번째 */
+
+    let list =
         Array.isArray(settings.currencies) && settings.currencies.length > 0
-            ? settings.currencies
+            ? settings.currencies.slice()
             : ["KRW"];
 
 
-    /* ON된 통화 먼저, 그다음 OFF 통화 */
+    if (!list.includes("KRW")) {
+        list.unshift("KRW");
+    }
+    else {
+        /* 원화를 맨 앞으로 */
 
-    const onCodes = order.slice();
+        list = ["KRW", ...list.filter(c => c !== "KRW")];
+    }
+
+
+    settings.currencies = list;
+
+
+    const onCodes = list.slice();
 
     const offCodes = CURRENCY_LIST
         .filter(meta => !onCodes.includes(meta.code))
@@ -268,6 +282,8 @@ function toggleCurrencyUsage(code, enabled) {
 
 /* =========================
    통화 카드 순서 변경 (드래그)
+   - 원화 제외, ON 카드만 드래그 가능
+   - 원화는 항상 첫 번째 유지
 ========================= */
 
 function initializeCurrencyUsageDrag(card, code) {
@@ -275,6 +291,8 @@ function initializeCurrencyUsageDrag(card, code) {
     let startX = 0;
     let startY = 0;
     let dragging = false;
+    let originLeft = 0;
+    let originTop = 0;
     let originIndex = 0;
     let currentIndex = 0;
     let CELL_W = 100;
@@ -323,35 +341,34 @@ function initializeCurrencyUsageDrag(card, code) {
     }
 
 
-    function resetOtherCardsTransform() {
+    function resetTransforms() {
 
         const grid = getGrid();
         if (!grid) return;
 
         Array.from(grid.children).forEach(el => {
-            if (el !== card) el.style.transform = "";
+            el.style.transform = "";
         });
 
     }
 
 
-    function updateOtherCardsVisual(newIndex) {
+    function updateVisuals(newIndex) {
 
         const grid = getGrid();
         if (!grid) return;
 
-        /* ON인 카드들만 밀어내기 */
+        /* ON 카드들만 (원화 제외, .currency-off 제외) */
 
-        const cards = Array.from(grid.children).filter(el => {
-            if (el === card) return false;
-            if (el.classList.contains("currency-off")) return false;
-            return true;
-        });
+        Array.from(grid.children).forEach(el => {
 
-        cards.forEach(el => {
+            if (el === card) return;
+            if (el.classList.contains("currency-off")) return;
 
             const dataIndex = Number(el.dataset.index);
+
             if (isNaN(dataIndex) || dataIndex < 0) return;
+
 
             let visualIndex = dataIndex;
 
@@ -366,10 +383,16 @@ function initializeCurrencyUsageDrag(card, code) {
                 }
             }
 
-            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
-            const offsetY = (Math.floor(visualIndex / COLUMNS) - Math.floor(dataIndex / COLUMNS)) * CELL_H;
 
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+
+            const offsetY =
+                (Math.floor(visualIndex / COLUMNS) -
+                 Math.floor(dataIndex / COLUMNS)) * CELL_H;
+
+
+            el.style.transform =
+                `translate(${offsetX}px, ${offsetY}px)`;
 
         });
 
@@ -381,6 +404,7 @@ function initializeCurrencyUsageDrag(card, code) {
         if (event.touches.length !== 1) return;
 
         const touch = event.touches[0];
+
         startX = touch.clientX;
         startY = touch.clientY;
 
@@ -388,6 +412,10 @@ function initializeCurrencyUsageDrag(card, code) {
 
         originIndex = Number(card.dataset.index);
         currentIndex = originIndex;
+
+        const rect = card.getBoundingClientRect();
+        originLeft = rect.left;
+        originTop = rect.top;
 
     }, { passive: true });
 
@@ -401,6 +429,7 @@ function initializeCurrencyUsageDrag(card, code) {
         const diffX = touch.clientX - startX;
         const diffY = touch.clientY - startY;
 
+
         if (!dragging) {
             if (Math.abs(diffX) < DRAG_START_THRESHOLD && Math.abs(diffY) < DRAG_START_THRESHOLD) {
                 return;
@@ -412,38 +441,44 @@ function initializeCurrencyUsageDrag(card, code) {
             if (navigator.vibrate) navigator.vibrate(10);
         }
 
+
         card.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.05)`;
+
 
         const grid = getGrid();
         if (!grid) return;
 
         const containerRect = grid.getBoundingClientRect();
 
-        const relX = (card.getBoundingClientRect().left - diffX + diffX) - containerRect.left + diffX;
-        const relY = (card.getBoundingClientRect().top - diffY + diffY) - containerRect.top + diffY;
 
-        /* 카드 원래 위치 + 이동량 기준 */
+        /* 카드 원래 좌상단(originLeft/Top) + 이동량 기준 */
 
-        const originRect = card.getBoundingClientRect();
-        const baseLeft = originRect.left - diffX;
-        const baseTop = originRect.top - diffY;
+        const currentLeft = originLeft + diffX;
+        const currentTop = originTop + diffY;
 
-        const currentLeft = baseLeft + diffX;
-        const currentTop = baseTop + diffY;
 
-        const col = Math.max(0, Math.min(COLUMNS - 1, Math.round((currentLeft - containerRect.left) / CELL_W)));
-        const row = Math.max(0, Math.round((currentTop - containerRect.top) / CELL_H));
+        const relX = currentLeft - containerRect.left;
+        const relY = currentTop - containerRect.top;
+
+
+        const col = Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
+        const row = Math.max(0, Math.floor(relY / CELL_H));
 
         const targetIndex = row * COLUMNS + col;
 
+
         const onCount = settings.currencies.length;
 
-        let clampedTarget = Math.max(0, Math.min(onCount - 1, targetIndex));
+        /* 원화 인덱스 0은 제외 → 최소 1 */
+
+        let clampedTarget = Math.max(1, Math.min(onCount - 1, targetIndex));
+
 
         if (clampedTarget === currentIndex) return;
+
         currentIndex = clampedTarget;
 
-        updateOtherCardsVisual(clampedTarget);
+        updateVisuals(clampedTarget);
 
     }, { passive: true });
 
@@ -455,13 +490,15 @@ function initializeCurrencyUsageDrag(card, code) {
 
         card.style.transform = "";
         card.classList.remove("dragging");
-        resetOtherCardsTransform();
+        resetTransforms();
 
         const grid = getGrid();
         if (grid) grid.classList.remove("dragging-active");
 
 
         if (currentIndex !== originIndex) {
+
+            /* 원화는 항상 index 0 유지 */
 
             moveArrayItem(settings.currencies, originIndex, currentIndex);
 
@@ -572,109 +609,99 @@ const analysisGroupMeta = {
 };
 
 
-function renderAnalysisGroupOrderList() {
+function renderAnalysis() {
 
-    const container = document.getElementById("analysisGroupOrderList");
-    if (!container) return;
+    const startInput = document.getElementById("analysisStartDate");
+    const endInput = document.getElementById("analysisEndDate");
 
-    container.innerHTML = "";
-    container.classList.remove("category-manage-list");
-    container.classList.add("analysis-card-grid");
+    if (!startInput || !endInput) return;
 
+    if (!startInput.value || !endInput.value) initializeAnalysisDates();
 
-    const DEFAULT_ORDER = [
-        "balance",
-        "currency",
-        "monthlyChart",
-        "category",
-        "payment",
-        "subject"
-    ];
+    const startDate = startInput.value;
+    const endDate = endInput.value;
 
+    if (!startDate || !endDate) return;
 
-    /* settings.analysisGroupOrder 정규화 (6개 강제) */
+    const transactions = getAnalysisTransactions();
+    const total = transactions.reduce((sum, t) => sum + getKRWAmount(t), 0);
 
-    const validKeys = Object.keys(analysisGroupMeta);
+    renderAnalysisOverallSummary(total, startDate, endDate);
 
-    let order =
-        Array.isArray(settings.analysisGroupOrder)
-            ? settings.analysisGroupOrder.filter(key => validKeys.includes(key))
-            : [];
+    updateAnalysisGroupVisibility();
 
+    /* ★ 콘텐츠 먼저 렌더 */
 
-    /* 누락 키 추가 */
+    renderAnalysisBalance(startDate, endDate);
+    renderAnalysisCurrency(startDate, endDate);
+    renderAnalysisMonthlyChart(transactions, startDate, endDate);
 
-    validKeys.forEach(key => {
-        if (!order.includes(key)) order.push(key);
-    });
+    /* 카테고리 */
+    const categoryList = document.getElementById("analysisCategoryList");
+    const categoryDetails = document.getElementById("analysisCategoryDetails");
 
-
-    settings.analysisGroupOrder = order;
-
-
-    order.forEach((key, index) => {
-
-        const meta = analysisGroupMeta[key];
-        if (!meta) return;
-
-        const card = document.createElement("div");
-        card.className = "analysis-setting-card";
-        card.dataset.index = index;
-        card.dataset.key = key;
-
-        const name = document.createElement("div");
-        name.className = "analysis-setting-card-name";
-        name.innerText = meta.label;
-
-        const switchLabel = document.createElement("label");
-        switchLabel.className = "switch";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = settings[meta.settingKey];
-
-        checkbox.onchange = function(event) {
-            event.stopPropagation();
-            settings[meta.settingKey] = checkbox.checked;
-            saveSettings();
-            updateAnalysisGroupVisibility();
-
-            const analysisScreen = document.getElementById("analysisScreen");
-            if (analysisScreen && analysisScreen.classList.contains("active")) {
-                renderAnalysis();
-            }
-        };
-
-        const slider = document.createElement("span");
-        slider.className = "slider";
-
-        switchLabel.appendChild(checkbox);
-        switchLabel.appendChild(slider);
-
-        card.appendChild(name);
-        card.appendChild(switchLabel);
-
-        container.appendChild(card);
-
-        initializeAnalysisCardDrag(card, {
-            getArray: () => settings.analysisGroupOrder,
-            onSave: function() {
-                saveSettings();
-                if (typeof pushLocalDataToSupabase === "function" && supabaseClient && currentUser) {
-                    pushLocalDataToSupabase();
-                }
-            },
-            onRender: renderAnalysisGroupOrderList,
-            onAfterMove: function() {
-                const analysisScreen = document.getElementById("analysisScreen");
-                if (analysisScreen && analysisScreen.classList.contains("active")) {
-                    renderAnalysis();
-                }
-            }
+    if (categoryList) {
+        categoryList.innerHTML = "";
+        const categoryData = getAnalysisCategoryData(transactions);
+        renderAnalysisGroupBar("analysisCategoryBar", "analysisCategoryBarInfo", categoryData, total);
+        sortAnalysisEntriesByAmount(categoryData).forEach(([name, amount]) => {
+            categoryList.appendChild(createAnalysisCategoryItem(name, amount, startDate, endDate));
         });
+    }
 
-    });
+    if (categoryDetails && !analysisSelectedCategory) {
+        categoryDetails.classList.remove("active");
+        categoryDetails.innerHTML = "";
+    }
 
+    /* 결제수단 */
+    const paymentList = document.getElementById("analysisPaymentList");
+    const paymentDetails = document.getElementById("analysisPaymentDetails");
+
+    if (paymentList) {
+        paymentList.innerHTML = "";
+        const paymentData = getAnalysisPaymentData(transactions);
+        renderAnalysisGroupBar("analysisPaymentBar", "analysisPaymentBarInfo", paymentData, total);
+        sortAnalysisEntriesByAmount(paymentData).forEach(([name, amount]) => {
+            paymentList.appendChild(createAnalysisItem(name, amount, () => selectAnalysisPayment(name), startDate, endDate));
+        });
+    }
+
+    if (paymentDetails && !analysisSelectedPayment) {
+        paymentDetails.classList.remove("active");
+        paymentDetails.innerHTML = "";
+    }
+
+    /* 주체 */
+    const subjectList = document.getElementById("analysisSubjectList");
+    const subjectDetails = document.getElementById("analysisSubjectDetails");
+
+    if (subjectList) {
+        subjectList.innerHTML = "";
+        const subjectData = getAnalysisSubjectData(transactions);
+        renderAnalysisGroupBar("analysisSubjectBar", "analysisSubjectBarInfo", subjectData, total);
+        sortAnalysisEntriesByAmount(subjectData).forEach(([name, amount]) => {
+            subjectList.appendChild(createAnalysisItem(name, amount, () => selectAnalysisSubject(name), startDate, endDate));
+        });
+    }
+
+    if (subjectDetails && !analysisSelectedSubject) {
+        subjectDetails.classList.remove("active");
+        subjectDetails.innerHTML = "";
+    }
+
+    if (analysisSelectedCategory)
+        renderAnalysisDetails("analysisCategoryDetails", transactions, "category", analysisSelectedCategory);
+
+    if (analysisSelectedPayment)
+        renderAnalysisDetails("analysisPaymentDetails", transactions, "payment", analysisSelectedPayment);
+
+    if (analysisSelectedSubject)
+        renderAnalysisDetails("analysisSubjectDetails", transactions, "subject", analysisSelectedSubject);
+
+    /* ★ 마지막에 순서 재배치 (모든 렌더링 후) */
+
+    reorderAnalysisGroupsInDOM();
 }
 
 
