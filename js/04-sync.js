@@ -78,6 +78,21 @@ async function loadUserDataFromSupabase() {
 
                 amount: Number(row.amount) || 0,
 
+                /* ★ 다중 통화 컬럼 */
+
+                currency: row.currency || "KRW",
+
+                exchange_rate: Number(row.exchange_rate) || 1,
+
+                amount_krw:
+                    typeof row.amount_krw === "number"
+                        ? row.amount_krw
+                        : Number(row.amount) || 0,
+
+                rate_date: row.rate_date || "",
+
+                rate_source: row.rate_source || "",
+
                 category: row.category || "",
 
                 memo: row.memo || "",
@@ -103,46 +118,17 @@ async function loadUserDataFromSupabase() {
 
         if (userRow.settings) {
 
-    const remoteSettings = userRow.settings;
+            settings = {
+                ...settings,
+                ...userRow.settings
+            };
 
-    /* 원격 settings 병합 */
+            localStorage.setItem(
+                "householdSettings",
+                JSON.stringify(settings)
+            );
 
-    settings = { ...settings, ...remoteSettings };
-
-
-    /* analysisGroupOrder가 유효하지 않으면 로컬 기본값 유지 */
-
-    const validKeys = ["monthlyChart", "category", "payment", "subject", "balance"];
-
-    const remoteOrder = remoteSettings.analysisGroupOrder;
-
-    const remoteIsValid =
-        Array.isArray(remoteOrder) &&
-        remoteOrder.length === 5 &&
-        validKeys.every(k => remoteOrder.includes(k));
-
-
-    if (!remoteIsValid) {
-
-        settings.analysisGroupOrder = [
-            "balance",
-            "monthlyChart",
-            "category",
-            "payment",
-            "subject"
-        ];
-
-        settings.analysisGroupOrderMigratedV3 = true;
-
-    }
-
-
-    localStorage.setItem(
-        "householdSettings",
-        JSON.stringify(settings)
-    );
-
-}
+        }
 
 
         if (userRow.categories) {
@@ -190,12 +176,24 @@ async function loadUserDataFromSupabase() {
     }
 
 
+    /* 현재 통화가 settings.currencies에 없으면 원화로 */
+
+    if (
+        !Array.isArray(settings.currencies) ||
+        !settings.currencies.includes(currentCurrency)
+    ) {
+
+        currentCurrency = "KRW";
+
+        settings.selectedCurrency = "KRW";
+
+    }
+
+
     setSyncStatus("동기화 완료");
 
     refreshAllScreens();
 
-
-    /* 계정 화면이 열려 있으면 이번 달 요약 갱신 */
 
     if (currentScreen === "accountSettings" && currentUser) {
         renderAccountMonthSummary();
@@ -244,6 +242,22 @@ async function pushLocalDataToSupabase() {
 
                     amount: transaction.amount,
 
+                    /* ★ 다중 통화 컬럼 */
+
+                    currency: transaction.currency || "KRW",
+
+                    exchange_rate:
+                        Number(transaction.exchange_rate) || 1,
+
+                    amount_krw:
+                        typeof transaction.amount_krw === "number"
+                            ? transaction.amount_krw
+                            : Number(transaction.amount) || 0,
+
+                    rate_date: transaction.rate_date || null,
+
+                    rate_source: transaction.rate_source || null,
+
                     category: transaction.category || null,
 
                     memo: transaction.memo || null,
@@ -285,6 +299,20 @@ async function pushAllTransactionsToSupabase() {
                 type: transaction.type,
 
                 amount: transaction.amount,
+
+                currency: transaction.currency || "KRW",
+
+                exchange_rate:
+                    Number(transaction.exchange_rate) || 1,
+
+                amount_krw:
+                    typeof transaction.amount_krw === "number"
+                        ? transaction.amount_krw
+                        : Number(transaction.amount) || 0,
+
+                rate_date: transaction.rate_date || null,
+
+                rate_source: transaction.rate_source || null,
 
                 category: transaction.category || null,
 
@@ -395,6 +423,13 @@ function refreshAllScreens() {
     updateInputAreas();
 
 
+    applyCurrencyToInputUI();
+
+    if (currentCurrency !== "KRW") {
+        updateExchangeRateDisplay(false);
+    }
+
+
     renderCalendar();
 
     renderSelectedDate();
@@ -453,6 +488,20 @@ function syncInsertTransaction(transaction) {
             type: transaction.type,
 
             amount: transaction.amount,
+
+            currency: transaction.currency || "KRW",
+
+            exchange_rate:
+                Number(transaction.exchange_rate) || 1,
+
+            amount_krw:
+                typeof transaction.amount_krw === "number"
+                    ? transaction.amount_krw
+                    : Number(transaction.amount) || 0,
+
+            rate_date: transaction.rate_date || null,
+
+            rate_source: transaction.rate_source || null,
 
             category: transaction.category || null,
 

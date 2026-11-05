@@ -18,26 +18,17 @@ function updateInputDateText() {
     if (!hiddenInput || !text) return;
 
 
-    /* 값이 없으면 오늘로 초기화 */
-
     if (!hiddenInput.value) {
         hiddenInput.value = getTodayString();
     }
 
 
-    /* applyInputDate로 통일 */
-
     applyInputDate(hiddenInput.value);
 
 }
 
-/* =========================
-   입력탭 날짜 반영 (커스텀 피커용)
-========================= */
 
 function applyInputDate(dateString) {
-
-    /* hidden input에 저장 */
 
     const hiddenInput =
         document.getElementById("dateInput");
@@ -46,8 +37,6 @@ function applyInputDate(dateString) {
         hiddenInput.value = dateString;
     }
 
-
-    /* 텍스트 표시 */
 
     const text =
         document.getElementById("inputDateText");
@@ -68,8 +57,6 @@ function applyInputDate(dateString) {
                 date.getDate()
             }일 (${weekdays[date.getDay()]})`;
 
-        /* dataset에도 저장 (피커가 참조) */
-
         text.dataset.date = dateString;
 
     }
@@ -82,18 +69,17 @@ function applyInputDate(dateString) {
 
 function formatAmountInput() {
 
-    const input = document.getElementById("amountInput");
+    const input =
+        document.getElementById("amountInput");
+
     if (!input) return;
 
 
-    const isKRW = currentCurrency === "KRW";
     const isIntegerOnly =
         currentCurrency === "JPY" ||
         currentCurrency === "VND" ||
         currentCurrency === "KRW";
 
-
-    /* 숫자 + 소수점만 */
 
     let raw = input.value.replace(/[^0-9.]/g, "");
 
@@ -107,8 +93,6 @@ function formatAmountInput() {
     }
 
 
-    /* 정수 전용 통화는 소수점 제거 */
-
     if (isIntegerOnly) {
         raw = raw.split(".")[0];
     }
@@ -120,8 +104,6 @@ function formatAmountInput() {
         return;
     }
 
-
-    /* 소수점 있으면 유지 */
 
     const num = Number(raw);
 
@@ -253,33 +235,22 @@ function updateInputAreas() {
 
     if (memoArea) {
         memoArea.style.display =
-            isMemoEnabledForCurrentType()
-                ? "block"
-                : "none";
+            isMemoEnabledForCurrentType() ? "block" : "none";
     }
-
 
     if (paymentArea) {
         paymentArea.style.display =
-            isPaymentEnabledForCurrentType()
-                ? "block"
-                : "none";
+            isPaymentEnabledForCurrentType() ? "block" : "none";
     }
-
 
     if (categoryButtons) {
         categoryButtons.style.display =
-            isCategoryEnabledForCurrentType()
-                ? "grid"
-                : "none";
+            isCategoryEnabledForCurrentType() ? "grid" : "none";
     }
-
 
     if (subjectArea) {
         subjectArea.style.display =
-            isSubjectEnabledForCurrentType()
-                ? "block"
-                : "none";
+            isSubjectEnabledForCurrentType() ? "block" : "none";
     }
 
 }
@@ -296,40 +267,30 @@ function renderCategoryButtons() {
 
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     if (!isCategoryEnabledForCurrentType()) return;
 
 
     const list = categories[currentType] || [];
 
-
     list.forEach(category => {
 
-        const button =
-            document.createElement("button");
+        const button = document.createElement("button");
 
         button.type = "button";
         button.className = "category-btn";
-
 
         if (category === selectedCategory) {
             button.classList.add("active");
         }
 
-
         button.innerText = category;
 
         button.onclick = function() {
-
             selectedCategory = category;
-
             renderCategoryButtons();
-
         };
-
 
         container.appendChild(button);
 
@@ -345,37 +306,28 @@ function renderSubjectButtons() {
 
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     if (!isSubjectEnabledForCurrentType()) return;
 
 
     subjects.forEach(subject => {
 
-        const button =
-            document.createElement("button");
+        const button = document.createElement("button");
 
         button.type = "button";
         button.className = "subject-btn";
-
 
         if (subject === selectedSubject) {
             button.classList.add("active");
         }
 
-
         button.innerText = subject;
 
         button.onclick = function() {
-
             selectedSubject = subject;
-
             renderSubjectButtons();
-
         };
-
 
         container.appendChild(button);
 
@@ -391,37 +343,28 @@ function renderPaymentButtons() {
 
     if (!container) return;
 
-
     container.innerHTML = "";
-
 
     if (!isPaymentEnabledForCurrentType()) return;
 
 
     paymentMethods.forEach(payment => {
 
-        const button =
-            document.createElement("button");
+        const button = document.createElement("button");
 
         button.type = "button";
         button.className = "payment-btn";
-
 
         if (payment === selectedPayment) {
             button.classList.add("active");
         }
 
-
         button.innerText = payment;
 
         button.onclick = function() {
-
             selectedPayment = payment;
-
             renderPaymentButtons();
-
         };
-
 
         container.appendChild(button);
 
@@ -436,9 +379,14 @@ function renderPaymentButtons() {
 
 function saveTransaction() {
 
-    const dateInput = document.getElementById("dateInput");
-    const amountInput = document.getElementById("amountInput");
-    const memoInput = document.getElementById("memoInput");
+    const dateInput =
+        document.getElementById("dateInput");
+
+    const amountInput =
+        document.getElementById("amountInput");
+
+    const memoInput =
+        document.getElementById("memoInput");
 
 
     const date = dateInput.value;
@@ -554,6 +502,7 @@ function saveTransaction() {
     renderPaymentButtons();
 
     renderCalendar();
+    renderSelectedDate();
 
 
     showSaveToast(
@@ -565,6 +514,7 @@ function saveTransaction() {
 
 }
 
+
 /* =========================
    저장 토스트
 ========================= */
@@ -573,23 +523,15 @@ var saveToastTimer = null;
 
 function showSaveToast(message) {
 
-    /* 기존 토스트 제거 */
-
     const existing =
         document.querySelector(".save-toast");
 
-    if (existing) {
-        existing.remove();
-    }
-
+    if (existing) existing.remove();
 
     if (saveToastTimer) {
         clearTimeout(saveToastTimer);
         saveToastTimer = null;
     }
-
-
-    /* 토스트 생성 */
 
     const toast =
         document.createElement("div");
@@ -599,28 +541,16 @@ function showSaveToast(message) {
 
     document.body.appendChild(toast);
 
-
-    /* 애니메이션 트리거 */
-
     requestAnimationFrame(function() {
-
         toast.classList.add("active");
-
     });
-
-
-    /* 1초 후 제거 */
 
     saveToastTimer = setTimeout(function() {
 
         toast.classList.remove("active");
 
         setTimeout(function() {
-
-            if (toast.parentNode) {
-                toast.remove();
-            }
-
+            if (toast.parentNode) toast.remove();
         }, 250);
 
         saveToastTimer = null;
@@ -634,17 +564,11 @@ function addTransactionForSelectedDate() {
 
     showScreen("input");
 
-
-    const dateInput =
-        document.getElementById("dateInput");
-
+    const dateInput = document.getElementById("dateInput");
 
     if (dateInput) {
-
         dateInput.value = selectedDate;
-
         updateInputDateText();
-
     }
 
 }
@@ -657,255 +581,110 @@ function addTransactionForSelectedDate() {
 
 function isKoreanHoliday(dateString) {
 
-    const target =
-        new Date(dateString + "T00:00:00");
-
+    const target = new Date(dateString + "T00:00:00");
     const year = target.getFullYear();
-
     const holidays = {};
 
-
-    function pad(number) {
-        return String(number).padStart(2, "0");
-    }
-
+    function pad(number) { return String(number).padStart(2, "0"); }
 
     function dateKey(date) {
-
-        return (
-            date.getFullYear() +
-            "-" +
-            pad(date.getMonth() + 1) +
-            "-" +
-            pad(date.getDate())
-        );
-
+        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
     }
 
-
-    function addHoliday(date, name) {
-        holidays[dateKey(date)] = name;
-    }
-
+    function addHoliday(date, name) { holidays[dateKey(date)] = name; }
 
     function addFixed(month, day, name) {
-
-        addHoliday(
-            new Date(year, month - 1, day),
-            name
-        );
-
+        addHoliday(new Date(year, month - 1, day), name);
     }
 
-
-    /* 고정 공휴일 */
 
     addFixed(1, 1, "신정");
     addFixed(3, 1, "삼일절");
 
-
-    if (year >= 2026) {
-        addFixed(5, 1, "노동절");
-    }
-
+    if (year >= 2026) addFixed(5, 1, "노동절");
     addFixed(5, 5, "어린이날");
     addFixed(6, 6, "현충일");
-
-
-    if (year >= 2026) {
-        addFixed(7, 17, "제헌절");
-    }
-
-
+    if (year >= 2026) addFixed(7, 17, "제헌절");
     addFixed(8, 15, "광복절");
     addFixed(10, 3, "개천절");
     addFixed(10, 9, "한글날");
     addFixed(12, 25, "성탄절");
 
-
-    if (year === 2026) {
-        addFixed(6, 3, "전국동시지방선거일");
-    }
+    if (year === 2026) addFixed(6, 3, "전국동시지방선거일");
 
 
-    /* 음력 */
-
-    const lunarFormatter =
-        new Intl.DateTimeFormat(
-            "en-u-ca-chinese",
-            {
-                month: "numeric",
-                day: "numeric"
-            }
-        );
-
+    const lunarFormatter = new Intl.DateTimeFormat("en-u-ca-chinese", {
+        month: "numeric",
+        day: "numeric"
+    });
 
     function getLunar(date) {
-
-        const parts =
-            lunarFormatter.formatToParts(date);
-
-
-        let month = null;
-        let day = null;
-
-
+        const parts = lunarFormatter.formatToParts(date);
+        let month = null, day = null;
         parts.forEach(part => {
-
-            if (part.type === "month") {
-                month = Number(part.value);
-            }
-
-            if (part.type === "day") {
-                day = Number(part.value);
-            }
-
+            if (part.type === "month") month = Number(part.value);
+            if (part.type === "day") day = Number(part.value);
         });
-
-
         return { month, day };
-
     }
-
 
     const start = new Date(year, 0, 1);
     const end = new Date(year, 11, 31);
+    let seollal = null, buddha = null, chuseok = null;
 
-    let seollal = null;
-    let buddha = null;
-    let chuseok = null;
-
-
-    for (
-        let date = new Date(start);
-        date <= end;
-        date.setDate(date.getDate() + 1)
-    ) {
-
+    for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
         const lunar = getLunar(date);
-
         if (!lunar.month || !lunar.day) continue;
-
-
-        if (lunar.month === 1 && lunar.day === 1) {
-            seollal = new Date(date);
-        }
-
-        if (lunar.month === 4 && lunar.day === 8) {
-            buddha = new Date(date);
-        }
-
-        if (lunar.month === 8 && lunar.day === 15) {
-            chuseok = new Date(date);
-        }
-
+        if (lunar.month === 1 && lunar.day === 1) seollal = new Date(date);
+        if (lunar.month === 4 && lunar.day === 8) buddha = new Date(date);
+        if (lunar.month === 8 && lunar.day === 15) chuseok = new Date(date);
     }
 
-
     if (seollal) {
-
-        const before = new Date(seollal);
-        before.setDate(before.getDate() - 1);
-
-        const after = new Date(seollal);
-        after.setDate(after.getDate() + 1);
-
-
+        const before = new Date(seollal); before.setDate(before.getDate() - 1);
+        const after = new Date(seollal); after.setDate(after.getDate() + 1);
         addHoliday(before, "설날 전날");
         addHoliday(seollal, "설날");
         addHoliday(after, "설날 다음날");
-
     }
 
-
-    if (buddha) {
-        addHoliday(buddha, "부처님오신날");
-    }
-
+    if (buddha) addHoliday(buddha, "부처님오신날");
 
     if (chuseok) {
-
-        const before = new Date(chuseok);
-        before.setDate(before.getDate() - 1);
-
-        const after = new Date(chuseok);
-        after.setDate(after.getDate() + 1);
-
-
+        const before = new Date(chuseok); before.setDate(before.getDate() - 1);
+        const after = new Date(chuseok); after.setDate(after.getDate() + 1);
         addHoliday(before, "추석 전날");
         addHoliday(chuseok, "추석");
         addHoliday(after, "추석 다음날");
-
     }
 
 
-    /* 대체공휴일 */
-
     const substituteTargets = [
-        "삼일절",
-        "부처님오신날",
-        "어린이날",
-        "광복절",
-        "개천절",
-        "한글날",
-        "성탄절",
-        "설날 전날",
-        "설날",
-        "설날 다음날",
-        "추석 전날",
-        "추석",
-        "추석 다음날"
+        "삼일절", "부처님오신날", "어린이날", "광복절",
+        "개천절", "한글날", "성탄절",
+        "설날 전날", "설날", "설날 다음날",
+        "추석 전날", "추석", "추석 다음날"
     ];
 
+    const originalHolidayEntries = Object.entries(holidays);
 
-    const originalHolidayEntries =
-        Object.entries(holidays);
+    originalHolidayEntries.forEach(([key, name]) => {
+        if (!substituteTargets.includes(name)) return;
 
+        const date = new Date(key + "T00:00:00");
+        const day = date.getDay();
 
-    originalHolidayEntries.forEach(
-        ([key, name]) => {
+        if (day !== 0 && day !== 6) return;
 
-            if (!substituteTargets.includes(name)) {
-                return;
-            }
+        let substitute = new Date(date);
+        substitute.setDate(substitute.getDate() + 1);
 
-
-            const date =
-                new Date(key + "T00:00:00");
-
-            const day = date.getDay();
-
-
-            if (day !== 0 && day !== 6) {
-                return;
-            }
-
-
-            let substitute = new Date(date);
-
-            substitute.setDate(
-                substitute.getDate() + 1
-            );
-
-
-            while (
-                holidays[dateKey(substitute)]
-            ) {
-
-                substitute.setDate(
-                    substitute.getDate() + 1
-                );
-
-            }
-
-
-            addHoliday(
-                substitute,
-                name + " 대체공휴일"
-            );
-
+        while (holidays[dateKey(substitute)]) {
+            substitute.setDate(substitute.getDate() + 1);
         }
-    );
+
+        addHoliday(substitute, name + " 대체공휴일");
+    });
 
 
     return holidays[dateString] || "";
@@ -920,12 +699,8 @@ function isKoreanHoliday(dateString) {
 
 function renderCalendar() {
 
-    const calendar =
-        document.getElementById("calendar");
-
-    const title =
-        document.getElementById("calendarTitle");
-
+    const calendar = document.getElementById("calendar");
+    const title = document.getElementById("calendarTitle");
 
     if (!calendar || !title) return;
 
@@ -933,52 +708,34 @@ function renderCalendar() {
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
 
-
     title.innerText = `${year}년 ${month + 1}월`;
-
 
     calendar.innerHTML = "";
 
 
-    const firstDay =
-        new Date(year, month, 1).getDay();
-
-    const lastDate =
-        new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
 
 
     for (let i = 0; i < firstDay; i++) {
-
-        const empty =
-            document.createElement("div");
-
+        const empty = document.createElement("div");
         empty.className = "calendar-day empty";
-
         calendar.appendChild(empty);
-
     }
 
 
     for (let day = 1; day <= lastDate; day++) {
 
-        const cell =
-            document.createElement("div");
-
+        const cell = document.createElement("div");
         cell.className = "calendar-day";
-
 
         const dateString =
             `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-
         const date = new Date(year, month, day);
-
         const dayOfWeek = date.getDay();
 
-
-        const holidayName =
-            isKoreanHoliday(dateString);
-
+        const holidayName = isKoreanHoliday(dateString);
 
         if (dayOfWeek === 0 || holidayName) {
             cell.classList.add("sunday-holiday");
@@ -987,93 +744,60 @@ function renderCalendar() {
             cell.classList.add("saturday");
         }
 
+        if (holidayName) cell.title = holidayName;
 
-        if (holidayName) {
-            cell.title = holidayName;
-        }
-
-
-        if (dateString === selectedDate) {
-            cell.classList.add("selected");
-        }
+        if (dateString === selectedDate) cell.classList.add("selected");
+        if (dateString === getTodayString()) cell.classList.add("today");
 
 
-        if (dateString === getTodayString()) {
-            cell.classList.add("today");
-        }
-
-
-        const number =
-            document.createElement("div");
-
+        const number = document.createElement("div");
         number.className = "calendar-day-number";
         number.innerText = day;
-
         cell.appendChild(number);
 
 
         const dailyTransactions =
-            transactions.filter(
-                transaction =>
-                    transaction.date === dateString
-            );
+            transactions.filter(t => t.date === dateString);
 
 
         let expenseTotal = 0;
         let incomeTotal = 0;
 
-
         dailyTransactions.forEach(transaction => {
 
-            if (transaction.type === "expense") {
-                expenseTotal += transaction.amount;
-            }
-            else {
-                incomeTotal += transaction.amount;
-            }
+            /* ★ 원화 환산액 기준 */
+
+            const krw =
+                typeof transaction.amount_krw === "number"
+                    ? transaction.amount_krw
+                    : (Number(transaction.amount) || 0);
+
+            if (transaction.type === "expense") expenseTotal += krw;
+            else incomeTotal += krw;
 
         });
 
 
         if (expenseTotal > 0) {
-
-            const amount =
-                document.createElement("div");
-
+            const amount = document.createElement("div");
             amount.className = "calendar-amount expense";
-
-            amount.innerText =
-                "-" + formatCompactAmount(expenseTotal);
-
+            amount.innerText = "-" + formatCompactAmount(expenseTotal);
             cell.appendChild(amount);
-
         }
 
-
         if (incomeTotal > 0) {
-
-            const amount =
-                document.createElement("div");
-
+            const amount = document.createElement("div");
             amount.className = "calendar-amount income";
-
-            amount.innerText =
-                "+" + formatCompactAmount(incomeTotal);
-
+            amount.innerText = "+" + formatCompactAmount(incomeTotal);
             cell.appendChild(amount);
-
         }
 
 
         cell.onclick = function() {
-
             selectDate(dateString);
-
         };
 
-
         calendar.appendChild(cell);
-
     }
 
 }
@@ -1082,25 +806,14 @@ function renderCalendar() {
 function selectDate(dateString) {
 
     selectedDate = dateString;
-
     historySearchKeyword = "";
 
 
-    const searchArea =
-        document.getElementById("historySearchArea");
+    const searchArea = document.getElementById("historySearchArea");
+    const searchInput = document.getElementById("historySearchInput");
 
-    const searchInput =
-        document.getElementById("historySearchInput");
-
-
-    if (searchArea) {
-        searchArea.classList.remove("active");
-    }
-
-
-    if (searchInput) {
-        searchInput.value = "";
-    }
+    if (searchArea) searchArea.classList.remove("active");
+    if (searchInput) searchInput.value = "";
 
 
     renderCalendar();
@@ -1112,11 +825,7 @@ function selectDate(dateString) {
 function changeMonth(delta) {
 
     calendarDate =
-        new Date(
-            calendarDate.getFullYear(),
-            calendarDate.getMonth() + delta,
-            1
-        );
+        new Date(calendarDate.getFullYear(), calendarDate.getMonth() + delta, 1);
 
     renderCalendar();
 
@@ -1126,126 +835,64 @@ function changeMonth(delta) {
    월 선택 피커
 ========================= */
 
-let monthPickerYear =
-    new Date().getFullYear();
-
+let monthPickerYear = new Date().getFullYear();
 let monthPickerOpen = false;
 
 
-/* 피커 열기/닫기 토글 */
-
 function toggleMonthPicker() {
 
-    const picker =
-        document.getElementById("monthPicker");
-
+    const picker = document.getElementById("monthPicker");
     if (!picker) return;
 
-
-    if (monthPickerOpen) {
-
-        closeMonthPicker();
-
-    }
-
-    else {
-
-        openMonthPicker();
-
-    }
+    if (monthPickerOpen) closeMonthPicker();
+    else openMonthPicker();
 
 }
 
 
 function openMonthPicker() {
 
-    const picker =
-        document.getElementById("monthPicker");
-
+    const picker = document.getElementById("monthPicker");
     if (!picker) return;
 
-
-    /* 현재 보고 있는 달의 연도로 시작 */
-
-    monthPickerYear =
-        calendarDate.getFullYear();
-
+    monthPickerYear = calendarDate.getFullYear();
 
     renderMonthPicker();
 
     picker.classList.add("active");
-
     monthPickerOpen = true;
-
-
-    /* 텍스트 바로 아래에 위치 계산 */
 
     positionMonthPicker();
 
 }
 
 
-/* 텍스트 아래에 위치시키기 */
-
 function positionMonthPicker() {
 
-    const pickerInner =
-        document.querySelector(".month-picker-inner");
-
-    const title =
-        document.getElementById("calendarTitle");
-
+    const pickerInner = document.querySelector(".month-picker-inner");
+    const title = document.getElementById("calendarTitle");
 
     if (!pickerInner || !title) return;
 
-
-    const anchorRect =
-        title.getBoundingClientRect();
-
-    const viewportHeight =
-        window.innerHeight;
-
-
-    /* left 50% 유지 (CSS) */
+    const anchorRect = title.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
 
     pickerInner.style.left = "50%";
     pickerInner.style.transform = "translateX(-50%)";
 
-
-    /* 일단 앵커 아래로 */
-
     let top = anchorRect.bottom + 8;
-
     pickerInner.style.top = top + "px";
-
-
-    /* 표시 후 실제 높이 재기 → 아래 넘치면 위로 */
 
     requestAnimationFrame(function() {
 
         const sheetHeight = pickerInner.offsetHeight;
 
-
         if (top + sheetHeight > viewportHeight - 20) {
 
-            const aboveTop =
-                anchorRect.top - sheetHeight - 8;
+            const aboveTop = anchorRect.top - sheetHeight - 8;
 
-            if (aboveTop > 20) {
-
-                pickerInner.style.top =
-                    aboveTop + "px";
-
-            }
-            else {
-
-                pickerInner.style.top =
-                    Math.max(
-                        20,
-                        (viewportHeight - sheetHeight) / 2
-                    ) + "px";
-
-            }
+            if (aboveTop > 20) pickerInner.style.top = aboveTop + "px";
+            else pickerInner.style.top = Math.max(20, (viewportHeight - sheetHeight) / 2) + "px";
 
         }
 
@@ -1253,141 +900,73 @@ function positionMonthPicker() {
 
 }
 
-/* 오버레이 클릭 시 닫기 */
 
 function handleMonthPickerOverlayClick(event) {
-
-    if (event.target.id === "monthPicker") {
-        closeMonthPicker();
-    }
-
+    if (event.target.id === "monthPicker") closeMonthPicker();
 }
 
 
 function closeMonthPicker() {
 
-    const picker =
-        document.getElementById("monthPicker");
+    const picker = document.getElementById("monthPicker");
+    const pickerInner = document.querySelector(".month-picker-inner");
 
-    const pickerInner =
-        document.querySelector(".month-picker-inner");
-
-
-    if (picker) {
-        picker.classList.remove("active");
-    }
-
+    if (picker) picker.classList.remove("active");
 
     if (pickerInner) {
-
         pickerInner.style.top = "";
         pickerInner.style.left = "";
         pickerInner.style.transform = "";
-
     }
-
 
     monthPickerOpen = false;
 
 }
 
 
-/* 피커의 연도 이동 */
-
 function changeMonthPickerYear(delta) {
-
     monthPickerYear += delta;
-
     renderMonthPicker();
-
 }
 
 
-/* 피커 렌더 */
-
 function renderMonthPicker() {
 
-    const yearLabel =
-        document.getElementById("monthPickerYear");
-
-    const monthsContainer =
-        document.getElementById("monthPickerMonths");
-
+    const yearLabel = document.getElementById("monthPickerYear");
+    const monthsContainer = document.getElementById("monthPickerMonths");
 
     if (!yearLabel || !monthsContainer) return;
 
-
-    yearLabel.innerText =
-        monthPickerYear + "년";
-
-
+    yearLabel.innerText = monthPickerYear + "년";
     monthsContainer.innerHTML = "";
 
 
-    const currentYear =
-        new Date().getFullYear();
-
-    const currentMonth =
-        new Date().getMonth();
-
-
-    const selectedYear =
-        calendarDate.getFullYear();
-
-    const selectedMonth =
-        calendarDate.getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const selectedYear = calendarDate.getFullYear();
+    const selectedMonth = calendarDate.getMonth();
 
 
     for (let m = 0; m < 12; m++) {
 
-        const btn =
-            document.createElement("button");
-
+        const btn = document.createElement("button");
         btn.type = "button";
-
         btn.className = "month-picker-month-btn";
-
         btn.textContent = (m + 1) + "월";
 
-
-        /* 현재 선택된 달 */
-
-        if (
-            monthPickerYear === selectedYear &&
-            m === selectedMonth
-        ) {
-
+        if (monthPickerYear === selectedYear && m === selectedMonth) {
             btn.classList.add("selected");
-
         }
 
-
-        /* 오늘 기준 이번 달 */
-
-        if (
-            monthPickerYear === currentYear &&
-            m === currentMonth
-        ) {
-
+        if (monthPickerYear === currentYear && m === currentMonth) {
             btn.classList.add("current");
-
         }
 
-
-        btn.onclick =
-            (function(month) {
-
-                return function() {
-
-                    selectMonthFromPicker(
-                        monthPickerYear,
-                        month
-                    );
-
-                };
-
-            })(m);
-
+        btn.onclick = (function(month) {
+            return function() {
+                selectMonthFromPicker(monthPickerYear, month);
+            };
+        })(m);
 
         monthsContainer.appendChild(btn);
 
@@ -1396,18 +975,10 @@ function renderMonthPicker() {
 }
 
 
-/* 월 선택 → 그 달로 이동 + 피커 닫기 */
-
 function selectMonthFromPicker(year, month) {
-
-    calendarDate =
-        new Date(year, month, 1);
-
-
+    calendarDate = new Date(year, month, 1);
     closeMonthPicker();
-
     renderCalendar();
-
 }
 
 
@@ -1418,34 +989,21 @@ function selectMonthFromPicker(year, month) {
 
 function toggleHistorySearch() {
 
-    const area =
-        document.getElementById("historySearchArea");
-
-    const input =
-        document.getElementById("historySearchInput");
-
+    const area = document.getElementById("historySearchArea");
+    const input = document.getElementById("historySearchInput");
 
     if (!area) return;
 
-
     area.classList.toggle("active");
 
-
     if (area.classList.contains("active")) {
-
         if (input) input.focus();
-
     }
-
     else {
-
         historySearchKeyword = "";
-
         if (input) input.value = "";
-
         renderCalendar();
         renderSelectedDate();
-
     }
 
 }
@@ -1453,101 +1011,56 @@ function toggleHistorySearch() {
 
 function clearHistorySearch() {
 
-    const input =
-        document.getElementById("historySearchInput");
-
+    const input = document.getElementById("historySearchInput");
 
     historySearchKeyword = "";
-
-    if (input) {
-        input.value = "";
-    }
-
+    if (input) input.value = "";
 
     renderCalendar();
     renderSelectedDate();
 
+    const area = document.getElementById("historySearchArea");
 
-    /* ★ 검색창 다시 열기 (포커스 유지) */
-
-    const area =
-        document.getElementById("historySearchArea");
-
-    if (area && !area.classList.contains("active")) {
-        area.classList.add("active");
-    }
-
+    if (area && !area.classList.contains("active")) area.classList.add("active");
 
     if (input) {
-        setTimeout(function() {
-            input.focus();
-        }, 50);
+        setTimeout(function() { input.focus(); }, 50);
     }
 
 }
 
 
-document.addEventListener(
-    "input",
-    function(event) {
-
-        if (
-            event.target &&
-            event.target.id === "historySearchInput"
-        ) {
-
-            historySearchKeyword =
-                event.target.value.trim();
-
-            renderCalendar();
-            renderSelectedDate();
-
-        }
-
+document.addEventListener("input", function(event) {
+    if (event.target && event.target.id === "historySearchInput") {
+        historySearchKeyword = event.target.value.trim();
+        renderCalendar();
+        renderSelectedDate();
     }
-);
+});
 
 
 function getHistorySearchResults() {
 
     if (!historySearchKeyword) return [];
 
-
-    const keyword =
-        historySearchKeyword.toLowerCase();
-
+    const keyword = historySearchKeyword.toLowerCase();
 
     return transactions
         .filter(transaction => {
-
             const memo = transaction.memo || "";
-
             return memo.toLowerCase().includes(keyword);
-
         })
-        .sort(
-            (a, b) =>
-                String(b.date).localeCompare(String(a.date))
-        );
+        .sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
 }
 
 
 function formatHistoryResultDate(dateString) {
 
-    const date =
-        new Date(dateString + "T00:00:00");
+    const date = new Date(dateString + "T00:00:00");
+    const weekdays = [ "일", "월", "화", "수", "목", "금", "토" ];
 
-    const weekdays = [
-        "일", "월", "화", "수", "목", "금", "토"
-    ];
-
-
-    return `${
-        date.getMonth() + 1
-    }월 ${
-        date.getDate()
-    }일(${weekdays[date.getDay()]})`;
+    return `${date.getMonth() + 1}월 ${date.getDate()}일(${weekdays[date.getDay()]})`;
 
 }
 
@@ -1556,42 +1069,22 @@ function goToSearchResultDate(dateString) {
 
     selectedDate = dateString;
 
+    const date = new Date(dateString + "T00:00:00");
 
-    const date =
-        new Date(dateString + "T00:00:00");
+    calendarDate = new Date(date.getFullYear(), date.getMonth(), 1);
 
-
-    calendarDate =
-        new Date(
-            date.getFullYear(),
-            date.getMonth(),
-            1
-        );
-
-
-    const area =
-        document.getElementById("historySearchArea");
-
-    const input =
-        document.getElementById("historySearchInput");
-
+    const area = document.getElementById("historySearchArea");
+    const input = document.getElementById("historySearchInput");
 
     if (area) area.classList.remove("active");
-
     if (input) input.value = "";
 
-
     historySearchKeyword = "";
-
 
     renderCalendar();
     renderSelectedDate();
 
-
-    const details =
-        document.getElementById("selectedDateTransactions");
-
-
+    const details = document.getElementById("selectedDateTransactions");
     if (details) details.scrollTop = 0;
 
 }
@@ -1604,15 +1097,10 @@ function goToSearchResultDate(dateString) {
 
 function renderSelectedDate() {
 
-    const title =
-        document.getElementById("selectedDateTitle");
-
-    const container =
-        document.getElementById("selectedDateTransactions");
-
+    const title = document.getElementById("selectedDateTitle");
+    const container = document.getElementById("selectedDateTransactions");
 
     if (!title || !container) return;
-
 
     container.innerHTML = "";
 
@@ -1621,125 +1109,63 @@ function renderSelectedDate() {
 
         title.innerText = "검색 결과";
 
-
         const results = getHistorySearchResults();
 
-
         if (results.length === 0) {
-
-            container.innerHTML =
-                `<div class="no-transactions">
-                    검색 결과가 없습니다.
-                </div>`;
-
+            container.innerHTML = `<div class="no-transactions">검색 결과가 없습니다.</div>`;
             return;
-
         }
 
-
-        const list =
-            document.createElement("div");
-
+        const list = document.createElement("div");
         list.className = "transaction-list";
 
-
         results.forEach(transaction => {
-
-            list.appendChild(
-                createTransactionCard(transaction, true)
-            );
-
+            list.appendChild(createTransactionCard(transaction, true));
         });
 
-
         container.appendChild(list);
-
         return;
 
     }
 
 
-    const date =
-        new Date(selectedDate + "T00:00:00");
+    const date = new Date(selectedDate + "T00:00:00");
+
+    title.innerText = `${date.getMonth() + 1}월 ${date.getDate()}일 내역`;
 
 
-    title.innerText =
-        `${date.getMonth() + 1}월 ${
-            date.getDate()
-        }일 내역`;
-
-
-    const addButton =
-        document.createElement("button");
-
+    const addButton = document.createElement("button");
     addButton.type = "button";
     addButton.className = "selected-date-add-button";
-
     addButton.innerHTML = `
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-circle-plus"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus">
         <circle cx="12" cy="12" r="10"></circle>
         <path d="M8 12h8"></path>
         <path d="M12 8v8"></path>
-    </svg>
-`;
+    </svg>`;
 
-
-    addButton.onclick =
-        addTransactionForSelectedDate;
-
+    addButton.onclick = addTransactionForSelectedDate;
 
     title.appendChild(addButton);
 
 
     const dailyTransactions =
         transactions
-            .filter(
-                transaction =>
-                    transaction.date === selectedDate
-            )
-            .sort(
-                (a, b) =>
-                    String(b.id).localeCompare(String(a.id))
-            );
+            .filter(t => t.date === selectedDate)
+            .sort((a, b) => String(b.id).localeCompare(String(a.id)));
 
 
     if (dailyTransactions.length === 0) {
-
-        container.innerHTML =
-            `<div class="no-transactions">
-                내역이 없습니다.
-            </div>`;
-
+        container.innerHTML = `<div class="no-transactions">내역이 없습니다.</div>`;
         return;
-
     }
 
-
-    const list =
-        document.createElement("div");
-
+    const list = document.createElement("div");
     list.className = "transaction-list";
 
-
     dailyTransactions.forEach(transaction => {
-
-        list.appendChild(
-            createTransactionCard(transaction, false)
-        );
-
+        list.appendChild(createTransactionCard(transaction, false));
     });
-
 
     container.appendChild(list);
 
@@ -1751,84 +1177,49 @@ function renderSelectedDate() {
    거래 카드
 ========================= */
 
-function createTransactionCard(
-    transaction,
-    isSearchResult = false
-) {
+function createTransactionCard(transaction, isSearchResult = false) {
 
-    const card =
-        document.createElement("div");
-
+    const card = document.createElement("div");
     card.className = "transaction-card";
 
 
-    const actions =
-        document.createElement("div");
-
+    const actions = document.createElement("div");
     actions.className = "swipe-actions";
 
 
-    const editButton =
-        document.createElement("button");
-
+    const editButton = document.createElement("button");
     editButton.type = "button";
     editButton.className = "swipe-edit";
     editButton.innerText = "수정";
 
-    /* click + touchend 둘 다 처리 (iOS/안드로이드 호환) */
-
     let editHandled = false;
-
     function handleEdit(event) {
-
         event.stopPropagation();
         event.preventDefault();
-
         if (editHandled) return;
-
         editHandled = true;
-
-        setTimeout(function() {
-            editHandled = false;
-        }, 300);
-
+        setTimeout(() => { editHandled = false; }, 300);
         editTransaction(transaction.id);
-
     }
-
     editButton.addEventListener("click", handleEdit);
-
     editButton.addEventListener("touchend", handleEdit, { passive: false });
 
 
-    const deleteButton =
-        document.createElement("button");
-
+    const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "swipe-delete";
     deleteButton.innerText = "삭제";
 
     let deleteHandled = false;
-
     function handleDelete(event) {
-
         event.stopPropagation();
         event.preventDefault();
-
         if (deleteHandled) return;
-
         deleteHandled = true;
-
-        setTimeout(function() {
-            deleteHandled = false;
-        }, 300);
-
+        setTimeout(() => { deleteHandled = false; }, 300);
         deleteTransaction(transaction.id);
-
     }
-
     deleteButton.addEventListener("click", handleDelete);
-
     deleteButton.addEventListener("touchend", handleDelete, { passive: false });
 
 
@@ -1836,133 +1227,136 @@ function createTransactionCard(
     actions.appendChild(deleteButton);
 
 
-    const content =
-        document.createElement("div");
-
+    const content = document.createElement("div");
     content.className = "transaction-content";
 
 
-    const left =
-        document.createElement("div");
-
+    const left = document.createElement("div");
     left.className = "transaction-left";
 
 
     if (isSearchResult) {
 
-        const titleRow =
-            document.createElement("div");
-
+        const titleRow = document.createElement("div");
         titleRow.className = "search-result-title";
 
-
-        const searchDate =
-            document.createElement("button");
-
+        const searchDate = document.createElement("button");
         searchDate.type = "button";
         searchDate.className = "search-result-date";
-        searchDate.innerText =
-            formatHistoryResultDate(transaction.date);
-
+        searchDate.innerText = formatHistoryResultDate(transaction.date);
         searchDate.onclick = function(event) {
-
             event.stopPropagation();
-
             goToSearchResultDate(transaction.date);
-
         };
-
-
         titleRow.appendChild(searchDate);
 
-
         if (transaction.category) {
-
-            const searchCategory =
-                document.createElement("span");
-
+            const searchCategory = document.createElement("span");
             searchCategory.className = "search-result-category";
             searchCategory.innerText = transaction.category;
-
             titleRow.appendChild(searchCategory);
-
         }
-
 
         left.appendChild(titleRow);
 
     }
-
     else {
-
         if (transaction.category) {
-
-            const category =
-                document.createElement("div");
-
+            const category = document.createElement("div");
             category.className = "transaction-category";
             category.innerText = transaction.category;
-
             left.appendChild(category);
-
         }
-
     }
 
 
-    const meta =
-        document.createElement("div");
-
+    const meta = document.createElement("div");
     meta.className = "transaction-meta";
 
-
     const metaParts = [];
-
-
     if (transaction.subject) metaParts.push(transaction.subject);
     if (transaction.memo) metaParts.push(transaction.memo);
     if (transaction.payment) metaParts.push(transaction.payment);
 
-
     meta.innerText = metaParts.join(" · ");
 
-
-    if (metaParts.length > 0) {
-        left.appendChild(meta);
-    }
+    if (metaParts.length > 0) left.appendChild(meta);
 
 
-    const amount =
-        document.createElement("div");
+    /* ★ 금액 표시 (외화면 외화 + 원화 둘 다) */
 
+    const amount = document.createElement("div");
     amount.className = "transaction-amount";
 
     amount.classList.add(
-        transaction.type === "expense"
-            ? "expense"
-            : "income"
+        transaction.type === "expense" ? "expense" : "income"
     );
 
 
-    amount.innerText =
-        transaction.type === "expense"
-            ? "-" +
-              Number(transaction.amount).toLocaleString("ko-KR") +
-              "원"
-            : "+" +
-              Number(transaction.amount).toLocaleString("ko-KR") +
-              "원";
+    const currency = transaction.currency || "KRW";
+    const isForeign = currency !== "KRW";
+
+
+    if (isForeign) {
+
+        const foreignText =
+            formatCurrencyWithSymbol(transaction.amount, currency);
+
+        const krwText =
+            (transaction.type === "expense" ? "-" : "+") +
+            Number(transaction.amount_krw || 0).toLocaleString("ko-KR") +
+            "원";
+
+        amount.innerHTML =
+            `<div class="transaction-amount-foreign">${foreignText}</div>` +
+            `<div class="transaction-amount-krw">${krwText}</div>`;
+
+    }
+    else {
+
+        amount.innerText =
+            transaction.type === "expense"
+                ? "-" + Number(transaction.amount).toLocaleString("ko-KR") + "원"
+                : "+" + Number(transaction.amount).toLocaleString("ko-KR") + "원";
+
+    }
 
 
     content.appendChild(left);
     content.appendChild(amount);
 
-
     card.appendChild(actions);
     card.appendChild(content);
 
-
     initializeSwipe(card);
+
+
+    /* ★ 길게 누르기 → 환율 정보 (외화일 때만) */
+
+    if (isForeign) {
+
+        let pressTimer = null;
+
+        const startLongPress = function() {
+            pressTimer = setTimeout(function() {
+                pressTimer = null;
+                openRateInfoModal(transaction);
+            }, 600);
+        };
+
+        const cancelLongPress = function() {
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        };
+
+        content.addEventListener("touchstart", startLongPress, { passive: true });
+        content.addEventListener("touchend", cancelLongPress);
+        content.addEventListener("touchmove", cancelLongPress, { passive: true });
+        content.addEventListener("touchcancel", cancelLongPress);
+
+    }
 
 
     return card;
@@ -1978,36 +1372,21 @@ function createTransactionCard(
 var activeSwipeCards = new WeakSet();
 
 
-document.addEventListener(
-    "touchstart",
-    function(event) {
+document.addEventListener("touchstart", function(event) {
 
-        const target = event.target;
+    const target = event.target;
 
+    document.querySelectorAll(".transaction-content.swiped-open").forEach(function(content) {
 
-        document
-            .querySelectorAll(
-                ".transaction-content.swiped-open"
-            )
-            .forEach(function(content) {
+        if (!content.contains(target)) {
+            content.classList.remove("swiped-open");
+            content.style.transition = "transform 0.2s ease";
+            content.style.transform = "translateX(0)";
+        }
 
-                if (!content.contains(target)) {
+    });
 
-                    content.classList.remove("swiped-open");
-
-                    content.style.transition =
-                        "transform 0.2s ease";
-
-                    content.style.transform =
-                        "translateX(0)";
-
-                }
-
-            });
-
-    },
-    { passive: true }
-);
+}, { passive: true });
 
 
 function initializeSwipe(card) {
@@ -2018,9 +1397,7 @@ function initializeSwipe(card) {
     activeSwipeCards.add(card);
 
 
-    const content =
-        card.querySelector(".transaction-content");
-
+    const content = card.querySelector(".transaction-content");
     if (!content) return;
 
 
@@ -2032,153 +1409,90 @@ function initializeSwipe(card) {
     const revealWidth = 130;
 
 
-    content.addEventListener(
-        "touchstart",
-        function(event) {
+    content.addEventListener("touchstart", function(event) {
 
-            /* 버튼 위에서 시작하면 스와이프 무시 */
+        const target = event.target;
 
-            const target = event.target;
-
-            if (
-                target &&
-                target.closest &&
-                (
-                    target.closest(".swipe-edit") ||
-                    target.closest(".swipe-delete")
-                )
-            ) {
-                swiping = false;
-                return;
-            }
-
-
-            const touch = event.touches[0];
-
-            startX = touch.clientX;
-            startY = touch.clientY;
-            currentX = startX;
-
-            swiping = true;
-
-            content.style.transition = "none";
-
-        },
-        { passive: true }
-    );
-
-
-    content.addEventListener(
-        "touchmove",
-        function(event) {
-
-            if (!swiping) return;
-
-
-            const touch = event.touches[0];
-
-            currentX = touch.clientX;
-
-            const currentY = touch.clientY;
-
-            const diffX = currentX - startX;
-            const diffY = currentY - startY;
-
-
-            if (
-                Math.abs(diffY) > Math.abs(diffX) &&
-                Math.abs(diffY) > 8
-            ) {
-
-                swiping = false;
-
-                content.style.transition = "";
-
-                return;
-
-            }
-
-
-            if (diffX < 0) {
-
-                const translateX =
-                    Math.max(diffX, -revealWidth);
-
-                content.style.transform =
-                    `translateX(${translateX}px)`;
-
-            }
-
-            else if (diffX > 0) {
-
-                const currentTransform =
-                    parseFloat(
-                        getComputedStyle(content)
-                            .transform
-                            .replace(
-                                /^matrix\([^,]+,[^,]+,[^,]+,[^,]+,([^,]+),.*\)$/,
-                                "$1"
-                            )
-                    );
-
-
-                if (!isNaN(currentTransform) && currentTransform < 0) {
-
-                    const translateX =
-                        Math.min(0, currentTransform + diffX);
-
-                    content.style.transform =
-                        `translateX(${translateX}px)`;
-
-                }
-
-            }
-
-        },
-        { passive: true }
-    );
-
-
-    content.addEventListener(
-        "touchend",
-        function() {
-
-            if (!swiping) return;
-
+        if (
+            target &&
+            target.closest &&
+            (target.closest(".swipe-edit") || target.closest(".swipe-delete"))
+        ) {
             swiping = false;
-
-
-            const diff = currentX - startX;
-
-
-            content.style.transition =
-                "transform 0.2s ease";
-
-
-            if (diff < -50) {
-
-                content.style.transform =
-                    `translateX(-${revealWidth}px)`;
-
-                content.classList.add("swiped-open");
-
-            }
-
-            else {
-
-                content.style.transform = "translateX(0)";
-
-                content.classList.remove("swiped-open");
-
-            }
-
-
-            startX = 0;
-            startY = 0;
-            currentX = 0;
-
+            return;
         }
-    );
+
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        currentX = startX;
+        swiping = true;
+        content.style.transition = "none";
+
+    }, { passive: true });
+
+
+    content.addEventListener("touchmove", function(event) {
+
+        if (!swiping) return;
+
+        const touch = event.touches[0];
+        currentX = touch.clientX;
+
+        const currentY = touch.clientY;
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
+
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 8) {
+            swiping = false;
+            content.style.transition = "";
+            return;
+        }
+
+        if (diffX < 0) {
+            const translateX = Math.max(diffX, -revealWidth);
+            content.style.transform = `translateX(${translateX}px)`;
+        }
+        else if (diffX > 0) {
+            const currentTransform = parseFloat(
+                getComputedStyle(content).transform.replace(
+                    /^matrix\([^,]+,[^,]+,[^,]+,[^,]+,([^,]+),.*\)$/,
+                    "$1"
+                )
+            );
+
+            if (!isNaN(currentTransform) && currentTransform < 0) {
+                const translateX = Math.min(0, currentTransform + diffX);
+                content.style.transform = `translateX(${translateX}px)`;
+            }
+        }
+
+    }, { passive: true });
+
+
+    content.addEventListener("touchend", function() {
+
+        if (!swiping) return;
+        swiping = false;
+
+        const diff = currentX - startX;
+
+        content.style.transition = "transform 0.2s ease";
+
+        if (diff < -50) {
+            content.style.transform = `translateX(-${revealWidth}px)`;
+            content.classList.add("swiped-open");
+        }
+        else {
+            content.style.transform = "translateX(0)";
+            content.classList.remove("swiped-open");
+        }
+
+        startX = 0;
+        startY = 0;
+        currentX = 0;
+
+    });
 
 }
 
@@ -2190,65 +1504,67 @@ function initializeSwipe(card) {
 
 function editTransaction(id) {
 
-    const transaction =
-        transactions.find(
-            item => String(item.id) === String(id)
-        );
-
-
+    const transaction = transactions.find(t => String(t.id) === String(id));
     if (!transaction) return;
 
 
-    const currentAmount =
-        transaction.amount.toLocaleString("ko-KR");
+    const currency = transaction.currency || "KRW";
+    const currentAmount = formatCurrencyAmount(transaction.amount, currency);
 
 
     appPrompt(
-        "금액을 수정하세요.",
+        currency === "KRW" ? "금액을 수정하세요." : `금액을 수정하세요 (${currency}).`,
         currentAmount,
         {
             title: "금액 수정",
-            formatAmount: true,
+            formatAmount: currency === "KRW",
             placeholder: "0"
         }
     ).then(function(newAmount) {
 
         if (newAmount === null) return;
 
-
-        const amount =
-            Number(newAmount.replace(/[^0-9]/g, ""));
-
+        const raw = newAmount.replace(/[^0-9.]/g, "");
+        const amount = Number(raw);
 
         if (!amount || amount <= 0) {
-
             appAlert("올바른 금액을 입력해주세요.");
-
             return;
-
         }
 
 
         transaction.amount = amount;
 
 
+        /* 외화면 환율 유지, 원화 환산 재계산 */
+
+        if (currency !== "KRW") {
+
+            const rate = Number(transaction.exchange_rate) || 1;
+
+            transaction.amount_krw = convertToKRW(amount, currency, rate);
+
+        }
+        else {
+            transaction.amount_krw = amount;
+        }
+
+
         saveTransactions();
 
-        syncUpdateTransaction(id, { amount: amount });
+        syncUpdateTransaction(id, {
+            amount: transaction.amount,
+            amount_krw: transaction.amount_krw
+        });
+
 
         renderCalendar();
         renderSelectedDate();
 
 
-        /* 분석 화면이 열려 있으면 갱신 */
+        const analysisScreen = document.getElementById("analysisScreen");
 
-        const analysisScreen =
-            document.getElementById("analysisScreen");
-
-        if (
-            analysisScreen &&
-            analysisScreen.classList.contains("active")
-        ) {
+        if (analysisScreen && analysisScreen.classList.contains("active")) {
             renderAnalysis();
         }
 
@@ -2259,12 +1575,7 @@ function editTransaction(id) {
 
 function deleteTransaction(id) {
 
-    const transaction =
-        transactions.find(
-            item => String(item.id) === String(id)
-        );
-
-
+    const transaction = transactions.find(t => String(t.id) === String(id));
     if (!transaction) return;
 
 
@@ -2279,34 +1590,51 @@ function deleteTransaction(id) {
 
         if (!confirmed) return;
 
-
-        transactions =
-            transactions.filter(
-                item => String(item.id) !== String(id)
-            );
-
+        transactions = transactions.filter(t => String(t.id) !== String(id));
 
         saveTransactions();
-
         syncDeleteTransaction(id);
 
         renderCalendar();
         renderSelectedDate();
 
+        const analysisScreen = document.getElementById("analysisScreen");
 
-        /* 분석 화면이 열려 있으면 갱신 */
-
-        const analysisScreen =
-            document.getElementById("analysisScreen");
-
-        if (
-            analysisScreen &&
-            analysisScreen.classList.contains("active")
-        ) {
+        if (analysisScreen && analysisScreen.classList.contains("active")) {
             renderAnalysis();
         }
 
     });
+
+}
+
+
+
+/* =========================
+   환율 정보 모달 (거래 카드 길게 누르기)
+========================= */
+
+function openRateInfoModal(transaction) {
+
+    if (!transaction) return;
+
+    const currency = transaction.currency || "KRW";
+    const meta = getCurrencyMeta(currency);
+
+    const lines = [
+        `입력 통화: ${meta.flag} ${meta.label} (${currency})`,
+        `입력 금액: ${formatCurrencyWithSymbol(transaction.amount, currency)}`,
+        `적용 환율: 1 ${currency} = ${Number(transaction.exchange_rate || 1).toLocaleString("ko-KR", { maximumFractionDigits: 4 })}원`,
+        `원화 환산: ${Number(transaction.amount_krw || 0).toLocaleString("ko-KR")}원`,
+        `환율 기준일: ${transaction.rate_date || "-"}`,
+        `환율 출처: ${transaction.rate_source || "-"}`
+    ];
+
+
+    appAlert(
+        lines.join("\n"),
+        { title: "환율 정보" }
+    );
 
 }
 
@@ -2318,16 +1646,11 @@ function deleteTransaction(id) {
 
 function setExportDates(start, end) {
 
-    const startInput =
-        document.getElementById("exportStartDate");
-
-    const endInput =
-        document.getElementById("exportEndDate");
-
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
 
     if (startInput) startInput.value = start;
     if (endInput) endInput.value = end;
-
 
     updateExportDateTexts();
 
@@ -2347,27 +1670,17 @@ function formatExportDateDisplay(dateString) {
 
 function updateExportDateTexts() {
 
-    const startInput =
-        document.getElementById("exportStartDate");
-
-    const endInput =
-        document.getElementById("exportEndDate");
-
-    const startText =
-        document.getElementById("exportStartDateText");
-
-    const endText =
-        document.getElementById("exportEndDateText");
-
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
+    const startText = document.getElementById("exportStartDateText");
+    const endText = document.getElementById("exportEndDateText");
 
     if (startText) {
-        startText.innerText =
-            formatExportDateDisplay(startInput ? startInput.value : "");
+        startText.innerText = formatExportDateDisplay(startInput ? startInput.value : "");
     }
 
     if (endText) {
-        endText.innerText =
-            formatExportDateDisplay(endInput ? endInput.value : "");
+        endText.innerText = formatExportDateDisplay(endInput ? endInput.value : "");
     }
 
 }
@@ -2379,18 +1692,9 @@ function setExportRangeThisMonth() {
     const year = today.getFullYear();
     const month = today.getMonth();
 
-
-    const start =
-        `${year}-${String(month + 1).padStart(2, "0")}-01`;
-
-
-    const lastDate =
-        new Date(year, month + 1, 0).getDate();
-
-
-    const end =
-        `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
-
+    const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
 
     setExportDates(start, end);
 
@@ -2400,26 +1704,14 @@ function setExportRangeThisMonth() {
 function setExportRangeLastMonth() {
 
     const today = new Date();
-
-    const date =
-        new Date(today.getFullYear(), today.getMonth() - 1, 1);
-
+    const date = new Date(today.getFullYear(), today.getMonth() - 1, 1);
 
     const year = date.getFullYear();
     const month = date.getMonth();
 
-
-    const start =
-        `${year}-${String(month + 1).padStart(2, "0")}-01`;
-
-
-    const lastDate =
-        new Date(year, month + 1, 0).getDate();
-
-
-    const end =
-        `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
-
+    const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDate).padStart(2, "0")}`;
 
     setExportDates(start, end);
 
@@ -2427,92 +1719,51 @@ function setExportRangeLastMonth() {
 
 
 function setExportRangeThisYear() {
-
     const year = new Date().getFullYear();
-
-    setExportDates(
-        `${year}-01-01`,
-        `${year}-12-31`
-    );
-
+    setExportDates(`${year}-01-01`, `${year}-12-31`);
 }
 
 
 function setExportRangeAll() {
 
     if (!transactions.length) {
-
-        setExportDates(
-            getTodayString(),
-            getTodayString()
-        );
-
+        setExportDates(getTodayString(), getTodayString());
         return;
-
     }
 
+    const sorted = [...transactions].sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
-    const sorted =
-        [...transactions].sort(
-            (a, b) =>
-                String(a.date).localeCompare(String(b.date))
-        );
-
-
-    setExportDates(
-        sorted[0].date,
-        sorted[sorted.length - 1].date
-    );
+    setExportDates(sorted[0].date, sorted[sorted.length - 1].date);
 
 }
 
 
 function initializeExportDates() {
 
-    const startInput =
-        document.getElementById("exportStartDate");
-
-    const endInput =
-        document.getElementById("exportEndDate");
-
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
 
     if (!startInput || !endInput) return;
 
-
-    if (!startInput.value || !endInput.value) {
-        setExportRangeThisMonth();
-    }
-    else {
-        updateExportDateTexts();
-    }
+    if (!startInput.value || !endInput.value) setExportRangeThisMonth();
+    else updateExportDateTexts();
 
 }
 
 
-/* =========================
-   엑셀 저장 — 날짜 선택기 트리거
-========================= */
-
 function openExportStartDatePicker() {
 
-    const startInput =
-        document.getElementById("exportStartDate");
-
-    const endInput =
-        document.getElementById("exportEndDate");
-
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
 
     openDatepickerRange(
         startInput ? startInput.value : "",
         endInput ? endInput.value : "",
         "start",
         function(start, end) {
-
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
-
             updateExportDateTexts();
-
         },
         { anchorId: "exportStartDateText" }
     );
@@ -2522,24 +1773,17 @@ function openExportStartDatePicker() {
 
 function openExportEndDatePicker() {
 
-    const startInput =
-        document.getElementById("exportStartDate");
-
-    const endInput =
-        document.getElementById("exportEndDate");
-
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
 
     openDatepickerRange(
         startInput ? startInput.value : "",
         endInput ? endInput.value : "",
         "end",
         function(start, end) {
-
             if (startInput) startInput.value = start;
             if (endInput) endInput.value = end;
-
             updateExportDateTexts();
-
         },
         { anchorId: "exportEndDateText" }
     );
@@ -2549,69 +1793,41 @@ function openExportEndDatePicker() {
 
 function exportTransactionsToExcel() {
 
-    const startInput =
-        document.getElementById("exportStartDate");
+    const startInput = document.getElementById("exportStartDate");
+    const endInput = document.getElementById("exportEndDate");
 
-    const endInput =
-        document.getElementById("exportEndDate");
-
-
-    const start =
-        startInput ? startInput.value : "";
-
-    const end =
-        endInput ? endInput.value : "";
-
+    const start = startInput ? startInput.value : "";
+    const end = endInput ? endInput.value : "";
 
     if (!start || !end) {
-
         appAlert("기간을 선택해주세요.");
-
         return;
-
     }
 
-
     if (start > end) {
-
         appAlert("시작일이 종료일보다 늦을 수 없습니다.");
-
         return;
-
     }
 
 
     const filtered =
         transactions
-            .filter(
-                transaction =>
-                    transaction.date >= start &&
-                    transaction.date <= end
-            )
-            .sort(
-                (a, b) =>
-                    String(a.date).localeCompare(String(b.date)) ||
-                    String(a.id).localeCompare(String(b.id))
+            .filter(t => t.date >= start && t.date <= end)
+            .sort((a, b) =>
+                String(a.date).localeCompare(String(b.date)) ||
+                String(a.id).localeCompare(String(b.id))
             );
 
 
     if (!filtered.length) {
-
         appAlert("선택한 기간에 내역이 없습니다.");
-
         return;
-
     }
 
 
     if (typeof XLSX === "undefined") {
-
-        appAlert(
-            "엑셀 기능을 불러오지 못했습니다. 인터넷 연결을 확인해주세요."
-        );
-
+        appAlert("엑셀 기능을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.");
         return;
-
     }
 
 
@@ -2621,11 +1837,15 @@ function exportTransactionsToExcel() {
             "날짜": transaction.date,
 
             "구분":
-                transaction.type === "expense"
-                    ? "지출"
-                    : "수입",
+                transaction.type === "expense" ? "지출" : "수입",
+
+            "통화": transaction.currency || "KRW",
 
             "금액": transaction.amount,
+
+            "적용 환율": transaction.exchange_rate || 1,
+
+            "원화 환산": transaction.amount_krw || transaction.amount,
 
             "카테고리": transaction.category || "",
             "결제수단": transaction.payment || "",
@@ -2635,109 +1855,58 @@ function exportTransactionsToExcel() {
         }));
 
 
-    const worksheet =
-        XLSX.utils.json_to_sheet(rows);
-
+    const worksheet = XLSX.utils.json_to_sheet(rows);
 
     worksheet["!cols"] = [
-        { wch: 12 },
-        { wch: 6 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 10 },
-        { wch: 8 },
-        { wch: 24 }
+        { wch: 12 }, { wch: 6 }, { wch: 6 }, { wch: 12 },
+        { wch: 10 }, { wch: 12 }, { wch: 12 },
+        { wch: 10 }, { wch: 8 }, { wch: 24 }
     ];
 
 
-    const workbook =
-        XLSX.utils.book_new();
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "거래내역");
 
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "거래내역"
-    );
-
-
-    const fileName =
-        `가계부_거래내역_${start}_${end}.xlsx`;
+    const fileName = `가계부_거래내역_${start}_${end}.xlsx`;
 
 
     try {
 
-        const workbookArray =
-            XLSX.write(
-                workbook,
-                {
-                    bookType: "xlsx",
-                    type: "array"
-                }
-            );
+        const workbookArray = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
 
-
-        const blob =
-            new Blob(
-                [workbookArray],
-                {
-                    type:
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                }
-            );
-
+        const blob = new Blob(
+            [workbookArray],
+            { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+        );
 
         const url = URL.createObjectURL(blob);
-
-
-        const link =
-            document.createElement("a");
+        const link = document.createElement("a");
 
         link.href = url;
         link.download = fileName;
         link.style.display = "none";
 
-
         document.body.appendChild(link);
-
         link.click();
 
-
-        setTimeout(
-            function() {
-
-                document.body.removeChild(link);
-
-                URL.revokeObjectURL(url);
-
-            },
-            1000
-        );
+        setTimeout(function() {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 1000);
 
     }
-
     catch (error) {
-
         console.error(error);
-
         XLSX.writeFile(workbook, fileName);
-
     }
 
 }
 
-/* 창 크기 변경 시 월 피커 위치 재계산 */
+window.addEventListener("resize", function() {
+    if (monthPickerOpen) positionMonthPicker();
+});
 
-window.addEventListener(
-    "resize",
-    function() {
 
-        if (monthPickerOpen) {
-            positionMonthPicker();
-        }
-
-    }
-);
 
 /* =========================
    다중 통화 - 통화 선택 모달
@@ -2750,11 +1919,7 @@ function openCurrencyPicker() {
 
     if (!overlay || !list) return;
 
-
     list.innerHTML = "";
-
-
-    /* ON된 통화만, 설정된 순서대로 */
 
     const activeCurrencies =
         Array.isArray(settings.currencies) && settings.currencies.length > 0
@@ -2767,15 +1932,10 @@ function openCurrencyPicker() {
         const meta = getCurrencyMeta(code);
 
         const item = document.createElement("button");
-
         item.type = "button";
-
         item.className = "currency-picker-item";
 
-        if (code === currentCurrency) {
-            item.classList.add("active");
-        }
-
+        if (code === currentCurrency) item.classList.add("active");
 
         const flag = document.createElement("span");
         flag.className = "currency-picker-flag";
@@ -2789,25 +1949,18 @@ function openCurrencyPicker() {
         codeEl.className = "currency-picker-code";
         codeEl.innerText = code;
 
-
         item.appendChild(flag);
         item.appendChild(label);
         item.appendChild(codeEl);
 
-
         item.onclick = function() {
-
             selectCurrency(code);
-
             closeCurrencyPicker();
-
         };
-
 
         list.appendChild(item);
 
     });
-
 
     overlay.classList.add("active");
 
@@ -2815,63 +1968,41 @@ function openCurrencyPicker() {
 
 
 function closeCurrencyPicker() {
-
     const overlay = document.getElementById("currencyPickerOverlay");
-
-    if (overlay) {
-        overlay.classList.remove("active");
-    }
-
+    if (overlay) overlay.classList.remove("active");
 }
 
 
 function handleCurrencyPickerOverlayClick(event) {
-
-    if (event.target.id === "currencyPickerOverlay") {
-        closeCurrencyPicker();
-    }
-
+    if (event.target.id === "currencyPickerOverlay") closeCurrencyPicker();
 }
 
 
 function selectCurrency(code) {
 
     if (!code) return;
-
     if (!CURRENCY_LIST.some(c => c.code === code)) return;
-
     if (!settings.currencies.includes(code)) return;
 
 
     currentCurrency = code;
-
     settings.selectedCurrency = code;
-
     saveSettings();
 
-
     applyCurrencyToInputUI();
-
     formatAmountInput();
 
-
     if (code === "KRW") {
-
         currentExchangeRate = 1;
         currentRateDate = getTodayString();
         currentRateSource = "fixed";
-
         updateExchangeRateDisplay(false);
-
     }
     else {
-
         currentExchangeRate = 1;
         currentRateDate = "";
         currentRateSource = "";
-
         refreshExchangeRateForCurrentCurrency();
-
     }
 
 }
