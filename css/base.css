@@ -1296,100 +1296,6 @@ input {
 }
 
 /* =========================
-   엑셀 저장 — 날짜 텍스트 (분석 탭과 통일감)
-========================= */
-
-.export-date-row-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 14px;
-    padding: 4px 0;
-}
-
-.export-date-row-text .export-date-text {
-    flex: 1;
-    min-width: 0;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e5e5e5;
-    border-radius: 10px;
-    background: white;
-    font-size: 14px;
-    font-weight: 600;
-    color: #222;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 8px;
-}
-
-.export-date-row-text .export-date-text:active {
-    background: #f5f5f5;
-    border-color: #ccc;
-}
-
-.export-date-row-text .export-date-separator {
-    flex: 0 0 auto;
-    color: #999;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-/* =========================
-   모달 비밀번호 표시 토글
-========================= */
-
-.modal-input-wrap {
-    position: relative;
-}
-
-.modal-input-wrap.active {
-    display: block;
-}
-
-.modal-password-toggle {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: transparent;
-    color: #999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: color 0.15s ease, background 0.15s ease;
-}
-
-.modal-password-toggle:active {
-    background: #f0f0f0;
-}
-
-.modal-password-toggle.visible {
-    color: #222;
-}
-
-/* 비밀번호 input일 때 오른쪽 여백 + 가운데 정렬 */
-
-.modal-input-wrap.password-mode .modal-input {
-    padding-left: 44px;
-    padding-right: 44px;
-    text-align: center;
-}
-
-/* =========================
    분석 - 잔액 그룹
 ========================= */
 
@@ -1667,7 +1573,6 @@ input {
     color: #222;
 }
 
-
 /* =========================
    통화 분석 (분석 탭)
 ========================= */
@@ -1740,7 +1645,7 @@ input {
 }
 
 /* =========================
-   통화 사용 설정 - OFF / 드래그
+   통화 사용 설정 - OFF & 드래그
 ========================= */
 
 .currency-usage-card {

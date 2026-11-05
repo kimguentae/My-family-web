@@ -165,8 +165,6 @@ function renderUsageCurrencySettings() {
         list.unshift("KRW");
     }
     else {
-        /* 원화를 맨 앞으로 */
-
         list = ["KRW", ...list.filter(c => c !== "KRW")];
     }
 
@@ -282,7 +280,7 @@ function toggleCurrencyUsage(code, enabled) {
 
 /* =========================
    통화 카드 순서 변경 (드래그)
-   - 원화 제외, ON 카드만 드래그 가능
+   - 원화 제외, ON 카드만 드래그
    - 원화는 항상 첫 번째 유지
 ========================= */
 
@@ -291,10 +289,13 @@ function initializeCurrencyUsageDrag(card, code) {
     let startX = 0;
     let startY = 0;
     let dragging = false;
+
     let originLeft = 0;
     let originTop = 0;
+
     let originIndex = 0;
     let currentIndex = 0;
+
     let CELL_W = 100;
     let CELL_H = 100;
 
@@ -369,7 +370,6 @@ function initializeCurrencyUsageDrag(card, code) {
 
             if (isNaN(dataIndex) || dataIndex < 0) return;
 
-
             let visualIndex = dataIndex;
 
             if (originIndex < newIndex) {
@@ -384,7 +384,8 @@ function initializeCurrencyUsageDrag(card, code) {
             }
 
 
-            const offsetX = (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
+            const offsetX =
+                (visualIndex % COLUMNS - dataIndex % COLUMNS) * CELL_W;
 
             const offsetY =
                 (Math.floor(visualIndex / COLUMNS) -
@@ -431,7 +432,10 @@ function initializeCurrencyUsageDrag(card, code) {
 
 
         if (!dragging) {
-            if (Math.abs(diffX) < DRAG_START_THRESHOLD && Math.abs(diffY) < DRAG_START_THRESHOLD) {
+            if (
+                Math.abs(diffX) < DRAG_START_THRESHOLD &&
+                Math.abs(diffY) < DRAG_START_THRESHOLD
+            ) {
                 return;
             }
             dragging = true;
@@ -442,7 +446,8 @@ function initializeCurrencyUsageDrag(card, code) {
         }
 
 
-        card.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.05)`;
+        card.style.transform =
+            `translate(${diffX}px, ${diffY}px) scale(1.05)`;
 
 
         const grid = getGrid();
@@ -450,22 +455,16 @@ function initializeCurrencyUsageDrag(card, code) {
 
         const containerRect = grid.getBoundingClientRect();
 
-
-        /* 카드 원래 좌상단(originLeft/Top) + 이동량 기준 */
-
         const currentLeft = originLeft + diffX;
         const currentTop = originTop + diffY;
 
-
         const relX = currentLeft - containerRect.left;
         const relY = currentTop - containerRect.top;
-
 
         const col = Math.max(0, Math.min(COLUMNS - 1, Math.floor(relX / CELL_W)));
         const row = Math.max(0, Math.floor(relY / CELL_H));
 
         const targetIndex = row * COLUMNS + col;
-
 
         const onCount = settings.currencies.length;
 
