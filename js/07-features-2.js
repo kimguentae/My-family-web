@@ -608,6 +608,109 @@ const analysisGroupMeta = {
 
 };
 
+function renderAnalysisGroupOrderList() {
+
+    const container = document.getElementById("analysisGroupOrderList");
+    if (!container) return;
+
+    container.innerHTML = "";
+    container.classList.remove("category-manage-list");
+    container.classList.add("analysis-card-grid");
+
+
+    const DEFAULT_ORDER = [
+        "balance",
+        "currency",
+        "monthlyChart",
+        "category",
+        "payment",
+        "subject"
+    ];
+
+
+    /* settings.analysisGroupOrder 정규화 (6개 강제) */
+
+    const validKeys = Object.keys(analysisGroupMeta);
+
+    let order =
+        Array.isArray(settings.analysisGroupOrder)
+            ? settings.analysisGroupOrder.filter(key => validKeys.includes(key))
+            : [];
+
+
+    validKeys.forEach(key => {
+        if (!order.includes(key)) order.push(key);
+    });
+
+
+    settings.analysisGroupOrder = order;
+
+
+    order.forEach((key, index) => {
+
+        const meta = analysisGroupMeta[key];
+        if (!meta) return;
+
+        const card = document.createElement("div");
+        card.className = "analysis-setting-card";
+        card.dataset.index = index;
+        card.dataset.key = key;
+
+        const name = document.createElement("div");
+        name.className = "analysis-setting-card-name";
+        name.innerText = meta.label;
+
+        const switchLabel = document.createElement("label");
+        switchLabel.className = "switch";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = settings[meta.settingKey];
+
+        checkbox.onchange = function(event) {
+            event.stopPropagation();
+            settings[meta.settingKey] = checkbox.checked;
+            saveSettings();
+            updateAnalysisGroupVisibility();
+
+            const analysisScreen = document.getElementById("analysisScreen");
+            if (analysisScreen && analysisScreen.classList.contains("active")) {
+                renderAnalysis();
+            }
+        };
+
+        const slider = document.createElement("span");
+        slider.className = "slider";
+
+        switchLabel.appendChild(checkbox);
+        switchLabel.appendChild(slider);
+
+        card.appendChild(name);
+        card.appendChild(switchLabel);
+
+        container.appendChild(card);
+
+        initializeAnalysisCardDrag(card, {
+            getArray: () => settings.analysisGroupOrder,
+            onSave: function() {
+                saveSettings();
+                if (typeof pushLocalDataToSupabase === "function" && supabaseClient && currentUser) {
+                    pushLocalDataToSupabase();
+                }
+            },
+            onRender: renderAnalysisGroupOrderList,
+            onAfterMove: function() {
+                const analysisScreen = document.getElementById("analysisScreen");
+                if (analysisScreen && analysisScreen.classList.contains("active")) {
+                    renderAnalysis();
+                }
+            }
+        });
+
+    });
+
+}
+
 
 function renderAnalysis() {
 
