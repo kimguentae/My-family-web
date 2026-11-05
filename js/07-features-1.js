@@ -1622,18 +1622,14 @@ function openRateInfoModal(transaction) {
     const meta = getCurrencyMeta(currency);
 
     const lines = [
-        `입력 통화: ${meta.flag} ${meta.label} (${currency})`,
-        `입력 금액: ${formatCurrencyWithSymbol(transaction.amount, currency)}`,
-        `적용 환율: 1 ${currency} = ${Number(transaction.exchange_rate || 1).toLocaleString("ko-KR", { maximumFractionDigits: 4 })}원`,
-        `원화 환산: ${Number(transaction.amount_krw || 0).toLocaleString("ko-KR")}원`,
-        `환율 기준일: ${transaction.rate_date || "-"}`,
-        `환율 출처: ${transaction.rate_source || "-"}`
+        `${meta.flag} ${meta.label} (${currency})`,
+        `1 ${currency} = ${Number(transaction.exchange_rate || 1).toLocaleString("ko-KR", { maximumFractionDigits: 4 })}원`
     ];
 
 
     appAlert(
         lines.join("\n"),
-        { title: "환율 정보" }
+        { title: "환율" }
     );
 
 }
