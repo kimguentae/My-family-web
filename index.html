@@ -22,7 +22,7 @@
 
     <link rel="apple-touch-icon" href="./icons/icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="./css/base.css">
     <link rel="stylesheet" href="./css/screens.css">
@@ -446,29 +446,9 @@
         ></div>
 
 
-        <div
-            id="analysisMonthlyChartGroup"
-            class="analysis-group"
-        >
+        <!-- 잔액 그룹 -->
 
-            <div class="analysis-group-title">
-                월별 그래프
-            </div>
-
-            <div
-                id="analysisMonthlyChart"
-                class="monthly-chart"
-            ></div>
-
-            <div
-                id="analysisMonthlyLegend"
-                class="monthly-chart-legend"
-            ></div>
-
-        </div>
-
-                <div id="analysisBalanceGroup" class="analysis-group">
-
+        <div id="analysisBalanceGroup" class="analysis-group">
 
             <div class="analysis-group-title">
                 잔액
@@ -504,15 +484,49 @@
 
         </div>
 
+
+        <!-- 통화 그룹 -->
+
         <div id="analysisCurrencyGroup" class="analysis-group">
 
-            <div class="analysis-group-title">통화</div>
+            <div class="analysis-group-title">
+                통화
+            </div>
 
             <div
                 id="analysisCurrencyList"
                 class="currency-analysis-list"
             ></div>
-            
+
+        </div>
+
+
+        <!-- 월별 그래프 -->
+
+        <div
+            id="analysisMonthlyChartGroup"
+            class="analysis-group"
+        >
+
+            <div class="analysis-group-title">
+                월별 그래프
+            </div>
+
+            <div
+                id="analysisMonthlyChart"
+                class="monthly-chart"
+            ></div>
+
+            <div
+                id="analysisMonthlyLegend"
+                class="monthly-chart-legend"
+            ></div>
+
+        </div>
+
+
+        <!-- 카테고리 -->
+
         <div id="analysisCategoryGroup" class="analysis-group">
 
             <div class="analysis-group-title">
@@ -542,6 +556,8 @@
         </div>
 
 
+        <!-- 결제수단 -->
+
         <div id="analysisPaymentGroup" class="analysis-group">
 
             <div class="analysis-group-title">
@@ -570,6 +586,8 @@
 
         </div>
 
+
+        <!-- 주체 -->
 
         <div id="analysisSubjectGroup" class="analysis-group">
 
@@ -669,8 +687,6 @@
 
     </section>
 
-
-    <!-- 입력 항목 설정 -->
 
     <!-- 입력 항목 설정 -->
 
@@ -1364,22 +1380,6 @@
     </nav>
 
 
-        <!-- 통화 선택 모달 -->
-
-    <div
-        id="currencyPickerOverlay"
-        class="currency-picker-overlay"
-        onclick="handleCurrencyPickerOverlayClick(event)"
-    >
-        <div class="currency-picker-sheet">
-            <div class="currency-picker-title">통화 선택</div>
-            <div
-                id="currencyPickerList"
-                class="currency-picker-list"
-            ></div>
-        </div>
-    </div>
-
     <!-- 공용 모달 -->
 
     <div
@@ -1465,6 +1465,23 @@
 
         </div>
 
+    </div>
+
+
+    <!-- 통화 선택 모달 -->
+
+    <div
+        id="currencyPickerOverlay"
+        class="currency-picker-overlay"
+        onclick="handleCurrencyPickerOverlayClick(event)"
+    >
+        <div class="currency-picker-sheet">
+            <div class="currency-picker-title">통화 선택</div>
+            <div
+                id="currencyPickerList"
+                class="currency-picker-list"
+            ></div>
+        </div>
     </div>
 
 </div>
