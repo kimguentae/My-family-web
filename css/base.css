@@ -1371,7 +1371,7 @@ input {
     min-width: 44px;
     height: 44px;
     border: none;
-    background: #f3f3f3;
+    background: transparent;
     color: #222;
     font-size: 18px;
     font-weight: 700;
@@ -1382,13 +1382,12 @@ input {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s ease, transform 0.1s ease;
+    transition: opacity 0.15s ease;
     z-index: 2;
 }
 
 .currency-button:active {
-    background: #e5e5e5;
-    transform: translateY(-50%) scale(0.97);
+    opacity: 0.6;
 }
 
 .exchange-rate-row {
