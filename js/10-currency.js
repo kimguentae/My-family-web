@@ -433,8 +433,6 @@ function updateExchangeRateDisplay(isLoading) {
     }
 
 
-    const meta = getCurrencyMeta(currentCurrency);
-
     const rawAmount =
         Number(
             (amountInput ? amountInput.value : "").replace(/[^0-9.]/g, "")
@@ -448,24 +446,10 @@ function updateExchangeRateDisplay(isLoading) {
         `1 ${currentCurrency} = ${Number(currentExchangeRate).toLocaleString("ko-KR", { maximumFractionDigits: 2 })}원 · 약 ${krw.toLocaleString("ko-KR")}원`;
 
 
-    if (sourceText) {
+    /* ★ 출처/기준일 표시 안 함 */
 
-        const sourceMap = {
-            "fixed": "고정 환율",
-            "open.er-api.com": "open.er-api.com",
-            "fallback-1:1": "환율 조회 실패 (1:1 적용)"
-        };
+    if (sourceText) sourceText.innerText = "";
 
-        const sourceLabel =
-            sourceMap[currentRateSource] || currentRateSource || "";
-
-        sourceText.innerText =
-            `${sourceLabel} · ${currentRateDate}`;
-
-    }
-
-
-    /* 환율 수정 가능 힌트 */
 
     wrap.onclick = openExchangeRateEditModal;
 

@@ -74,6 +74,7 @@
     justify-content: center;
     width: 100%;
     margin-bottom: 25px;
+    position: relative;
 }
 
 .amount-input {
@@ -86,6 +87,9 @@
     outline: none;
     background: transparent;
     text-align: center;
+    /* 왼쪽 버튼과 겹치지 않게 좌우 대칭 여백 */
+    padding-left: 56px;
+    padding-right: 56px;
 }
 
 .amount-input::placeholder {

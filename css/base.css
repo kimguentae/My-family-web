@@ -1364,7 +1364,10 @@ input {
 ========================= */
 
 .currency-button {
-    margin-left: 8px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
     min-width: 44px;
     height: 44px;
     border: none;
@@ -1380,11 +1383,12 @@ input {
     align-items: center;
     justify-content: center;
     transition: background 0.15s ease, transform 0.1s ease;
+    z-index: 2;
 }
 
 .currency-button:active {
     background: #e5e5e5;
-    transform: scale(0.97);
+    transform: translateY(-50%) scale(0.97);
 }
 
 .exchange-rate-row {
